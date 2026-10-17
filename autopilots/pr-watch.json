@@ -1,1 +1,0 @@
-{"title":"pr-watch","agent":"sq-watcher","mode":"run_only","description":"Check in_review run-* issues for a merged PR and complete them. Follow your instructions exactly; stay silent when nothing changed.","cron":"*/5 * * * *","timezone":"Asia/Taipei"}

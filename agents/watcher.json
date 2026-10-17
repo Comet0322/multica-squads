@@ -1,1 +1,0 @@
-{"name":"sq-watcher","description":"Utility: closes issues waiting on a human PR review once the PR is merged","runtime":"claude","tier":"light","max_concurrent_tasks":1,"skills":[],"mcp":[]}

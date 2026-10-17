@@ -25,7 +25,18 @@ Post a comment mentioning the leader with:
 - **Risks / open questions**.
 - **Verdict** (reviewers and QA): APPROVE/CHANGES REQUESTED or PASS/FAIL.
 
-Reference acceptance criteria by number (AC1, AC2, ...) from the spec on the parent issue. Mention only the leader in a report, never another member: peer-to-peer mentions bypass the leader's supervision.
+Reference acceptance criteria by number (AC1, AC2, ...) from the spec on the parent issue.
+
+**Mention the owner of the level above you, never a peer.** A handoff under a ticket reports
+to that ticket's owner, `sq-reviewer`; a handoff under the spec reports to `sq-lead`. A
+member never mentions another member and never changes another issue's status: sequencing
+belongs to the owner, and two agents promoting the same stage will do the same work twice.
+
+**Finishing your own issue IS the handoff.** Set it `done`; the stage barrier wakes the owner
+within seconds. Nobody needs to be nudged, and nothing needs to be created to pass work on.
+
+**Rework arrives as your own issue reopened**, set back to `todo` with a comment naming what
+to fix — not as a new issue. Fix exactly that, push to the same branch, report, set `done`.
 
 Keep one task per handoff. Do not do work outside your role.
 
