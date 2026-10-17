@@ -1,2 +1,2 @@
-Workflow: lead plans -> implementer builds -> reviewer reviews -> qa verifies -> lead closes.
-Work flows through issue comments using the handoff-protocol. Rework goes back to the implementer; the lead decides when the definition of done is met.
+Pipeline per spec: stage 1 implement -> stage 2 review -> stage 3 QA -> stage 4 docs.
+Delegate by @mentioning the exact roster mention. Rework always returns to sq-implementer. Move the parent to in_review only when all acceptance criteria are verified; ask the user when blocked.
