@@ -1,0 +1,1 @@
+{"name":"Gate","type":"select","description":"Why a spec issue is in_review, so the human knows what to do without reading a comment.","icon":"flag","options":["PR review:#16a34a","Decision needed:#f59e0b"]}

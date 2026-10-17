@@ -1,1 +1,1 @@
-{"name": "sq-implementer", "description": "Writes code and tests for assigned tasks", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done", "forgejo-pr"], "mcp": [], "tier": "execution"}
+{"name": "sq-implementer", "description": "Makes the failing tests pass with the smallest change, and documents the behaviour", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done"], "mcp": [], "tier": "execution"}

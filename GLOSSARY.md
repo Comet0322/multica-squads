@@ -10,7 +10,11 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
 - **Ticket issue** — one independently verifiable behaviour from a spec (a
   vertical slice, not a layer). Child of a spec issue.
 - **Handoff issue** — one task for one agent. Internal; humans are not
-  expected to read these.
+  expected to read these. There are exactly two kinds:
+  - **Test handoff** — turns a ticket's acceptance criteria into executable
+    tests that fail. Written without sight of any implementation.
+  - **Implement handoff** — makes those tests pass. May add tests; may not
+    change or delete the ones the test handoff wrote.
 
 ## Scenarios and scope
 
@@ -35,6 +39,10 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
 - **Deterministic probe** — a cheap, repeatable check of one mechanism, whose
   outcome does not depend on chance (fault injection, a chat-only prompt). Not
   a scored run and not counted against the run budget.
+- **Red evidence** — the commit at which a ticket's tests fail, together with
+  the failing output. What makes a verdict a finding rather than an opinion: a
+  test that was never seen to fail proves nothing about the change that makes
+  it pass.
 - **Failure-mode ledger** — the classification of every observed failure by
   cause. A version claims an improvement by showing its targeted failure mode
   no longer occurs, not by a higher pass count.

@@ -1,1 +1,1 @@
-{"name": "sq-lead", "description": "Squad leader: breaks work down, delegates, integrates", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done", "repo-intake"], "mcp": [], "tier": "judgment"}
+{"name": "sq-lead", "description": "Owns the spec issue: boundary, spec, ticket plan, promotion, the PR and the human gate", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done", "repo-intake", "forgejo-pr"], "mcp": [], "tier": "judgment"}

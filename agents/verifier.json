@@ -1,0 +1,1 @@
+{"name": "sq-verifier", "description": "Owns the spec check and every ticket: judges tests against the spec, confirms the red, and gates each ticket on evidence", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done"], "mcp": [], "tier": "judgment"}

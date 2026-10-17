@@ -1,0 +1,1 @@
+{"name":"Result","type":"select","description":"The verifier's machine-readable outcome for a handoff or a ticket. Closed two-value set: REWORK is an instruction, not an opinion. Named Result because the pre-v7 `Verdict` definition still exists on the platform with four options and cannot be narrowed.","icon":"shield","options":["PASS:#16a34a","REWORK:#ef4444"]}

@@ -5,8 +5,8 @@ Question being answered: **can an agent squad reliably deliver complex software,
 Everything here is pushed to Multica with `./sync.py`; Multica itself is the upstream repo at `/mnt/a0df7f69-337a-4cb4-a10a-f48243e3ddfc/Code/multica` (do not put this config there).
 
 ## Layout
-- `agents/<n>.json|.md` — agent config (`tier` → `tiers.json`) + instructions. `skills/<n>/SKILL.md`, `mcp/`, `squads/`, `properties/<n>.json` (workspace custom property definitions; admin-only to create, so they are config and agents only set values). `Review verdict` (APPROVE/CHANGES REQUESTED) and `QA verdict` (PASS/FAIL) are deliberately two properties with two-value option sets, so the platform rejects a verdict written by the wrong role; the pre-v7 `Verdict` definition still exists on the platform for B1's data.
-- `tiers.json` — model tiers: judgment (Opus 5.5 high: lead, reviewer), execution (Sonnet 5.5 medium: implementer, qa), light (Haiku 5.5: doc).
+- `agents/<n>.json|.md` — agent config (`tier` → `tiers.json`) + instructions. `skills/<n>/SKILL.md`, `mcp/`, `squads/`, `properties/<n>.json` (workspace custom property definitions; admin-only to create, so they are config and agents only set values). v8's four: `Result` (PASS/REWORK), `Red SHA`, `Head SHA`, `Gate` (PR review/Decision needed). Retired configs live in `agents/archive/` and `properties/archive/` — `sync.py` globs only the top level, so archiving a file stops syncing it without deleting anything.
+- `tiers.json` — model tiers: judgment (Opus 5.5 high: lead, test-writer, verifier), execution (Sonnet 5.5 medium: implementer), light (unused in v8).
 - `sync.py [--dry-run] [--workspace X] [--only properties,skills,mcp,agents,squads]` — idempotent upsert by name, never deletes. Targets in `workspaces.json`; skips workspaces where you are not admin/owner.
 - `tools/chat.py <agent> "<msg>" [--session ID]` — Multica CLI cannot send chat; this uses the REST API with the token in `~/.multica/config.json`.
 - `tools/forgejo-pr.sh` — opens a PR on the local Forgejo (token from `forgejo/.env`).
@@ -14,15 +14,32 @@ Everything here is pushed to Multica with `./sync.py`; Multica itself is the ups
 - `docs/design-review.md` — **the criteria for auditing this squad's design without running it**: the wake inventory (every event has exactly one wake) plus W/O/R/S/C/E/$ items. Run it after every config change; `bench/failures.md` records what it caught.
 - `bench/` — rubric, tasks, per-run scorer, aggregate report (see `bench/README.md`). Reliability metric is pass^n over at most 3 runs per variant (user cap), following tau-bench; no composite score.
 
-## Current squad (`dev-team`, config v7)
-Leader `sq-lead` + `sq-implementer`, `sq-reviewer`, `sq-qa`, `sq-doc`. **No utility agents and no autopilots**: `squad-medic` and `pr-watch` were deleted and `sq-medic`/`sq-watcher` archived in v7 (see `docs/adr/0001-ownership-per-level-no-autopilot.md`).
-Vocabulary is in `GLOSSARY.md` (scenario vs task, scope tiers A/B/C/D, scored run vs deterministic probe, intervention vs recovery). v6 scope carried into v7: A (scored) = feature-add + symptom bug; B (mechanism, verified once) = greenfield **(verified, B1)**, PR-comment relay **(replaced: the human comments on the spec issue)**, fast path **(traced only, NOT run)**; C (must be refused in chat) = 12 scenarios incl. UI, performance, migrations, multi-repo, hotfix; D (measured only) = context peaks.
-**Ownership is per level and a stage barrier delivers the handoff.** The spec belongs to `sq-lead`, each ticket to `sq-reviewer`, each handoff to its assignee; finishing your own issue wakes the owner above you. Members never mention a peer and never change another issue's status.
-Flow: user chats with sq-lead → lead runs the **repo-intake** skill on every repo involved (build, `go test` on `main`, formatter/vet baseline, an `AGENTS.md`/`CLAUDE.md` to take conventions from, `.gitignore`, dependencies, and whether squadbot can push) and pastes the output into the spec's `Repo intake` section → lead checks the **capability boundary** and refuses out-of-scope work in chat without creating issues → one spec at a time → spec + ticket plan approved in chat → spec issue (frozen, assigned to the squad) with a stage-1 `spec-check` handoff (sq-reviewer: ACs testable, Impact-analysis symbols exist, a bug's Reproduction reproduces, and the `Repo intake` evidence is real — it re-runs the build and the test suite on `main` itself) → feature tickets F1..Fn in stages, **each assigned to sq-reviewer**, whose children are only stage 1 implement (sq-implementer) and stage 2 qa (sq-qa) — the review happens in the owner's own barrier wake, on the ticket → final `Deliver` ticket: docs → integration QA → open PR (docs first: it commits to the same branch, so the head the human merges must be the one integration QA ran) → spec `in_review` at the PR (the only human gate) → user merges → Forgejo webhook sets the spec `done` (PR body must contain `Closes <SPEC-ID>`).
-**Rework reopens the existing implement handoff**: the owner posts the brief as a comment (no @mention), resets any later stage that is already `done` back to `backlog` (except one that cannot be redone, an open PR), then restarts it with **two** writes, `backlog` then `todo`. Nobody creates a rework issue. After two failed cycles the ticket's owner escalates: a comment on the ticket @mentioning `sq-lead` **first** (that mention is the wake — `blocked` is not terminal and fires no barrier), then `blocked`. **Human PR feedback goes in a comment on the spec issue, not on the pull request** — nothing reads a PR's comments; the leader turns each concrete request into a new fix ticket and moves the spec back to `in_progress` while it is in flight.
-**Nothing runs on a timer.** Every leader and owner wake begins by re-checking its own level (`in_review` with a report posted → `done`; `todo`/`in_progress`/`blocked` with no active run → restart it with `status <id> backlog` then `status <id> todo`, since only a move out of `backlog` starts a run; anything moving → leave it). A stall where nothing completes at all is a failure and is recorded as one.
-A change tiny by all four tests may run the fast path after the user says yes: one ticket whose description carries `Mode: fast-path` (that line is how its owner knows the shape), stages implement → open PR, no QA and no docs, closed on the owner's own APPROVE plus the PR URL. Human PR feedback becomes a fix ticket; when that ticket is `done` the leader reopens the **Deliver** ticket so the head the human merges has had integration QA, and its owner re-runs integration QA without opening a second PR.
-Every issue the lead creates gets label `run-<YYYYMMDD>-<slug>` so runs can be filtered.
+## Current squad (`dev-team`, config v8 — written 2026-10-18, NOT yet verified)
+Leader `sq-lead` + `sq-verifier`, `sq-test-writer`, `sq-implementer`. `sq-qa`, `sq-doc` and `sq-reviewer` are retired (ADR 0002); `squad-medic`/`pr-watch` were already gone in v7 (ADR 0001).
+Vocabulary is in `GLOSSARY.md`. Design rationale: `docs/adr/0002-tests-first-written-by-another-agent.md`. Audit standard: `docs/design-review.md`.
+
+**Test-first, and the tests are written by an agent that never sees the implementation.** That is the whole independence mechanism — there is no post-hoc QA pass.
+
+```
+spec                    squad → sq-lead      frozen after approval; corrections are comments
+├ stage 1  spec-check   sq-verifier
+├ stage 2  ticket F1    sq-verifier          verification happens here, in the owner's barrier wake
+│  ├ stage 1  test      sq-test-writer       red: tests that fail for the right reason
+│  └ stage 2  implement sq-implementer       green + the README for what it changed
+└ stage 3  ticket F2    ...
+```
+
+- **Every ticket has the same two stages.** No ticket shapes, no `Deliver` ticket, no fast path.
+- **`done` is the only verb a member has.** No `@mention`, no `blocked`, no comment on an issue it does not own. An agent that cannot finish the work still finishes the issue and says why.
+- **Nothing copies the acceptance criteria.** Tickets carry `Covers: AC#` only; everyone reads the text from the spec (description + every `**Spec correction**`, newest in force), so there is no copy to go stale.
+- **The verifier judges the tests against the spec, not the ticket** — which is also how a ticket citing a nonexistent AC gets caught.
+- Stage 1 closed: each AC has a test, and re-running at `Red SHA` **fails for the right reason** (an assertion, not a compile error). Stage 2 closed: tests pass, suite green, `git diff --numstat <Red SHA>..<Head SHA>` shows **0 deleted test lines**, diff scope allowed. The last ticket's stage 2 is also the integration check — there is no separate one.
+- **Rework is counted, not stored**: the owner counts `done → backlog` in the timeline. At two it stops, sets the ticket `Result = REWORK` and closes it; the leader then sets `Gate = Decision needed` and the spec `in_review`. The human is the only escalation target.
+- The leader's entire logic is a four-row table on `(which child closed, its Result)`; the PR is opened by the leader as the terminal step, never by a stage.
+- PR feedback is a comment on the spec → an ordinary new ticket → it becomes the last ticket, so its own verification is the integration check on the head the human merges. Nothing is reopened.
+- **Nothing runs on a timer.** Every owner wake re-checks its own level first (`in_review` with a report → `done`; `todo`/`in_progress` with no active run → restart with two writes; anything moving → leave it). A stall where nothing completes is a failure and is recorded as one.
+- Every issue the lead creates gets label `run-<YYYYMMDD>-<slug>`.
+- **Not verified yet.** Four probes then pass^3 gate any claim; the config is frozen unless a probe fails (ADR 0002, Validation).
 
 ## Hard-won facts (verified unless marked)
 - Squad assignment/@mention wakes **only the leader**; members run only when assigned/@mentioned. Squad `instructions` go to the leader only. `role` is a roster label.

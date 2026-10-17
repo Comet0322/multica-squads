@@ -1,1 +1,1 @@
-{"name":"Head SHA","type":"text","description":"The commit the verdict was given on, so a verdict can never be read against a different tree.","icon":"tag"}
+{"name":"Head SHA","type":"text","description":"The commit a result was given on, so a result can never be read against a different tree, and the head the PR opens on can be checked against the head that was verified.","icon":"tag"}
