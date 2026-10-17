@@ -35,7 +35,7 @@ func hid3Binary(t *testing.T) string {
 		hid3Bin = filepath.Join(dir, "kv")
 		out, err := exec.Command("go", "build", "-o", hid3Bin, ".").CombinedOutput()
 		if err != nil {
-			hid3BuildErr = &buildError{string(out)}
+			hid3BuildErr = &hid3BuildError{string(out)}
 		}
 	})
 	if hid3BuildErr != nil {
@@ -44,12 +44,12 @@ func hid3Binary(t *testing.T) string {
 	return hid3Bin
 }
 
-type buildError struct{ out string }
+type hid3BuildError struct{ out string }
 
-func (e *buildError) Error() string { return e.out }
+func (e *hid3BuildError) Error() string { return e.out }
 
 // kv runs the binary against file; returns stdout, stderr, exit code.
-func kv(t *testing.T, file string, args ...string) (string, string, int) {
+func hid3Kv(t *testing.T, file string, args ...string) (string, string, int) {
 	t.Helper()
 	cmd := exec.Command(hid3Binary(t), args...)
 	cmd.Env = append(os.Environ(), "KV_FILE="+file)
@@ -67,9 +67,9 @@ func kv(t *testing.T, file string, args ...string) (string, string, int) {
 	return so.String(), se.String(), code
 }
 
-func keysOf(t *testing.T, file string) []string {
+func hid3KeysOf(t *testing.T, file string) []string {
 	t.Helper()
-	out, _, code := kv(t, file, "list")
+	out, _, code := hid3Kv(t, file, "list")
 	if code != 0 {
 		t.Fatalf("list exit %d", code)
 	}
@@ -85,11 +85,11 @@ func keysOf(t *testing.T, file string) []string {
 func TestT3ListIsBytewiseSorted(t *testing.T) {
 	f := filepath.Join(t.TempDir(), "kv.json")
 	for _, k := range []string{"b", "aa", "a", "B", "ab", "zz", "10", "9"} {
-		if _, _, c := kv(t, f, "set", k, "v"); c != 0 {
+		if _, _, c := hid3Kv(t, f, "set", k, "v"); c != 0 {
 			t.Fatalf("set %s failed", k)
 		}
 	}
-	got := keysOf(t, f)
+	got := hid3KeysOf(t, f)
 	want := append([]string(nil), got...)
 	sort.Strings(want)
 	if !reflect.DeepEqual(got, want) || len(got) != 8 {
@@ -104,13 +104,13 @@ func TestT3PermissionsPreserved(t *testing.T) {
 			t.Fatal(err)
 		}
 		os.Chmod(f, mode)
-		if _, _, c := kv(t, f, "set", "b", "2"); c != 0 {
+		if _, _, c := hid3Kv(t, f, "set", "b", "2"); c != 0 {
 			t.Fatal("set failed")
 		}
 		if st, _ := os.Stat(f); st.Mode().Perm() != mode {
 			t.Fatalf("after set mode=%v want %v", st.Mode().Perm(), mode)
 		}
-		if _, _, c := kv(t, f, "del", "a"); c != 0 {
+		if _, _, c := hid3Kv(t, f, "del", "a"); c != 0 {
 			t.Fatal("del failed")
 		}
 		if st, _ := os.Stat(f); st.Mode().Perm() != mode {
@@ -119,7 +119,7 @@ func TestT3PermissionsPreserved(t *testing.T) {
 	}
 }
 
-func parallel(t *testing.T, n int, fn func(i int) (int, string)) {
+func hid3Parallel(t *testing.T, n int, fn func(i int) (int, string)) {
 	t.Helper()
 	var wg sync.WaitGroup
 	errs := make(chan string, n)
@@ -146,11 +146,11 @@ func TestT3ConcurrentSetsLoseNothing(t *testing.T) {
 	for round := 0; round < 3; round++ {
 		f := filepath.Join(t.TempDir(), "kv.json")
 		const n = 40
-		parallel(t, n, func(i int) (int, string) {
-			_, e, c := kv(t, f, "set", fmt.Sprintf("k%02d", i), "v")
+		hid3Parallel(t, n, func(i int) (int, string) {
+			_, e, c := hid3Kv(t, f, "set", fmt.Sprintf("k%02d", i), "v")
 			return c, e
 		})
-		if got := keysOf(t, f); len(got) != n {
+		if got := hid3KeysOf(t, f); len(got) != n {
 			t.Fatalf("round %d: %d keys survived, want %d", round, len(got), n)
 		}
 	}
@@ -167,17 +167,17 @@ func TestT3ConcurrentSetAndDelete(t *testing.T) {
 		}
 		b, _ := json.Marshal(m)
 		os.WriteFile(f, b, 0o644)
-		parallel(t, 2*n, func(i int) (int, string) {
+		hid3Parallel(t, 2*n, func(i int) (int, string) {
 			var e string
 			var c int
 			if i < n {
-				_, e, c = kv(t, f, "set", fmt.Sprintf("s%02d", i), "new")
+				_, e, c = hid3Kv(t, f, "set", fmt.Sprintf("s%02d", i), "new")
 			} else {
-				_, e, c = kv(t, f, "del", fmt.Sprintf("d%02d", i-n))
+				_, e, c = hid3Kv(t, f, "del", fmt.Sprintf("d%02d", i-n))
 			}
 			return c, e
 		})
-		got := keysOf(t, f)
+		got := hid3KeysOf(t, f)
 		if len(got) != n {
 			t.Fatalf("round %d: keys=%v, want exactly s00..s24", round, got)
 		}
@@ -197,11 +197,11 @@ func TestT3ConcurrentSetAndDelete(t *testing.T) {
 
 func TestT3ConcurrentSameKeyEndsConsistent(t *testing.T) {
 	f := filepath.Join(t.TempDir(), "kv.json")
-	parallel(t, 30, func(i int) (int, string) {
-		_, e, c := kv(t, f, "set", "same", fmt.Sprintf("v%d", i))
+	hid3Parallel(t, 30, func(i int) (int, string) {
+		_, e, c := hid3Kv(t, f, "set", "same", fmt.Sprintf("v%d", i))
 		return c, e
 	})
-	out, _, c := kv(t, f, "get", "same")
+	out, _, c := hid3Kv(t, f, "get", "same")
 	if c != 0 || !strings.HasPrefix(out, "v") {
 		t.Fatalf("get same: %d %q", c, out)
 	}
@@ -209,29 +209,29 @@ func TestT3ConcurrentSameKeyEndsConsistent(t *testing.T) {
 
 func TestT3ExistingBehaviourUnchanged(t *testing.T) {
 	f := filepath.Join(t.TempDir(), "kv.json")
-	if _, _, c := kv(t, f, "set", "a", "1"); c != 0 {
+	if _, _, c := hid3Kv(t, f, "set", "a", "1"); c != 0 {
 		t.Fatal("set")
 	}
-	if out, _, c := kv(t, f, "get", "a"); c != 0 || out != "1\n" {
+	if out, _, c := hid3Kv(t, f, "get", "a"); c != 0 || out != "1\n" {
 		t.Fatalf("get %d %q", c, out)
 	}
-	if _, e, c := kv(t, f, "get", "nope"); c != 1 || e == "" {
+	if _, e, c := hid3Kv(t, f, "get", "nope"); c != 1 || e == "" {
 		t.Fatalf("get missing %d %q", c, e)
 	}
-	if _, e, c := kv(t, f, "del", "nope"); c != 1 || e == "" {
+	if _, e, c := hid3Kv(t, f, "del", "nope"); c != 1 || e == "" {
 		t.Fatalf("del missing %d %q", c, e)
 	}
-	if _, _, c := kv(t, f); c != 2 {
+	if _, _, c := hid3Kv(t, f); c != 2 {
 		t.Fatalf("no args exit %d want 2", c)
 	}
-	if _, _, c := kv(t, f, "bogus"); c != 2 {
+	if _, _, c := hid3Kv(t, f, "bogus"); c != 2 {
 		t.Fatalf("unknown cmd exit %d want 2", c)
 	}
-	if _, _, c := kv(t, f, "set", "only-key"); c != 2 {
+	if _, _, c := hid3Kv(t, f, "set", "only-key"); c != 2 {
 		t.Fatalf("wrong arity exit %d want 2", c)
 	}
 	os.WriteFile(f, []byte("{nope"), 0o644)
-	if _, _, c := kv(t, f, "list"); c != 1 {
+	if _, _, c := hid3Kv(t, f, "list"); c != 1 {
 		t.Fatalf("corrupt store exit %d want 1", c)
 	}
 }
