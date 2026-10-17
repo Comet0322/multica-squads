@@ -1,2 +1,3 @@
 mcp/*.local.json
 .state/
+bench/runs/
