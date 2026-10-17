@@ -77,7 +77,7 @@ def main():
     # -- v4 ACHE-75 proved the second one can leave no timeline entry at all, which
     # is why counting the timeline alone used to miss human wakes.
     human_events, last_end, first = 0, None, None
-    human_comment_ids, auto_recoveries = set(), 0
+    human_comment_ids, auto_recoveries, medic_times = set(), 0, []
     for i in family:
         for e in mc("issue", "timeline", i["identifier"]):
             when = ts(e.get("created_at"))
@@ -93,6 +93,7 @@ def main():
                     human_comment_ids.add(e.get("id"))
             if not is_human and body.startswith("**Medic**"):
                 auto_recoveries += 1
+                medic_times.append(when)
     runs = []
     for i in family:
         runs += mc("issue", "runs", i["identifier"])
@@ -102,14 +103,35 @@ def main():
             seen.add(r["id"]); uniq.append(r)
     run_min = sum((ts(r["completed_at"]) - ts(r["started_at"])).total_seconds() for r in uniq
                   if r.get("completed_at") and r.get("started_at")) / 60
-    # A run a person started by hand. Dedupe against the member comments already
-    # counted above: one human comment produces both a timeline entry and a run.
+    # A run a person started by hand. `attribution.source` CANNOT be used for this:
+    # it names the human or agent at the ROOT of the causal chain, not who started
+    # this run. Measured on real data (see bench/failures.md):
+    #   human comment -> agent      source=direct_human  ev=comment          sysrule=-
+    #   human fires a rule by hand  source=trigger_owner ev=issue_wakeup     sysrule=-
+    #   stage barrier, agent family source=delegation    ev=issue_wakeup     sysrule=child_done
+    #   stage barrier, human family source=direct_human  ev=issue_wakeup     sysrule=child_done
+    #   sq-medic `issue rerun`      source=direct_human  ev=issue_assignment sysrule=-
+    # So `direct_human` is both a false positive (a barrier wake in a family a person
+    # built) and incomplete (`trigger_owner` is a hand-fire it never mentions).
+    # Ask instead what EXPLAINS the run: a platform rule, another agent's task, or
+    # sq-medic. A run nothing explains is a person.
+    recoveries_matched = 0
     for r in uniq:
         at = r.get("attribution") or {}
-        if at.get("source") != "direct_human":
+        if r.get("wakeup_system_rule"):            # a platform rule fired
+            continue
+        if at.get("delegated_from_task_id"):       # another agent's task caused it
             continue
         ref = (at.get("evidence") or {}).get("ref_id")
-        if ref and ref in human_comment_ids:
+        if ref and ref in human_comment_ids:       # already counted as a member comment
+            continue
+        started = ts(r.get("started_at"))
+        # sq-medic posts its comment and then restarts within seconds; that restart
+        # is an automated recovery, already counted in auto_recoveries. At most one
+        # restart per Medic comment, which medic's own instructions guarantee.
+        if started and recoveries_matched < len(medic_times) and any(
+                0 <= (started - m).total_seconds() <= 300 for m in medic_times):
+            recoveries_matched += 1
             continue
         human_events += 1
     tokens = peak_in = peak_cache = 0
@@ -167,6 +189,8 @@ def main():
                         "is_leader_task": r.get("is_leader_task"), "kind": r.get("kind"),
                         "started_at": r.get("started_at"), "completed_at": r.get("completed_at"),
                         "attribution_source": (r.get("attribution") or {}).get("source"),
+                        "attribution_evidence_kind": ((r.get("attribution") or {}).get("evidence") or {}).get("kind"),
+                        "delegated_from_task_id": (r.get("attribution") or {}).get("delegated_from_task_id"),
                         "wakeup_system_rule": r.get("wakeup_system_rule"),
                         "usage": r.get("usage")} for r in uniq]}
     runs_dir = ROOT / "runs"

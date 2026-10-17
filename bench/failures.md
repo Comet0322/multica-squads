@@ -76,3 +76,42 @@ otherwise the leader can satisfy the boundary by doing the missing work itself.
 unsynchronised read-modify-write in **kv-cli**, which is the same defect T3 reports
 as a symptom in kv-bugs. T3's hidden bug is therefore easy to find from the code,
 and T3 measures the delivery flow rather than diagnostic difficulty.
+
+---
+
+## 2026-10-17 — the scorer's intervention metric was wrong for v6 families (`tooling`)
+**What happened.** `attribution.source` does not mean what the v6 scorer assumed.
+It names the human or agent at the **root of the causal chain**, not who started the
+run. So `source == "direct_human"` was both a false positive and incomplete, and the
+fault-injection probes exposed it before any scored run was spent.
+
+**Evidence.** Measured, not reasoned:
+
+| what really started the run | `source` | `evidence.kind` | `wakeup_system_rule` | `delegated_from_task_id` |
+|---|---|---|---|---|
+| a person comments, the agent wakes | `direct_human` | `comment` | – | – |
+| a person fires a rule by hand (`wakeup trigger`) | **`trigger_owner`** | `issue_wakeup` | – | – |
+| the platform's stage barrier, agent-built family (ACHE-75) | `delegation` | `issue_wakeup` | `child_done` | yes |
+| the platform's stage barrier, hand-built family (ACHE-105/109) | **`direct_human`** | `issue_wakeup` | `child_done` | – |
+| `sq-medic` restarting with `issue rerun` (ACHE-110) | `direct_human` | `issue_assignment` | – | – |
+| an agent's comment or assignment | `delegation` | `comment`/`issue_assignment` | – | yes |
+
+Two defects follow. **False positive:** every stage-barrier wake in a family a person
+built is `direct_human`; scoring the F17-3 probe family with the old code gives 4
+human interventions for a run that recovered by itself. v5 moved the squad from
+agent-created wakeup rules to platform stage barriers, so this would have hit every
+v6 scored run. **Incomplete:** a person hand-firing a wakeup rule is `trigger_owner`,
+a source the old code never looked at, so that intervention counted as zero.
+
+**Caused.** `bench/score.py` no longer reads `source` at all. It asks what *explains*
+a run — a platform rule (`wakeup_system_rule`), another agent's task
+(`delegated_from_task_id`), or an `sq-medic` restart (one per `**Medic**` comment,
+within 300 s) — and counts anything unexplained as a person. Re-scoring ACHE-75 still
+gives 3, so the v4 number is unchanged; the F17-3 family now gives 2 human
+interventions (the two status changes used to build it, which really were mine) and 1
+auto-recovery.
+
+**Also settled.** An agent running the `multica` CLI *is* recorded as `actor_type:
+agent` in the timeline — sq-medic's `**Medic**` comment and sq-doc's handoff comment
+both are. That was the v6 scorer's last unverified assumption, and it is why a
+recovery costs no bot account.

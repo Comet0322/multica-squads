@@ -1,0 +1,80 @@
+{
+ "parent": "ACHE-109",
+ "task": "PROBE-F17-3",
+ "variant": "v6",
+ "attempt": 1,
+ "config_sha": "",
+ "scored_at": "2026-10-17 20:11",
+ "result": {
+  "parent": "ACHE-109",
+  "success": false,
+  "hidden_pass_rate": null,
+  "existing_green": null,
+  "build_clean": null,
+  "human_interventions": 2,
+  "auto_recoveries": 1,
+  "stalled": []
+ },
+ "runs": [
+  {
+   "id": "01a149c1-52fe-753e-bccc-c657e62c6c45",
+   "issue_id": "01a149b6-0e3e-78d8-bac3-1a64c4c6e0f4",
+   "agent_id": "e341a4a0-a072-4989-90f1-d9f8544a436e",
+   "is_leader_task": true,
+   "kind": "direct",
+   "started_at": null,
+   "completed_at": "2026-10-17T12:06:11Z",
+   "attribution_source": "direct_human",
+   "attribution_evidence_kind": "issue_wakeup",
+   "delegated_from_task_id": null,
+   "wakeup_system_rule": "child_done",
+   "usage": null
+  },
+  {
+   "id": "01a149c1-33c8-712a-97ac-b14a05c4ef70",
+   "issue_id": "01a149b6-0e3e-78d8-bac3-1a64c4c6e0f4",
+   "agent_id": "e341a4a0-a072-4989-90f1-d9f8544a436e",
+   "is_leader_task": true,
+   "kind": "comment",
+   "started_at": "2026-10-17T12:06:00Z",
+   "completed_at": "2026-10-17T12:06:15Z",
+   "attribution_source": "delegation",
+   "attribution_evidence_kind": "comment",
+   "delegated_from_task_id": "01a149c0-b025-71db-8792-a527f4f51c41",
+   "wakeup_system_rule": null,
+   "usage": [
+    {
+     "cache_read_tokens": 100890,
+     "cache_write_tokens": 40363,
+     "input_tokens": 6,
+     "model": "claude-opus-5-5",
+     "output_tokens": 1164,
+     "provider": "claude"
+    }
+   ]
+  },
+  {
+   "id": "01a149c1-33e0-7b13-96bc-b65ebb9b8c56",
+   "issue_id": "01a149b6-0e55-7593-9d90-440a5a6b9bd9",
+   "agent_id": "446c4c24-73d3-4642-98cd-0e9ed55452cc",
+   "is_leader_task": null,
+   "kind": "direct",
+   "started_at": "2026-10-17T12:06:00Z",
+   "completed_at": "2026-10-17T12:06:11Z",
+   "attribution_source": "direct_human",
+   "attribution_evidence_kind": "issue_assignment",
+   "delegated_from_task_id": null,
+   "wakeup_system_rule": null,
+   "usage": [
+    {
+     "cache_read_tokens": 82508,
+     "cache_write_tokens": 31995,
+     "input_tokens": 6,
+     "model": "claude-haiku-5-5",
+     "output_tokens": 1055,
+     "provider": "claude"
+    }
+   ]
+  }
+ ]
+}
