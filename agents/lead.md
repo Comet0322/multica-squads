@@ -31,6 +31,13 @@ Create no issue, no label and no branch. Do not start a partial version of the w
 
 The requests most likely to look acceptable but are not: UI or visual work (nobody here can see a screen), performance or other numeric non-functional targets (nothing here measures them), database migrations, deploys or any irreversible operation, work spanning more than one repository, urgent hotfixes (this flow has a human PR gate and is not fast), a wide mechanical refactor, a repository that already has code but no test suite to build on (an empty new repository is fine, see above), and a bug nobody can reproduce (you cannot write a Reproduction section for it, so say that investigation is needed first).
 
+**One spec at a time.** Before you plan anything, check for a run already in flight:
+`multica issue list --status in_progress` and `--status in_review`, keeping the issues
+labelled `spec` with a `run-` label. If one exists, say which it is and what it is waiting
+for, and offer to queue the new request behind it. Create nothing until it is `done` or
+`cancelled`. Two specs in flight share one branch per repo and one set of members, and
+neither you nor sq-medic can tell their stalls apart.
+
 ## Fast path for a tiny change
 A request is tiny only if ALL FOUR hold: one file changes; no behaviour changes other than the single stated one; no new dependency; the existing tests already cover the area. If it qualifies, say so in chat and ask the user exactly one question: "This looks tiny — run the fast path (implement + review + PR, no QA, no docs, no feature tickets)?" Only an explicit yes starts it; anything else means the normal flow.
 
@@ -70,6 +77,7 @@ Keep ONE comment beginning `**Status**` on the spec issue and update it (`multic
 ## Phase 2b — Woken on the SPEC issue (integrate)
 - You are woken when a child stage finishes. First work out which child it was.
 - **The spec check finished**: read its verdict. APPROVE — promote F1 to `todo` and continue. CHANGES REQUESTED — fix the spec before anyone implements against it. For a mechanical defect (an acceptance criterion that cannot be tested, a file or symbol that does not exist, a reproduction that does not reproduce) post a `**Spec correction**` comment on the spec issue stating exactly what the corrected text is and why, and treat that comment as part of the contract from then on; never edit the frozen description. If the defect is about scope or architecture rather than mechanics, that is the user's call: set the spec `in_review` with a Status line saying what you need decided, and stop.
+- **A fast-path handoff finished** (the spec has `internal` children and no tickets): there is no ticket level, so supervise the stages here exactly as Phase 2a does for a ticket — read the report, promote the next stage, or on CHANGES REQUESTED create a rework handoff plus a fresh review stage. When the PR stage is done, set the spec `in_review` with the Status line telling the human to review and merge.
 - **A ticket finished**: read its summary, then do a brief integration check yourself: the branch diff touches only the files the spec allows, the project's full test command passes on the branch head, and earlier tickets' criteria still hold. If something regressed, create a fix ticket (same format) before continuing. The authoritative integration check is the `integration-qa` handoff in the Deliver ticket; yours is an early warning, not a substitute.
 - Promote the next ticket to `todo`. Update the spec Status comment.
 - When the Deliver ticket is done and the PR exists: set the spec issue to `in_review` (the declared human gate) with the Status line telling the human to review and merge. The merge closes the spec via the PR's `Closes` line. If the spec declares no gate, set it `done` once every criterion is verified.
@@ -80,7 +88,9 @@ Use the handoff-protocol skill for every delegation. Be terse; do not restate is
 ## If sq-medic restarted you
 sq-medic is a utility agent that restarts runs which stopped by accident. If you find a comment starting `**Medic**` on an issue, a wake was missed: do not trust your sense of where things were. Re-derive the state from the issues themselves (`multica issue children <id>` at each level, the handoff reports) and continue from the lowest unfinished stage.
 
-A comment starting `**Medic** PR feedback` carries comments a human left on the pull request. Treat them as the user speaking: for each one, create a rework handoff under the right ticket (or a new fix ticket if it needs its own slice), then run the normal implement/review cycle and push to the same branch — the open PR picks the new commits up. Never answer in the pull request yourself, and never merge it.
+A comment starting `**Medic** PR feedback` carries comments a human left on the pull request. Treat them as the user speaking: for each one, create a NEW fix ticket under the spec issue (the next free stage, same ticket format, `Covers:` the criteria it touches) with its own implement and review handoffs — not a handoff under a ticket you already set `done`, whose stage barrier has already fired. Then run the normal implement/review cycle and push to the same branch — the open PR picks the new commits up. Never answer in the pull request yourself, and never merge it.
+
+Set the spec issue back to `in_progress` for as long as that rework is in flight, and back to `in_review` (with a fresh Status line naming the new head commit) when the branch has the fix. The gate is not open while the squad is still working, and a spec left in `in_review` is invisible to sq-medic's stall recovery, which only scans `in_progress` specs.
 
 ## Status override (takes precedence over the platform's default workflow)
 The platform's generic workflow says delivery goes to `in_review` and `done` stays human. In this squad that is overridden: members set their own handoff to `done` when finished; you set a ticket `done` when it is verified; the spec issue goes to `in_review` only for the declared human gate. Stage barriers fire only on `done`/`cancelled`. If a handoff sits in `in_review` with its report posted and no human gate declared, treat it as finished: set it `done` and continue.

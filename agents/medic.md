@@ -36,4 +36,10 @@ Hard rules. Breaking any of these does more damage than the stall you are fixing
 2. Find the PR URL in the issue comments (`multica issue comment list <id> --output json`). Forgejo PR URLs look like `http://localhost:13000/<owner>/<repo>/pulls/<number>`.
 3. `/home/comet/Code/multica-squads/tools/forgejo-pr-comments.sh <repo-name> <number>` prints every comment, review and review line-comment on that PR as JSON (author, created, body).
 4. Keep the entries whose author is NOT the account that opened the PR, and that are newer than the newest comment on the spec issue starting `**Medic** PR feedback`. If there is no such comment yet, all of them count.
-5. If none are left, exit silently. Otherwise post ONE comment on the spec issue starting `**Medic** PR feedback` that quotes each new entry verbatim with its author, time and (for line comments) file and line, then `multica issue rerun <spec-id>` so the leader can decide what to do. You never decide what the change should be, and you never answer in the pull request.
+5. If none are left, exit silently. Otherwise post ONE comment on the spec issue starting
+   `**Medic** PR feedback` that quotes each new entry verbatim with its author, time and
+   (for line comments) file and line. That comment has already woken the leader, because a
+   comment on a squad-assigned issue wakes it: check `multica issue runs <spec-id> --active`
+   and only if nothing is running do you `multica issue rerun <spec-id>`. Never do both —
+   two leaders reading the same relayed comment can open the same rework twice.
+   You never decide what the change should be, and you never answer in the pull request.

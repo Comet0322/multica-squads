@@ -147,3 +147,26 @@ rule back ("An empty repo is fine: the first ticket sets up `go.mod` and
 **Lesson for the design.** A boundary condition is only safe if it is stated as the
 *reason* it exists. "Already has a test suite" was a proxy for "there is a baseline to
 protect"; written as the proxy, it excluded a case the reason does not.
+
+## 2026-10-17 — four defects on the only paths the fast path and the PR relay can take
+**Class:** spec-wrong (instructions), found by tracing rather than running.
+
+B2 and B3 were traced through `agents/medic.md`, `agents/lead.md` and the measured platform
+facts instead of being executed, because each live mechanism check costs ~30 min and ~300k
+tokens. The trace found four defects, each on a path that is not optional but the *only*
+path the mechanism can take:
+1. medic's Job 2 posted its relay comment and then `rerun`-ed the spec — the identical
+   double wake F17-2 found in Job 1, in the identical shape, with the identical risk of two
+   leaders opening one rework twice.
+2. PR feedback was to become a handoff under a ticket already set `done`, relying on a stage
+   barrier firing on a `done` parent, which nothing has ever verified.
+3. The spec stayed `in_review` while that rework ran, and medic's Job 1 only scans
+   `in_progress` specs, so the one window where a human is explicitly involved was the one
+   window medic could not recover.
+4. Phase 2b had no branch for a handoff child of the spec, which is the *only* structure the
+   fast path produces, so every fast-path wake would have been improvised.
+
+**Lesson:** a fix applied to one job does not propagate to the other job of the same agent,
+and a feature with its own structure (the fast path) needs its own branch in every phase
+that structure can wake. Both are findable by reading the instruction for each path the
+design admits — cheaper than a run, and it found what three live probes had not.

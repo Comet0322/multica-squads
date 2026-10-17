@@ -1,0 +1,43 @@
+{
+ "parent": "ACHE-112",
+ "task": "PROBE-F17-2b",
+ "variant": "v6",
+ "attempt": 1,
+ "config_sha": "",
+ "scored_at": "2026-10-17 20:26",
+ "result": {
+  "parent": "ACHE-112",
+  "success": false,
+  "hidden_pass_rate": null,
+  "existing_green": null,
+  "build_clean": null,
+  "human_interventions": 3,
+  "auto_recoveries": 1,
+  "stalled": []
+ },
+ "runs": [
+  {
+   "id": "01a149d3-6672-739d-9ec8-0e39a894a819",
+   "issue_id": "01a149c7-b6d4-7360-98be-85e194049f36",
+   "agent_id": "e341a4a0-a072-4989-90f1-d9f8544a436e",
+   "is_leader_task": true,
+   "kind": "comment",
+   "started_at": "2026-10-17T12:25:53Z",
+   "completed_at": "2026-10-17T12:26:09Z",
+   "attribution_source": "delegation",
+   "attribution_evidence_kind": "comment",
+   "delegated_from_task_id": "01a149d2-ffb2-7171-a1e2-333e40894d33",
+   "wakeup_system_rule": null,
+   "usage": [
+    {
+     "cache_read_tokens": 151975,
+     "cache_write_tokens": 40697,
+     "input_tokens": 8,
+     "model": "claude-opus-5-5",
+     "output_tokens": 1219,
+     "provider": "claude"
+    }
+   ]
+  }
+ ]
+}
