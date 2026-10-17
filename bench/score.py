@@ -96,6 +96,7 @@ def main():
     # is why counting the timeline alone used to miss human wakes.
     human_events, last_end, first = 0, None, None
     human_comment_ids, auto_recoveries, medic_times = set(), 0, []
+    reopens = 0
     for i in family:
         for e in mc("issue", "timeline", i["identifier"]):
             when = ts(e.get("created_at"))
@@ -112,6 +113,12 @@ def main():
             if not is_human and body.startswith("**Medic**"):
                 auto_recoveries += 1
                 medic_times.append(when)
+            # v7 sends work back by reopening the SAME handoff, so a rework cycle is a
+            # done -> todo transition, not a new issue. Exact, and no prose is parsed.
+            if e.get("action") == "status_changed":
+                d = e.get("details") or {}
+                if d.get("from") == "done" and d.get("to") in ("todo", "in_progress"):
+                    reopens += 1
     runs = []
     for i in family:
         runs += mc("issue", "runs", i["identifier"])
@@ -175,7 +182,23 @@ def main():
     if a.repo and a.branch:
         rate, existing, clean = go_tests(a.repo, a.branch, a.hidden)
 
-    # Process metrics from comments: reviewer / QA verdicts.
+    # Typed verdicts (the `Verdict` custom property). A property holds only the LATEST
+    # value, so it cannot count cycles -- `reopens` does that -- but it is the authoritative
+    # final state, read rather than interpreted. In a clean run NOTHING should end negative:
+    # a handoff left on CHANGES REQUESTED or FAIL under a ticket that was closed means a
+    # failure was closed over. Recorded, not yet part of `success` (that is a rubric change).
+    verdicts, negative_final = {}, 0
+    for i in family:
+        for pr in mc("issue", "property", "list", i["identifier"]) or []:
+            if pr.get("name") == "Verdict" and pr.get("display"):
+                verdicts[i["identifier"]] = pr["display"]
+                if pr["display"] in ("CHANGES REQUESTED", "FAIL"):
+                    negative_final += 1
+
+    # Legacy prose counts. These match on the phrase anywhere in a comment, so they
+    # OVER-count when a later comment quotes an earlier verdict (measured on B1: 2 real
+    # verdicts counted as 3). Kept only so pre-v7 rows stay comparable; for v7 read
+    # `reopens` and `verdicts` instead.
     changes_req = qa_fail = 0
     for i in subs:
         for e in mc("issue", "timeline", i["identifier"]):
@@ -191,6 +214,7 @@ def main():
     result = {"parent": a.parent, "success": success, "hidden_pass_rate": rate,
               "existing_green": existing, "build_clean": clean,
               "human_interventions": human_events, "auto_recoveries": auto_recoveries,
+              "rework_reopens": reopens, "negative_final_verdicts": negative_final,
               "stalled": stalled}
     print(json.dumps(result, indent=1))
     print("Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipline): fill in results.csv manual_scores")
@@ -200,7 +224,9 @@ def main():
            "existing_green": int(bool(existing)), "build_clean": int(bool(clean)),
            "human_interventions": human_events, "auto_recoveries": auto_recoveries,
            "stalled_sub_issues": len(stalled), "ticket_count": len(tickets),
-           "rework_issues": rework, "review_changes_requested": changes_req, "qa_fail": qa_fail,
+           "rework_issues": rework, "rework_reopens": reopens,
+           "negative_final_verdicts": negative_final,
+           "review_changes_requested": changes_req, "qa_fail": qa_fail,
            "leader_wakeups": sum(1 for r in uniq if r.get("is_leader_task")), "sub_issue_count": len(subs),
            "wall_minutes": round((last_end - first).total_seconds() / 60, 1) if first else "",
            "agent_run_minutes": round(run_min, 1), "tokens": int(tokens),
@@ -211,6 +237,7 @@ def main():
     # started what stay inspectable without re-querying a run that may age out.
     detail = {"parent": a.parent, "task": a.task, "variant": a.variant, "attempt": a.attempt,
               "config_sha": a.config_sha, "scored_at": row["date"], "result": result,
+              "final_verdicts": verdicts,
               "runs": [{"id": r["id"], "issue_id": r.get("issue_id"), "agent_id": r.get("agent_id"),
                         "is_leader_task": r.get("is_leader_task"), "kind": r.get("kind"),
                         "started_at": r.get("started_at"), "completed_at": r.get("completed_at"),

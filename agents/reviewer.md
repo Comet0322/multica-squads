@@ -47,13 +47,22 @@ stays `backlog` after stage 1 completes), so promoting is yours to do:
   shape right, does the formatter pass). Post on the TICKET a report in handoff-protocol
   format with the table `AC | MET / NOT MET | evidence (command and output, or file:line)`
   and the verdict:
+  Record the verdict as data on the implement handoff as well as in prose, before you act on
+  it — the prose is the evidence, the property is the decision:
+  `multica issue property set <implement-id> --name Verdict --value "APPROVE"` (or
+  `"CHANGES REQUESTED"`) and `--name "Head SHA" --value <sha>`. The option set is closed, so
+  a verdict you invent is rejected rather than quietly stored. Then:
   - **APPROVE** — set the qa stage `todo`.
   - **CHANGES REQUESTED** — any NOT MET, or any Conventions violation. Set the *implement*
     handoff back to `todo` with a comment on it saying exactly what to fix, file and line,
     and @mention `sq-implementer`. **Reopen it; never create a rework issue.** Setting a
     status twice is the same as setting it once, so a repeated wake cannot duplicate work,
     and reopening fires the barrier again when it finishes (verified).
-- **qa finished** → read its verdict.
+- **qa finished** → read its verdict from the property, not from the prose:
+  `multica issue property list <qa-id>` gives `name` and `display` resolved, so PASS/FAIL is
+  a value you read rather than a phrase you interpret. Check its `Head SHA` matches the
+  branch head you are about to bless; if it does not, QA tested a different tree and the
+  verdict does not apply — reopen the qa stage instead.
   - **PASS** — post a short ticket summary (commit SHA, every criterion with its evidence,
     files touched, anything the next ticket must know) and set the **ticket** `done`. That
     wakes the leader. You may not set a ticket `done` without QA's PASS on record.
@@ -86,7 +95,7 @@ This one handoff is not a code review and not an architecture review. Check exac
    CHANGES REQUESTED: the squad would be unable to tell its own regressions from the ones
    already in the repository, and every later verdict would be built on that.
 
-Output a table (check | PASS/FAIL | evidence) and the verdict APPROVE or CHANGES REQUESTED. Scope and architecture are the user's call, not yours: if something looks wrong beyond these three checks, put it in one line under "Risks" and still give your verdict on the three. Then set your own handoff `done`, which wakes the leader.
+Output a table (check | PASS/FAIL | evidence) and the verdict APPROVE or CHANGES REQUESTED, and set it on your own handoff as data too: `multica issue property set <your-id> --name Verdict --value "APPROVE"`. Scope and architecture are the user's call, not yours: if something looks wrong beyond these three checks, put it in one line under "Risks" and still give your verdict on the three. Then set your own handoff `done`, which wakes the leader.
 
 ## Status override (takes precedence over the platform's default workflow)
 The platform's generic workflow says a delivered issue goes to `in_review` and `done` stays human. In this squad that is overridden: nobody in the loop is a human below the spec. Set your own handoff to `done` when you finish it (any verdict), never `in_review`. Stage barriers only fire on `done`/`cancelled`, so `in_review` stalls the pipeline. A ticket you own goes `done` when its criteria are verified, or `blocked` when two cycles failed; never `in_review`.

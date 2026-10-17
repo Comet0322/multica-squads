@@ -25,7 +25,12 @@ Post a comment mentioning the leader with:
 - **Done**: what changed (files, branch/commit).
 - **Verified**: commands run and results.
 - **Risks / open questions**.
-- **Verdict** (reviewers and QA): APPROVE/CHANGES REQUESTED or PASS/FAIL.
+- **Verdict** (reviewers and QA): APPROVE/CHANGES REQUESTED or PASS/FAIL in the report, AND
+  set as data before you set the issue `done`:
+  `multica issue property set <issue-id> --name Verdict --value "PASS"` plus
+  `--name "Head SHA" --value <sha>`. The option set is closed, so a paraphrase is rejected
+  instead of being stored as something nothing can read; `multica issue property list <id>`
+  returns it resolved by name. The prose is the evidence; the property is the decision.
 
 Reference acceptance criteria by number (AC1, AC2, ...) from the spec on the parent issue.
 

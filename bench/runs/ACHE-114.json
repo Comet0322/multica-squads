@@ -3,8 +3,8 @@
  "task": "B1",
  "variant": "v6",
  "attempt": 1,
- "config_sha": "9c9a112",
- "scored_at": "2026-10-17 21:33",
+ "config_sha": "6025681",
+ "scored_at": "2026-10-17 23:03",
  "result": {
   "parent": "ACHE-114",
   "success": false,
@@ -13,8 +13,11 @@
   "build_clean": true,
   "human_interventions": 0,
   "auto_recoveries": 0,
+  "rework_reopens": 0,
+  "negative_final_verdicts": 0,
   "stalled": []
  },
+ "final_verdicts": {},
  "runs": [
   {
    "id": "01a149f7-bbf6-7126-81a0-e68ff6d1dd55",

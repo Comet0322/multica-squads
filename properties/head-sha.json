@@ -1,0 +1,1 @@
+{"name":"Head SHA","type":"text","description":"The commit the verdict was given on, so a verdict can never be read against a different tree.","icon":"tag"}

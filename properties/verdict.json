@@ -1,0 +1,1 @@
+{"name":"Verdict","type":"select","description":"A reviewer's or QA's machine-readable verdict on the work this issue covers. The option set is closed, so a verdict cannot be paraphrased into something nothing can read.","icon":"shield","options":["APPROVE:#16a34a","CHANGES REQUESTED:#ef4444","PASS:#16a34a","FAIL:#ef4444"]}

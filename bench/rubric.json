@@ -24,7 +24,10 @@
   ],
   "max_auto_recoveries": 3,
   "human_interventions": "Any action by a person on the run's issues: a member-authored comment or status change, OR a run whose attribution.source is `direct_human` (a hand-started wake leaves no timeline entry, so the timeline alone undercounts). Deduped by the triggering comment. The requirements chat before the run is not counted.",
-  "auto_recoveries": "`**Medic**` comments by sq-medic in the issue family. Allowed and capped: the squad recovered, the human did not."
+  "auto_recoveries": "`**Medic**` comments by sq-medic in the issue family. Allowed and capped: the squad recovered, the human did not.",
+  "candidate_conditions": {
+   "negative_final_verdicts": "A handoff left on a CHANGES REQUESTED or FAIL `Verdict` property under a closed ticket means a failure was closed over. Measurable only because the verdict is typed (probe F21). Recorded from 2026-10-17; NOT part of `success` yet, because adding a condition breaks comparability with the v1-v6 rows."
+  }
  },
  "headline_metrics": {
   "pass_hat_n": "all n runs succeed (consistency; the main answer to 'is it stable')",

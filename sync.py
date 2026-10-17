@@ -2,13 +2,13 @@
 """Sync agents, skills, MCP servers and squads in this directory to Multica.
 
 Idempotent: resources are matched by name; existing ones are updated.
-Order: skills -> mcp -> agents -> squads. Never deletes anything.
+Order: properties -> skills -> mcp -> agents -> squads. Never deletes anything.
 
 Target workspaces come from workspaces.json ({"workspaces": ["slug", ...]} or
 {"workspaces": "all"} for every workspace where you are admin/owner). Override
 with repeated --workspace. Workspaces where you are not admin/owner are skipped.
 
-Usage: ./sync.py [--dry-run] [--workspace ID|SLUG ...] [--only skills,mcp,agents,squads]
+Usage: ./sync.py [--dry-run] [--workspace ID|SLUG ...] [--only properties,skills,mcp,agents,squads]
 """
 import argparse, json, re, subprocess, sys
 from pathlib import Path
@@ -200,8 +200,29 @@ def sync_workspace(only):
     agents = sync_agents(skills, mcp) if "agents" in only else {a["name"]: a["id"] for a in listing("agent", "list")}
     if "squads" in only:
         sync_squads(agents)
+    if "properties" in only:
+        sync_properties()
     if "autopilots" in only:
         sync_autopilots()
+
+
+def sync_properties():
+    """Workspace custom property definitions. Creating them is owner/admin only, so they
+    belong in config rather than in an agent's hands; agents only set VALUES on issues."""
+    existing = {d["name"]: d for d in listing("property", "list")}
+    for f in sorted((ROOT / "properties").glob("*.json")):
+        cfg = json.loads(f.read_text())
+        name = cfg["name"]
+        flags = ["--description", cfg.get("description", ""), "--icon", cfg.get("icon", "")]
+        if name in existing:
+            print(f"property update: {name}")
+            run("property", "update", existing[name]["id"], *flags)
+            continue
+        print(f"property create: {name}")
+        opts = []
+        for o in cfg.get("options", []):
+            opts += ["--option", o]
+        run("property", "create", "--name", name, "--type", cfg["type"], *flags, *opts)
 
 
 def sync_autopilots():
@@ -227,7 +248,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--workspace", action="append", help="ID, slug or name; repeatable")
-    ap.add_argument("--only", default="skills,mcp,agents,squads,autopilots")
+    ap.add_argument("--only", default="properties,skills,mcp,agents,squads")
     ARGS = ap.parse_args()
     only = set(ARGS.only.split(","))
     email = me()

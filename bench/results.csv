@@ -1,8 +1,8 @@
-date,task,variant,attempt,parent,config_sha,success,hidden_pass_rate,existing_green,build_clean,human_interventions,auto_recoveries,stalled_sub_issues,ticket_count,rework_issues,review_changes_requested,qa_fail,leader_wakeups,sub_issue_count,wall_minutes,agent_run_minutes,tokens,peak_input_tokens,peak_cache_read_tokens,peak_context_tokens,manual_scores
-2026-10-17 11:14,T2,v1,1,ACHE-27,8f1289f,1,1.0,1,1,0,,0,,0,0,0,7,5,6.5,7.0,43048,,,,
-2026-10-17 11:22,T2,v1,2,ACHE-33,8f1289f,1,1.0,1,1,0,,0,,0,0,0,7,5,6.1,6.3,41991,,,,
-2026-10-17 11:28,T2,v1,3,ACHE-39,8f1289f,1,1.0,1,1,0,,0,,0,0,0,7,5,5.5,6.0,34371,,,,
-2026-10-17 13:31,T3,v1,1,ACHE-45,a9880e2,1,1.0,1,1,0,,0,,3,2,0,10,9,18.4,20.1,79253,,,,
-2026-10-17 14:01,T3,v1,2,ACHE-55,a9880e2,1,1.0,1,1,0,,0,,0,0,0,7,5,12.7,13.5,51467,,,,
-2026-10-17 14:01,T3,v1,3,ACHE-61,a9880e2,1,1.0,1,1,0,,0,,2,2,0,8,7,14.9,16.4,71256,,,,
-2026-10-17 16:06,T3,v4,1,ACHE-75,fa404d8,0,1.0,1,1,2,,0,,4,3,0,15,16,55.7,32.6,151577,,,,
+date,task,variant,attempt,parent,config_sha,success,hidden_pass_rate,existing_green,build_clean,human_interventions,auto_recoveries,stalled_sub_issues,ticket_count,rework_issues,rework_reopens,negative_final_verdicts,review_changes_requested,qa_fail,leader_wakeups,sub_issue_count,wall_minutes,agent_run_minutes,tokens,peak_input_tokens,peak_cache_read_tokens,peak_context_tokens,manual_scores
+2026-10-17 11:14,T2,v1,1,ACHE-27,8f1289f,1,1.0,1,1,0,,0,,0,,,0,0,7,5,6.5,7.0,43048,,,,
+2026-10-17 11:22,T2,v1,2,ACHE-33,8f1289f,1,1.0,1,1,0,,0,,0,,,0,0,7,5,6.1,6.3,41991,,,,
+2026-10-17 11:28,T2,v1,3,ACHE-39,8f1289f,1,1.0,1,1,0,,0,,0,,,0,0,7,5,5.5,6.0,34371,,,,
+2026-10-17 13:31,T3,v1,1,ACHE-45,a9880e2,1,1.0,1,1,0,,0,,3,,,2,0,10,9,18.4,20.1,79253,,,,
+2026-10-17 14:01,T3,v1,2,ACHE-55,a9880e2,1,1.0,1,1,0,,0,,0,,,0,0,7,5,12.7,13.5,51467,,,,
+2026-10-17 14:01,T3,v1,3,ACHE-61,a9880e2,1,1.0,1,1,0,,0,,2,,,2,0,8,7,14.9,16.4,71256,,,,
+2026-10-17 16:06,T3,v4,1,ACHE-75,fa404d8,0,1.0,1,1,2,,0,,4,,,3,0,15,16,55.7,32.6,151577,,,,

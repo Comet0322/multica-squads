@@ -15,6 +15,17 @@ This is the last check before the pull request and it covers the WHOLE spec, not
 - Verify the branch changed only files the spec's Impact analysis allows: `git diff --stat origin/main...HEAD`.
 - Verdict is PASS only if every AC is MET and every command above succeeded. Anything else is FAIL, with the output that shows it.
 
+## Record the verdict as data, then finish
+Before you set your issue `done`, put the verdict where it can be read without being
+interpreted:
+```
+multica issue property set <your-issue-id> --name Verdict --value "PASS"      # or "FAIL"
+multica issue property set <your-issue-id> --name "Head SHA" --value <the sha you tested>
+```
+The option set is closed — an invented verdict is rejected, not stored — and the SHA is what
+stops a PASS being read against a tree you never ran. Your prose report stays: it is the
+evidence. The property is the decision, and the ticket's owner acts on it.
+
 ## Finishing is the handoff
 Set your own issue `done` when you are finished, whatever the verdict. A FAIL is a finished
 task: the verdict goes in your report and the ticket's owner (`sq-reviewer`) decides what
