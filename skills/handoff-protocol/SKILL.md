@@ -11,6 +11,12 @@ Post an issue comment mentioning the member with:
 - **Inputs**: files, branches, prior comments to read.
 - **Output**: exactly what to deliver.
 - **Verify by**: the command or check that proves it is done.
+- **Conventions**: how this project does things, copied from the spec's Impact analysis —
+  the error-message shape, what must not be committed, formatting, which dependencies are
+  allowed. The receiver has a fresh context and no memory of the project, so a convention
+  you leave out is one it cannot know. This field is not optional: on B1 the only real
+  rework cycle existed solely because two conventions were never transmitted (a compiled
+  binary was committed, and error messages lacked the required `<tool>: ` prefix).
 
 ## Reporting (member -> leader)
 Post a comment mentioning the leader with:
@@ -36,3 +42,4 @@ Humans are not part of the loop unless the spec says so. Never leave a task wait
 - The worktree starts on a throwaway agent branch. Switch to the feature branch named in the spec: `git fetch origin && git switch feat/<name>` if it exists on origin, else `git switch -c feat/<name> origin/main`. Never commit to main.
 - Push your work to the feature branch (`git push -u origin feat/<name>`) before reporting, so the next stage can fetch it. Say the branch and commit SHA in your report.
 - Reviewers, QA and docs: fetch the same branch and work from the SHA given in the handoff, not from memory.
+- Before you push, check what you are committing (`git status`, `git diff --cached --stat`): source and tests only. Never a compiled binary, a coverage file, an editor or OS file, or a `.gitignore` nobody asked for. Fix the formatting the project uses (for Go, `gofmt -l .` must print nothing).
