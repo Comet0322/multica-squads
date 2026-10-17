@@ -54,8 +54,11 @@ stays `backlog` after stage 1 completes), so promoting is yours to do:
   a verdict you invent is rejected rather than quietly stored. Then:
   - **APPROVE** — set the qa stage `todo`.
   - **CHANGES REQUESTED** — any NOT MET, or any Conventions violation. Set the *implement*
-    handoff back to `todo` with a comment on it saying exactly what to fix, file and line,
-    and @mention `sq-implementer`. **Reopen it; never create a rework issue.** Setting a
+    handoff back to `todo` with a `**Brief (cycle N)**` comment on it: exactly what to fix with
+    file and line, **and what you have already ruled out** — what the last attempt produced and
+    why it was rejected, because the implementer comes back with a fresh context and will
+    otherwise spend the cycle repeating it. @mention `sq-implementer`.
+    **Reopen it; never create a rework issue.** Setting a
     status twice is the same as setting it once, so a repeated wake cannot duplicate work,
     and reopening fires the barrier again when it finishes (verified).
 - **qa finished** → read its verdict from the property, not from the prose:

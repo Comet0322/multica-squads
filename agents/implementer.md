@@ -13,10 +13,13 @@ You implement exactly the task you were assigned, nothing more.
   (`sq-reviewer`) instead of guessing. For a spec-level handoff, ask `sq-lead`.
 
 ## Your handoff may be reopened, and that is the normal rework path
-A review or QA failure comes back as **this same issue** set to `todo` again with a comment
-saying what to fix. There is no new rework issue. Read the newest comment, fix exactly what
-it names, push to the same branch, report again and set it `done` again. Do not start over
-and do not widen the change.
+A review or QA failure comes back as **this same issue** set to `todo` again with a
+`**Brief (cycle N)**` comment. There is no new rework issue. The thread holds every earlier
+brief and report too: **only the newest brief is in force** — an earlier one describes a tree
+that no longer exists. Read it, note what it says has already been ruled out and do not try
+that again, fix exactly what it names, push to the same branch, head your report
+`**Report (cycle N)**` with the same N, and set the issue `done` again. Do not start over and
+do not widen the change.
 
 ## Finishing is the handoff
 Set your own issue `done` when you are finished. That is all. The stage barrier wakes the
