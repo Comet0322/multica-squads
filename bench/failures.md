@@ -239,8 +239,8 @@ moving ownership down a level and of deleting the medic.
    @mention its owner, and setting the issue `done` fires the barrier about a second later;
    deduplication is per (issue, agent) (`HasPendingTaskForIssueAndAgent`), and these are two
    different issues. Measured in B1: `ACHE-122`'s report woke `sq-lead` at 12:36:25 and the
-   barrier woke it on `ACHE-116` at 12:36:26 — **18 of B1's 74 runs** started within 3 s of
-   a comment. Harmless in v6, where the second run only chatted; in v7 the owner's wake
+   barrier woke it on `ACHE-116` at 12:36:26 — **17 of B1's 74 runs** were woken by a comment
+   rather than by a barrier or a promotion. Harmless in v6, where the second run only chatted; in v7 the owner's wake
    promotes stages and reopens issues, so two runs on one state can do it twice. Fixed:
    reports @mention nobody, and `score.py` now counts `double_wakes`.
 3. **Deciding which stage finished from `total`/`done` counts breaks after a reopen.** After

@@ -48,7 +48,8 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
   (status change, comment, wake). Must be zero for a run to succeed. A
   requirements chat before the run is not an intervention.
 - **Automated recovery** — an action by a non-human actor that unblocks a
-  stalled run. Allowed, counted, and capped; counted separately from human
-  intervention because it means the squad recovered, not that the human did.
+  stalled run. Counted separately from human intervention because it means the
+  squad recovered, not that the human did. A squad may provide no such actor, in
+  which case the count is structurally zero and a stall is simply a failure.
 - **Human gate** — a point where the design *intends* to wait for a person.
   Declared in the spec. A gate is not an intervention.

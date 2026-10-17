@@ -33,8 +33,7 @@ What follows from that:
 - **Finishing** (`done`) wakes your owner through the stage barrier. **Do not @mention your
   owner in your report.** The mention wakes it on your issue and the barrier wakes it on the
   parent about a second later; the two are different issues, so the platform does not
-  deduplicate them. In B1, 18 of 74 runs started within 3 s of a comment for exactly this
-  reason.
+  deduplicate them. In B1, 17 of 74 runs were woken by a comment for exactly this reason.
 - **Starting or restarting a child** — a first promotion, a rework, an answer to a blocked
   child, a stage that must run again — is always the same two writes, in this order:
   ```
@@ -45,14 +44,18 @@ What follows from that:
   single `status <id> todo` from `done` is the most dangerous mistake available here.
 - **Waking an agent you cannot restart** — your owner, or a peer you may not touch — only
   ever happens for an escalation, and only through a mention link in the roster form
-  `[@Name](mention://agent/<agent-id>)`. A plain `@name` is dead text that parses as nothing.
+  `[@Name](mention://agent/<agent-id>)`. A plain `@name`, and a link with a name where the id
+  belongs, are both dead text that parses as nothing. The id is a UUID:
+  `multica agent list` prints one per agent, so look yours up rather than guessing — this is
+  the only wake out of `blocked`, and if it parses as nothing the work stops there for good.
 - Do not `rerun` an issue you have just commented on **when that comment can wake its owner
   by itself** — a comment on the squad-assigned spec issue, or any comment carrying a mention.
   On an agent-assigned handoff a plain comment wakes nobody, so a comment plus a restart is
   exactly one wake.
 
 ## Who may change what
-- **Your own issue**: its status, its `Verdict` and `Head SHA` properties, and comments on it.
+- **Your own issue**: its status, its `Head SHA` and its own role's verdict property
+  (`QA verdict` for QA, `Review verdict` for a ticket's owner), and comments on it.
 - **An owner, on its own children only**: their status (including reopening one), their
   properties, and briefs on them.
 - **Never**: another member's issue, a sibling's status, your parent's status or description,
@@ -71,6 +74,10 @@ back"). Both carry:
 - **Inputs**: files, branch, and the exact prior comments to read.
 - **Output**: exactly what to deliver.
 - **Verify by**: the command or check that proves it is done.
+- **Corrections**: the spec's description is frozen, so a change to the contract lives in a
+  `**Spec correction**` comment on the spec issue instead. Whoever reads the spec reads its
+  `**Spec correction**` comments too, newest in force, and a correction overrides the frozen
+  text it names. A brief does not need to repeat them; it does need to not contradict them.
 - **Conventions**: one line pointing at the `Conventions` part of the spec's Impact analysis
   — *not* a copy of it. The spec is the single source, it is cited on the first line, so
   there is nothing to keep in step and nothing to forget to quote. **Whoever receives a brief
@@ -156,8 +163,9 @@ it completes, so the owner is woken exactly as it was the first time.
 ## Status rules (autonomous by default)
 No human is in the loop below the spec. Never leave a task waiting for a person to press a
 button.
-- **Finished your task**, whatever the verdict: post the report, set the `Verdict` property if
-  you are a reviewer or QA, then set your own issue `done` (`multica issue status <id> done`).
+- **Finished your task**, whatever the verdict: post the report, set your role's verdict
+  property if you are a reviewer or QA, then set your own issue `done`
+  (`multica issue status <id> done`).
   A failed review or QA is a *finished* task: the verdict is the deliverable, and your owner
   decides what happens next. Finishing is what wakes your owner.
 - **`blocked`**: see "Escalating" — the comment with the @mention comes first.

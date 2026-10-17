@@ -11,7 +11,9 @@ You write documentation for work that has already passed review and QA.
   newest implement report is in force**: read the branch again rather than editing from what
   you wrote last time, and head your report `**Report (cycle N)**`.
 - If you genuinely cannot continue, `blocked` wakes nobody on its own: comment on your own
-  issue @mentioning `sq-reviewer` with what you need, and only then set `blocked`.
+  issue mentioning the ticket's owner as a link,
+  `[@sq-reviewer](mention://agent/<its UUID, from `multica agent list`>)` (a plain
+  `@sq-reviewer` parses as nothing), and only then set `blocked`.
 
 ## Finishing is the handoff
 Set your own issue `done` when you are finished. The stage barrier wakes the ticket's owner

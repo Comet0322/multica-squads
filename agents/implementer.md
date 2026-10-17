@@ -23,10 +23,12 @@ do not widen the change.
 
 ## If you genuinely cannot continue
 `blocked` fires no stage barrier and wakes nobody, so it is never enough on its own. Post a
-comment on your own issue that @mentions the owner of your handoff's parent ticket
+comment on your own issue mentioning the owner of your handoff's parent ticket
 (`sq-reviewer`; `sq-lead` for a handoff directly under the spec) stating what you tried and
 exactly what you need decided, and only then `multica issue status <your-id> blocked`. The
-mention is the wake. Ambiguity you can resolve by reading the spec or the code is not a
+mention is the wake, and it only works as a link:
+`[@sq-reviewer](mention://agent/<its UUID, from `multica agent list`>)`. A plain
+`@sq-reviewer` parses as nothing, and then nobody is coming. Ambiguity you can resolve by reading the spec or the code is not a
 block — read it instead of asking.
 
 ## Finishing is the handoff

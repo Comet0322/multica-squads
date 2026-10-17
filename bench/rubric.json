@@ -27,8 +27,9 @@
   "auto_recoveries": "Recovery by a non-human actor. Config v7 has no such actor (`squad-medic` and `sq-medic` were removed in ADR 0001), so this is structurally 0 and the cap is vacuous; it is kept only so pre-v7 rows stay comparable. v7 recovers only inside a wake that happens for another reason, which is why a family where nothing completes is recorded as a failure.",
   "candidate_conditions": {
    "negative_final_verdicts": "A handoff left on `CHANGES REQUESTED` (`Review verdict`) or `FAIL` (`QA verdict`) under a closed ticket means a failure was closed over. Measurable because the verdicts are typed and role-separated. Recorded from 2026-10-17; NOT part of `success` yet, because adding a condition breaks comparability with the v1-v6 rows.",
-   "double_wakes": "Runs whose attribution evidence kind is `comment`: one event producing two wakes (a report that mentions its owner, or an agent commenting on the squad-assigned spec). Target 0; B1 measured 18 of 74 runs. Cost plus a duplicate-action hazard, not a defect in the delivered code.",
-   "verdict_role_mismatch": "A verdict written by the wrong role. Should be impossible since the two properties were split; a non-zero value means an agent used the pre-v7 `Verdict` property."
+   "double_wakes": "Runs whose attribution evidence kind is `comment` and that are not an escalation: one event producing two wakes (a report that mentions its owner, or an agent commenting on the squad-assigned spec). Target 0; B1 measured 17 of 74, against 27 barrier wakes and 30 promotions. Cost plus a duplicate-action hazard, not a defect in the delivered code.",
+   "verdict_role_mismatch": "A verdict written by the wrong role. Should be impossible since the two properties were split; a non-zero value means an agent used the pre-v7 `Verdict` property.",
+   "escalations": "Comment wakes followed by that issue going `blocked` within 120 s: the sanctioned escalation path, since `blocked` fires no barrier and a mention is the only wake out of it. Expected 0 in a clean run, but not a violation when it is not."
   }
  },
  "headline_metrics": {
@@ -40,8 +41,8 @@
  "improvement_claim_rule": "With n<=3 runs, pass^n has no resolution (3/3 gives a 95% lower bound near 0.37 by the rule of three). A version may therefore claim an improvement only by showing (a) the failure mode it targeted does not recur, AND (b) a deterministic probe for that mode passes. Never by a higher pass count alone.",
  "per_run_record": [
   "hidden_pass_rate",
-  "existing_tests_green",
-  "build_vet_gofmt_clean",
+  "existing_green",
+  "build_clean",
   "human_interventions",
   "auto_recoveries",
   "stalled_sub_issues",
@@ -50,6 +51,7 @@
   "rework_reopens",
   "negative_final_verdicts",
   "double_wakes",
+  "escalations",
   "verdict_role_mismatch",
   "review_changes_requested",
   "qa_fail",

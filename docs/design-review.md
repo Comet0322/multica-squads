@@ -122,8 +122,9 @@ Forbidden, because they produce **no** wake while looking like one:
 
 ## $ — cost
 
-- **$1** Does any instruction create a run that does no work? (B1: 18 of 74 runs started
-  within 3 s of a comment — the report-mention double wake.)
+- **$1** Does any instruction create a run that does no work? (B1: 17 of 74 runs were woken
+  by a comment — the report-mention double wake. An escalation is also a comment wake, and is
+  counted separately because it is the only wake out of `blocked`.)
 - **$2** Does any issue accumulate an unbounded number of wakes? (The 12-trigger pause seen
   on v4's `ACHE-75` applied to an **agent-created** wakeup rule, not to the platform barrier,
   so this is a cost question now, not a correctness one.)
@@ -143,7 +144,7 @@ Forbidden, because they produce **no** wake while looking like one:
 | a parent in `backlog`, `done` or `cancelled`, or assigned to a human, gets no notification at all | same file `:118`–`:131` |
 | wake deduplication is per (issue, agent), so a mention on the child and a barrier on the parent are two runs | `HasPendingTaskForIssueAndAgent`, same file `:914` |
 | a squad-assigned parent wakes the **leader only**, with no member fan-out | `triggerChildDoneSquad`, same file |
-| a status change starts a run unless `--no-start` is passed; creating an issue has no such flag, so handoffs are created `backlog` and promoted | `multica issue status --help`; B1 `ACHE-122` created `backlog` 12:35:47, promoted 12:35:53, run 12:35:53 |
+| `issue create` has no `--no-start`, so an issue created in any status but `backlog` starts a run at once; `--no-start` exists only on `issue status`/`issue update` | `multica issue create --help`; B1 `ACHE-114` (created `in_progress`) ran at creation, `ACHE-115` (created `backlog`) did not |
 | an `@mention` in a comment wakes the mentioned agent even on an issue it is not assigned | B1 `ACHE-122`: the implementer's report mentioned `sq-lead`, which ran at 12:36:25 while the barrier ran on the parent at 12:36:26 |
 
 ## How to run the review

@@ -97,6 +97,10 @@ def main():
     human_events, last_end, first = 0, None, None
     human_comment_ids, auto_recoveries, medic_times = set(), 0, []
     reopens = 0
+    # An escalation is a comment wake BY DESIGN (`blocked` fires no barrier, so the mention is
+    # the only way out), so it must not be counted as a protocol violation. It is told apart
+    # from a report-mention by what follows it on the same issue: a move to `blocked`.
+    comment_at, blocked_at = {}, {}
     for i in family:
         for e in mc("issue", "timeline", i["identifier"]):
             when = ts(e.get("created_at"))
@@ -115,10 +119,14 @@ def main():
                 medic_times.append(when)
             # v7 sends work back by reopening the SAME handoff, so a rework cycle is a
             # done -> todo transition, not a new issue. Exact, and no prose is parsed.
+            if e.get("type") == "comment" and when:
+                comment_at[e.get("id")] = when
             if e.get("action") == "status_changed":
                 d = e.get("details") or {}
                 if d.get("from") == "done" and d.get("to") in ("todo", "in_progress"):
                     reopens += 1
+                if d.get("to") == "blocked" and when:
+                    blocked_at.setdefault(i["id"], []).append(when)
     runs = []
     for i in family:
         runs += mc("issue", "runs", i["identifier"])
@@ -134,12 +142,19 @@ def main():
     # exactly: `issue_assignment` for a status-promoted run, `issue_wakeup` for a barrier,
     # `comment` for a comment wake (B1: 30 / 27 / 17 of 74 runs). Human comments are already
     # counted as interventions, so only agent-authored ones are a protocol violation here.
-    double_wakes = 0
+    double_wakes, escalations = 0, 0
     for r in uniq:
         at = r.get("attribution") or {}
-        if ((at.get("evidence") or {}).get("kind")) != "comment":
+        ev = at.get("evidence") or {}
+        if ev.get("kind") != "comment":
             continue
-        if ((at.get("evidence") or {}).get("ref_id")) in human_comment_ids:
+        ref = ev.get("ref_id")
+        if ref in human_comment_ids:
+            continue
+        when = comment_at.get(ref)
+        if when and any(0 <= (b - when).total_seconds() <= 120
+                        for b in blocked_at.get(r.get("issue_id"), [])):
+            escalations += 1       # sanctioned: the only wake out of `blocked`
             continue
         double_wakes += 1
     # A run a person started by hand. `attribution.source` CANNOT be used for this:
@@ -244,7 +259,8 @@ def main():
               "existing_green": existing, "build_clean": clean,
               "human_interventions": human_events, "auto_recoveries": auto_recoveries,
               "rework_reopens": reopens, "negative_final_verdicts": negative_final,
-              "double_wakes": double_wakes, "verdict_role_mismatch": role_mismatch,
+              "double_wakes": double_wakes, "escalations": escalations,
+              "verdict_role_mismatch": role_mismatch,
               "stalled": stalled}
     print(json.dumps(result, indent=1))
     print("Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipline): fill in results.csv manual_scores")
@@ -256,7 +272,7 @@ def main():
            "stalled_sub_issues": len(stalled), "ticket_count": len(tickets),
            "rework_issues": rework, "rework_reopens": reopens,
            "negative_final_verdicts": negative_final, "double_wakes": double_wakes,
-           "verdict_role_mismatch": len(role_mismatch),
+           "escalations": escalations, "verdict_role_mismatch": len(role_mismatch),
            "review_changes_requested": changes_req, "qa_fail": qa_fail,
            "leader_wakeups": sum(1 for r in uniq if r.get("is_leader_task")), "sub_issue_count": len(subs),
            "wall_minutes": round((last_end - first).total_seconds() / 60, 1) if first else "",

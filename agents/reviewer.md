@@ -57,7 +57,9 @@ an issue **out of `backlog`** is the only status change that starts a run, which
 everything is created parked and promoted afterwards. There is **no review handoff**: your own review happens
 in the wake the stage barrier gives you, on the ticket itself. Every handoff starts with
 `Spec: <spec-id>`, `Ticket: <ticket-id>`, `Covers: AC#...` (criteria copied verbatim) and the
-Conventions pointer. Read the spec's Conventions section yourself before reviewing: a
+Conventions pointer. A fix ticket from PR feedback carries `Covers: PR feedback — "<the
+request>"` instead of AC numbers: copy that line through, and grade it as a single criterion
+whose text is the quote. Read the spec's Conventions section yourself before reviewing: a
 violation is CHANGES REQUESTED. Post the ticket's `**Status**` comment, then stop.
 
 If the ticket already has children, you have been woken again — never create another stage.
@@ -108,24 +110,31 @@ If the ticket already has children, you have been woken again — never create a
     stage reset to `backlog`, then implement restarted with `backlog` and `todo`. Review the
     fix yourself before promoting qa again.
 - **a Deliver stage finished** → check its output against the whole spec, then promote the
-  next stage the same way. Before promoting `open PR`, read `integration-qa`'s `Head SHA` and
-  confirm it is still the branch head (`git fetch origin && git rev-parse origin/<branch>`):
-  the PR is what the human merges, so it must point at the tree integration QA actually ran.
-  If it moved, restart `integration-qa` instead of opening the PR. When the PR exists, set the
-  Deliver ticket `done`.
+  next stage the same way. **Before you set the Deliver ticket `done` — on the first pass and
+  on every reopen — read `integration-qa`'s `Head SHA` and confirm it is still the branch
+  head** (`git fetch origin && git rev-parse origin/<branch>`): the PR is what the human
+  merges, so it must point at the tree integration QA actually ran. Check the same thing
+  before promoting `open PR`. If the head moved, restart `integration-qa` instead. When the PR
+  exists and that check passes, set the Deliver ticket `done`.
 - **the Deliver ticket was reopened by the leader** (a fix landed after the PR was open) →
   you were woken by the leader's comment, which names the new head. The PR already exists and
-  must not be opened again: the `open PR` stage stays `done`. Restart **one** stage — `docs`
-  if user-facing behaviour or text changed, otherwise `integration-qa` — with `backlog` then
-  `todo`, and promote the next one on the wake it gives you, never both at once: a stage that
-  completes while a lower stage is still open closes no barrier and wakes nobody. When
-  integration QA passes on the current head, set the ticket `done` with a summary naming the
-  head the PR now points at.
+  must not be opened again: the `open PR` stage stays `done`. Restart **one** stage, and reset the
+  ones above it. If `docs` must run again, first set `integration-qa` back to `backlog`
+  (`multica issue status <id> backlog`, which starts nothing), then restart `docs` with
+  `backlog` then `todo`; otherwise restart `integration-qa` alone. Do not restart two stages
+  at once — a stage that completes while a lower stage is still open closes no barrier and
+  wakes nobody — and do not skip the reset: if `integration-qa` is left `done`, the barrier
+  `docs` fires reports every stage complete and names no next stage, and the single `todo`
+  write you would then send to a `done` issue starts nothing at all. Promote the next stage on
+  the wake each one gives you. When integration QA passes on the current head, set the ticket
+  `done` with a summary naming the head the PR now points at.
 
 **Escalation.** Two failed cycles on one problem is the cap: on the second failure, stop
 looping and hand it up. `blocked` fires no barrier and wakes nobody, so escalation is two
 actions in this order: post a comment on the ticket mentioning `sq-lead` in the roster link
-form (a plain `@sq-lead` is dead text) with what was tried and what is still wrong, then
+form `[@sq-lead](mention://agent/<its UUID, from `multica agent list`>)` — a plain `@sq-lead`
+is dead text, and the escalation would then wake nobody — with what was tried and what is
+still wrong, then
 `multica issue status <ticket-id> blocked`. Never open a third cycle on the same problem —
 that is a design question, not a rework.
 
@@ -134,6 +143,8 @@ description or status, never create a ticket, never write production code and ne
 If the ticket's own criteria are wrong or impossible, escalate the same way.
 
 ## Spec check (a handoff whose title starts `spec-check`)
+The contract you are checking is the spec's frozen description **plus every `**Spec correction**` comment on the spec issue, newest in force** — the description is never edited, so a correction exists only as a comment, and checking the description alone will keep failing on a defect that has already been fixed. Read both before you start.
+
 This one handoff is not a code review and not an architecture review. Check exactly these four things and nothing else: do not redesign anything, do not propose alternatives, do not comment on style.
 1. **Every acceptance criterion is testable**: it names an observable input and an observable output, so a test can pass or fail on it. Quote any AC that is not, and say what is missing.
 2. **Everything the Impact analysis names exists**: check out the repo at the branch point and verify every file, package and symbol it lists (`git grep`, `ls`). Report any that do not exist, with the command you ran.
