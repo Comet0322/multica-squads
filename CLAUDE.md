@@ -11,7 +11,7 @@ Everything here is pushed to Multica with `./sync.py`; Multica itself is the ups
 - `tools/chat.py <agent> "<msg>" [--session ID]` — Multica CLI cannot send chat; this uses the REST API with the token in `~/.multica/config.json`.
 - `tools/forgejo-pr.sh` — opens a PR on the local Forgejo (token from `forgejo/.env`).
 - `forgejo/` — local Forgejo compose (UI `http://localhost:13000`, user `squadadmin`; secrets in gitignored `.env`, `.connection.json`).
-- `bench/` — rubric, tasks, scorer (see `bench/README.md`).
+- `bench/` — rubric, tasks, per-run scorer, aggregate report (see `bench/README.md`). Reliability metric is pass^n over at most 3 runs per variant (user cap), following tau-bench; no composite score.
 
 ## Current squad (`dev-team`)
 Leader `sq-lead` + `sq-implementer`, `sq-reviewer`, `sq-qa`, `sq-doc`; utility `sq-watcher` (autopilot `pr-watch`, every 5 min, closes `in_review` issues whose **GitHub** PR merged).

@@ -1,31 +1,27 @@
 {
-  "version": 1,
-  "total": 100,
-  "failure_gate": {"hidden_pass_rate_below": 0.6, "interventions_at_least": 2},
-  "quality": {
-    "max": 40, "auto": true,
-    "items": {
-      "hidden_tests": {"max": 20, "how": "pass_rate * 20"},
-      "existing_tests_green": {"max": 10, "how": "all pass = 10 else 0"},
-      "build_vet_gofmt": {"max": 5, "how": "all clean = 5 else 0"},
-      "no_out_of_scope_changes": {"max": 5, "how": "manual: diff touches only expected files", "auto": false}
-    }
+  "version": 2,
+  "runs_per_variant": 3,
+  "max_runs_per_variant": 3,
+  "success": {
+    "description": "A run succeeds only if ALL hold. Reliability is judged over repeated runs, not one run.",
+    "all_of": [
+      "hidden_pass_rate == 1.0",
+      "existing_tests_green",
+      "build_vet_gofmt_clean",
+      "human_interventions == 0",
+      "no_stalled_sub_issue"
+    ]
   },
-  "autonomy": {
-    "max": 30, "auto": true,
-    "items": {
-      "zero_intervention": {"max": 15, "how": "15 - 5 * human_interventions, floor 0"},
-      "no_unexpected_stall": {"max": 10, "how": "10 if no sub-issue ended outside done/cancelled, else 0"},
-      "no_routine_questions": {"max": 5, "how": "manual: 5 - 2 * unnecessary questions to the user", "auto": false}
-    }
+  "headline_metrics": {
+    "pass_hat_n": "all n runs succeed (consistency; the main answer to 'is it stable')",
+    "pass_at_n": "at least one of n runs succeeds (capability ceiling)",
+    "success_rate": "successes / n"
   },
-  "human": {
-    "max": 30, "auto": false,
-    "items": {
-      "spec_quality": {"max": 10},
-      "pr_and_handoff_quality": {"max": 10},
-      "maintainability": {"max": 10}
-    }
-  },
-  "record_only": ["wall_clock_minutes", "agent_run_minutes", "leader_wakeups", "rework_issues", "tokens", "sub_issue_count"]
+  "per_run_record": [
+    "hidden_pass_rate", "existing_tests_green", "build_vet_gofmt_clean", "human_interventions",
+    "stalled_sub_issues", "rework_issues", "review_changes_requested", "qa_fail",
+    "leader_wakeups", "sub_issue_count", "wall_minutes", "agent_run_minutes", "tokens"
+  ],
+  "manual_1_to_5_not_summed": ["spec_quality", "pr_and_handoff_quality", "maintainability", "scope_discipline"],
+  "notes": "No single composite score: weights would be arbitrary. Compare variants on pass_hat_n first, then cost and rework. A variant costing more but passing more often can be the right trade."
 }

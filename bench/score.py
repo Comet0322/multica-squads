@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """Score a finished squad run.
 
-Usage: bench/score.py <PARENT-ISSUE-ID> [--hidden DIR --repo PATH --branch NAME] [--task T2] [--config-sha SHA]
+Usage: bench/score.py <PARENT-ISSUE-ID> --task T2 --variant NAME [--attempt N] [--hidden DIR --repo PATH --branch NAME] [--config-sha SHA]
 
-Auto-scores what can be measured from Multica (timeline actors, runs, usage) and,
-when --hidden/--repo/--branch are given, runs hidden Go tests against the branch.
-Manual items are printed as TODO and left out of the auto subtotal.
-Appends a row to bench/results.csv.
+Records one run (success/fail per bench/rubric.json plus process and cost metrics) as a
+row in bench/results.csv. Aggregate with bench/report.py. Manual 1-5 ratings are filled later
+in the csv (manual_scores column).
 """
 import argparse, csv, json, subprocess, tempfile, shutil
 from datetime import datetime
@@ -64,7 +63,8 @@ def go_tests(repo, branch, hidden):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("parent"); ap.add_argument("--task", default="")
+    ap.add_argument("parent"); ap.add_argument("--task", required=True)
+    ap.add_argument("--variant", required=True); ap.add_argument("--attempt", type=int, default=1)
     ap.add_argument("--hidden"); ap.add_argument("--repo"); ap.add_argument("--branch")
     ap.add_argument("--config-sha", default="")
     a = ap.parse_args()
@@ -103,31 +103,38 @@ def main():
     if a.repo and a.branch:
         rate, existing, clean = go_tests(a.repo, a.branch, a.hidden)
 
-    q, au = RUBRIC["quality"]["items"], RUBRIC["autonomy"]["items"]
-    score = {}
-    score["hidden_tests"] = None if rate is None else round(rate * q["hidden_tests"]["max"], 1)
-    score["existing_tests_green"] = None if existing is None else (10 if existing else 0)
-    score["build_vet_gofmt"] = None if clean is None else (5 if clean else 0)
-    score["zero_intervention"] = max(0, 15 - 5 * human_events)
-    score["no_unexpected_stall"] = 0 if stalled else 10
-    auto_total = sum(v for v in score.values() if v is not None)
-    gate = RUBRIC["failure_gate"]
-    failed = (rate is not None and rate < gate["hidden_pass_rate_below"]) or human_events >= gate["interventions_at_least"]
+    # Process metrics from comments: reviewer / QA verdicts.
+    changes_req = qa_fail = 0
+    for i in subs:
+        for e in mc("issue", "timeline", i["identifier"]):
+            body = (e.get("content") or "") if e.get("type") == "comment" else ""
+            if "CHANGES REQUESTED" in body.upper() and "VERDICT" in body.upper():
+                changes_req += 1
+            if "QA VERDICT: FAIL" in body.upper() or "VERDICT: FAIL" in body.upper():
+                qa_fail += 1
 
-    print(json.dumps({"parent": a.parent, "auto_scores": score, "auto_subtotal": auto_total,
-                      "human_interventions": human_events, "stalled": stalled, "failed_gate": failed}, indent=1))
-    print("TODO manual: no_out_of_scope_changes(5), no_routine_questions(5), spec_quality(10), pr_and_handoff_quality(10), maintainability(10)")
-    row = {"date": datetime.now().strftime("%Y-%m-%d %H:%M"), "task": a.task, "parent": a.parent,
-           "config_sha": a.config_sha, "labels": ",".join(l["name"] for l in parent.get("labels", [])),
-           "auto_subtotal": auto_total, "interventions": human_events, "failed_gate": failed,
+    success = (rate == 1.0 if rate is not None else False) and bool(existing) and bool(clean) \
+        and human_events == 0 and not stalled
+    result = {"parent": a.parent, "success": success, "hidden_pass_rate": rate,
+              "existing_green": existing, "build_clean": clean,
+              "human_interventions": human_events, "stalled": stalled}
+    print(json.dumps(result, indent=1))
+    print("Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipline): fill in results.csv manual_scores")
+    row = {"date": datetime.now().strftime("%Y-%m-%d %H:%M"), "task": a.task, "variant": a.variant,
+           "attempt": a.attempt, "parent": a.parent, "config_sha": a.config_sha,
+           "success": int(success), "hidden_pass_rate": "" if rate is None else round(rate, 3),
+           "existing_green": int(bool(existing)), "build_clean": int(bool(clean)),
+           "human_interventions": human_events, "stalled_sub_issues": len(stalled),
+           "rework_issues": rework, "review_changes_requested": changes_req, "qa_fail": qa_fail,
+           "leader_wakeups": sum(1 for r in uniq if r.get("is_leader_task")), "sub_issue_count": len(subs),
            "wall_minutes": round((last_end - first).total_seconds() / 60, 1) if first else "",
-           "agent_run_minutes": round(run_min, 1), "leader_wakeups": sum(1 for r in uniq if r.get("is_leader_task")),
-           "rework_issues": rework, "tokens": int(tokens), "sub_issues": len(subs), "manual_scores": ""}
+           "agent_run_minutes": round(run_min, 1), "tokens": int(tokens), "manual_scores": ""}
     path = ROOT / "results.csv"
     new = not path.exists()
     with path.open("a", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(row)); 
-        if new: w.writeheader()
+        w = csv.DictWriter(f, fieldnames=list(row))
+        if new:
+            w.writeheader()
         w.writerow(row)
 
 
