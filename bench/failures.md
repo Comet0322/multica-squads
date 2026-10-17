@@ -115,3 +115,35 @@ auto-recovery.
 agent` in the timeline — sq-medic's `**Medic**` comment and sq-doc's handoff comment
 both are. That was the v6 scorer's last unverified assumption, and it is why a
 recovery costs no bot account.
+
+---
+
+## 2026-10-17 — the v6 capability boundary refused greenfield work (`spec-wrong`)
+**What happened.** B1 could not start. Asked for a new CLI in the empty `csvstat`
+repo, the leader refused: Phase 0 required "a repository that already has a test suite
+you can run", and an empty repo has none. The refusal was well argued and listed
+exactly what the repo would need.
+
+**Evidence.** Leader reply: "the repo needs a test suite we can already run. I checked
+out `csvstat`. It has one commit … There's no `go.mod`, no Go code and no tests, so
+`go test ./...` has nothing to run." Nothing was created.
+
+**Why this was the instructions' fault, not the squad's.** `agents/lead.md` said both
+things at once: Phase 0 demanded an existing test suite, while Phase 1 said "a new
+project may have an empty repo; that is fine". The agreed v6 scope puts greenfield in
+tier B — a mechanism that must work — and all four experiments already run were
+greenfield, so the boundary as written would have refused every one of them. The
+leader picked the safer of two contradictory readings, which is the right instinct.
+
+**Caused.** 131e892 makes the distinction explicit: an **empty** repository is inside
+the boundary, because the squad writes all the code and there is no untested work to
+regress, and the first ticket must establish the build and the test command; a
+repository that **has code but no tests** stays outside it, because review and QA
+would have no baseline to protect. C9's probe note now says which of the two its
+wording means. Re-run of B1 after the fix: the leader accepted and quoted the new
+rule back ("An empty repo is fine: the first ticket sets up `go.mod` and
+`go test ./...`").
+
+**Lesson for the design.** A boundary condition is only safe if it is stated as the
+*reason* it exists. "Already has a test suite" was a proxy for "there is a baseline to
+protect"; written as the proxy, it excluded a case the reason does not.
