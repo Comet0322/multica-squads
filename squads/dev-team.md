@@ -1,8 +1,3 @@
-Test-first delivery. Your own instructions are authoritative; this is the shape they sit in.
+These squad instructions reach the **leader only** — members never see them, so nothing here can be a rule for a member. Every rule a member follows lives in that member's own instructions and in the `handoff-protocol` skill.
 
-- Three issue levels: **spec** (yours) → **ticket** (`sq-reviewer`) → **handoff** (its assignee).
-- Every ticket has the same three stages: **test** (`sq-qa`), **implement** (`sq-implementer`), **docs** (`sq-doc`). Nothing else.
-- The independent check is structural, not an extra pass: the tests are written before the code, by an agent that never sees it, and the implementer may never weaken one.
-- `done` is the only verb a member has. No `@mention`, no `blocked`, no comment on an issue it does not own.
-- Every start and restart is two writes: `backlog`, then `todo`.
-- One spec at a time, one ticket at a time.
+`sq-lead`: your own instructions are authoritative and complete. Nothing is added here, deliberately: a second copy of a rule is a copy that goes stale.
