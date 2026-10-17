@@ -37,7 +37,10 @@ def run(*cmd, read_only=False):
 
 
 def listing(*cmd):
-    return run(*cmd, "--output", "json", read_only=True) or []
+    out = run(*cmd, "--output", "json", read_only=True) or []
+    if isinstance(out, dict):
+        out = next((v for v in out.values() if isinstance(v, list)), [])
+    return out
 
 
 def frontmatter(text):
@@ -197,6 +200,26 @@ def sync_workspace(only):
     agents = sync_agents(skills, mcp) if "agents" in only else {a["name"]: a["id"] for a in listing("agent", "list")}
     if "squads" in only:
         sync_squads(agents)
+    if "autopilots" in only:
+        sync_autopilots()
+
+
+def sync_autopilots():
+    existing = {a["title"]: a for a in listing("autopilot", "list")}
+    for f in sorted((ROOT / "autopilots").glob("*.json")):
+        cfg = json.loads(f.read_text())
+        title = cfg["title"]
+        if title in existing:
+            print(f"autopilot update: {title}")
+            run("autopilot", "update", existing[title]["id"], "--description", cfg["description"],
+                "--agent", cfg["agent"])
+            continue
+        print(f"autopilot create: {title}")
+        r = run("autopilot", "create", "--title", title, "--agent", cfg["agent"],
+                "--mode", cfg["mode"], "--description", cfg["description"])
+        if r:
+            run("autopilot", "trigger-add", r["id"], "--cron", cfg["cron"],
+                "--timezone", cfg.get("timezone", "UTC"), "--label", title)
 
 
 def main():
@@ -204,7 +227,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--workspace", action="append", help="ID, slug or name; repeatable")
-    ap.add_argument("--only", default="skills,mcp,agents,squads")
+    ap.add_argument("--only", default="skills,mcp,agents,squads,autopilots")
     ARGS = ap.parse_args()
     only = set(ARGS.only.split(","))
     email = me()
