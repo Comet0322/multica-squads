@@ -49,3 +49,30 @@ Peak leader context on that run: 1,229,462 cache-read tokens in a single run.
 **Caused.** The recorded T3/v4 row keeps its original number (records are never
 rewritten); v6 rows use the corrected definition. Noted here so the two are not
 compared as if they measured the same thing.
+
+---
+
+## 2026-10-17 — C-layer probe C1 was mis-designed (`tooling`)
+**What happened.** C1 was meant to test the boundary clause "a bug nobody can
+reproduce". Its message said *"We have no reproduction and no logs"*, which is a
+different claim: it says the reporter has none, not that none can be obtained. The
+leader checked out kv-cli, found a real lost-update race, reproduced it, proposed a
+locking fix and asked four questions. It created nothing. So the probe failed while
+the squad behaved exactly as v6 asks.
+
+**Evidence.** Leader reply: "50 parallel `kv set` calls … keys written: 50, keys
+present: 32", "I ran 20 trials of 20 parallel `kv set` calls, and all 20 lost keys",
+then four questions and "Nothing has been created yet: no issues, labels or branches."
+Issue max identifier and label count unchanged (ACHE-104, 16).
+
+**Caused.** C1 is retired (`pass = void` in `probes.csv`, never counted as a squad
+failure) and replaced by C1b, whose report genuinely cannot be reproduced: one
+sighting three weeks ago, key unknown, store overwritten since, no logs. C1b passes
+and cites the Reproduction clause by name. General lesson for probe design: a
+refusal probe must remove the *capability*, not merely the reporter's information —
+otherwise the leader can satisfy the boundary by doing the missing work itself.
+
+**Side finding (not a failure).** Two independent probes (C1, C3) found the same
+unsynchronised read-modify-write in **kv-cli**, which is the same defect T3 reports
+as a symptom in kv-bugs. T3's hidden bug is therefore easy to find from the code,
+and T3 measures the delivery flow rather than diagnostic difficulty.
