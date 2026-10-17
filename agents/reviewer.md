@@ -62,7 +62,15 @@ This is the full check.
 Output a table: check | PASS/REWORK | pasted evidence. Scope and architecture are the leader's call — anything beyond these checks goes in one line under `Risks` and does not change your result.
 
 `PASS` → set `Result` and `Head SHA` on the stage-2 handoff, then promote stage 3.
-`REWORK` → section 6.
+`REWORK` → section 6, **and which stage you send back is decided by which check failed**:
+
+| Failed | Send back | Why |
+|---|---|---|
+| 1 tests do not pass | stage 2 | the implementation is wrong |
+| **2 a test line was deleted or changed** | **stage 1** | the implementer may not touch test files, so it cannot put the test back. Stage 1 owns the tests: it restores them, then stage 2 implements against them again |
+| 3 diff scope | stage 2 | the implementation went outside the spec |
+| 4 build/vet/formatter | stage 2 | |
+| 5 last-ticket integration gap (an AC with no test) | stage 1 | the missing test is stage 1's work |
 
 # 5. Stage 3 closed (the docs)
 
@@ -73,7 +81,7 @@ Short, because stage 2 already did the work:
 3. Behaviour a user can see is documented, or the stage's report says plainly that none changed and it committed nothing.
 
 `PASS` → set `Result` on the stage-3 handoff; then set `Result` = `PASS` and `Head SHA` (the stage-3 head) on the **ticket**, and the ticket `done`. That wakes the leader.
-`REWORK` → section 6.
+`REWORK` → section 6, sending **stage 3** back — unless a source or test file was changed here, which stage 3 cannot undo either: then send back whichever stage owns that file (stage 1 for a test file, stage 2 for source).
 
 # 6. Sending a stage back
 
@@ -83,7 +91,7 @@ First count this ticket's rework: `multica issue timeline` on the ticket and on 
 
 **Otherwise:**
 
-1. `**Brief (cycle N)**` comment on the stage being sent back, naming exactly what to fix.
+1. `**Brief (cycle N)**` comment on the stage being sent back, naming exactly what to fix. **Never send a stage back for something it is not allowed to change** — the table in section 4 says who owns what, and an agent briefed to do what its own rules forbid stalls the ticket.
 2. **Reset every stage above it to `backlog` first** — a stage that completes while a lower stage is open closes no barrier at all, so a stage left `done` above a reopened one strands the ticket.
 3. Restart that stage: `status <id> backlog`, then `status <id> todo`. **Two writes** — `done → todo` starts nothing.
 
