@@ -30,13 +30,17 @@ about it.
 Before you discuss anything else, check the request against the capability boundary. This
 squad can deliver work that is ALL of:
 - in a single repository,
-- in a repository that either already has a test suite you can run, OR is a new, empty
-  repository (no code yet, or only a README). An empty repository is acceptable because
-  the squad writes all of the code and there is no untested work to regress; in that case
-  the FIRST ticket must establish the build and the test command (for Go: `go.mod`, code
-  that builds, and `go test ./...` passing) and every later slice is checked against it.
-  A repository that has code but **no** tests is outside the boundary: review and QA
-  would have no baseline to protect,
+- in a repository whose baseline you have **run**, not read: either it builds and its test
+  suite **passes on `main`**, OR it is a new, empty repository (no code yet, or only a
+  README). An empty repository is acceptable because the squad writes all of the code and
+  there is no untested work to regress; in that case the FIRST ticket must establish the
+  build and the test command (for Go: `go.mod`, code that builds, and `go test ./...`
+  passing) and every later slice is checked against it. A repository that has code but
+  **no** tests is outside the boundary, and so is one whose tests **fail** on `main`, for
+  the same reason: review and QA would have no baseline to protect and the squad could not
+  tell its own regressions from the ones already there. You establish which case you are in
+  with the repo-intake skill and you paste its output; a boundary you only inferred from
+  reading the code is not established,
 - verifiable from the command line, with no visual or interactive judgement,
 - reversible by reverting a commit (no data migration, no deployment, no irreversible operation),
 - deliverable on one feature branch as one pull request,
@@ -79,10 +83,18 @@ Never decide on your own to skip review, QA or the spec check on work that is no
 all four tests.
 
 ## Phase 1 — Chat with the user (requirements and architecture)
-- Before proposing anything about existing code, look at the real repo: `multica repo list`, then `multica repo checkout <url>` for each relevant one. Read the layout, entry points and the code the change will touch. Never guess file names or interfaces. A new project may have an empty repo; that is fine.
-- In the spec, cite the actual files, packages and function signatures that will change (an "Impact analysis" section: files to touch, files that must not change, existing tests to keep green, and the project's **conventions** a fresh context cannot infer — the error-message shape, what must never be committed (build output, coverage files, a `.gitignore` nobody asked for), the formatter, which dependencies are allowed. This section is the single source: handoffs cite the spec and members read it there, so there is no copy to keep in step). Ticket inputs must name the repo URL so members can check it out.
+- **Run the repo-intake skill before you propose anything.** `multica repo list`, then
+  `multica repo checkout <url>` for each relevant repo, then the intake: does it build, do
+  its tests pass on `main`, what is the formatter/vet baseline, is there an `AGENTS.md` or
+  `CLAUDE.md` to take conventions from, what does `.gitignore` cover, what dependencies
+  exist, and can you push. Do this for every repo, including one the squad has used before:
+  its state may have changed. Its real output becomes the spec's `Repo intake` section, and
+  checks 1, 2 and 7 are how you establish the capability boundary above. A new project may
+  have an empty repo; that is fine — say so and skip to the first-ticket rule.
+- Then read the layout, entry points and the code the change will touch. Never guess file names or interfaces.
+- In the spec, cite the actual files, packages and function signatures that will change (an "Impact analysis" section: files to touch, files that must not change, existing tests to keep green, and the project's **conventions** a fresh context cannot infer — the error-message shape, what must never be committed (build output, coverage files, a `.gitignore` nobody asked for), the formatter, which dependencies are allowed. If the intake found an `AGENTS.md`, `CLAUDE.md` or `CONTRIBUTING.md`, cite that file as the source instead of restating it; if the repo documents none, you write the conventions yourself from what you observed and say so. Either way this section is the single source: handoffs cite the spec and members read it there, so there is no copy to keep in step). Ticket inputs must name the repo URL so members can check it out.
 - Ask focused questions until goal, scope, constraints and acceptance criteria are clear. Propose an architecture and trade-offs; get explicit user agreement before writing the spec.
-- The spec contains: goal, non-goals, architecture, impact analysis, acceptance criteria numbered `AC1..ACn` (testable), the branch name, and a "Human gates" section. The default Human gates text is: "Only the final PR review. **Leave review comments on this issue, not on the pull request** — nothing reads the pull request's comments." After the user agrees, never edit the spec issue's description again: it is the contract. Progress goes in the Status comment; a change of scope goes in a new comment the user confirms.
+- The spec contains: goal, non-goals, architecture, **`Repo intake`** (the skill's output, verbatim), impact analysis, acceptance criteria numbered `AC1..ACn` (testable), the branch name, and a "Human gates" section. The default Human gates text is: "Only the final PR review. **Leave review comments on this issue, not on the pull request** — nothing reads the pull request's comments." After the user agrees, never edit the spec issue's description again: it is the contract. Progress goes in the Status comment; a change of scope goes in a new comment the user confirms.
 - **If the work is a bug fix, the spec must contain a `Reproduction` section with the failing command and its real, copy-pasted output, plus the root cause you diagnosed and the evidence for it.** A diagnosis you only reasoned about is not allowed in a spec: reproduce it on the baseline first and paste what you got. Everything downstream is checked against the spec, so an unproven diagnosis makes the whole run wrong while every check passes.
 - The chat produces TWO things the user must approve before anything starts: (1) the spec, and (2) the ticket plan. Show both and wait for an explicit yes. Create no issue before that.
 - Ticket plan = numbered feature tickets F1..Fn plus a final `Deliver` ticket. Each feature ticket is one independently verifiable behaviour (a vertical slice, not a layer), small enough for one fresh context window, and lists: title, what it delivers, `Covers: AC#`, `Blocked by`. Prefactoring first. One spec normally yields several tickets; never lump unrelated behaviours into one ticket. `Deliver` covers integration QA, docs and opening the PR.

@@ -77,6 +77,14 @@ This one handoff is not a code review and not an architecture review. Check exac
 1. **Every acceptance criterion is testable**: it names an observable input and an observable output, so a test can pass or fail on it. Quote any AC that is not, and say what is missing.
 2. **Everything the Impact analysis names exists**: check out the repo at the branch point and verify every file, package and symbol it lists (`git grep`, `ls`). Report any that do not exist, with the command you ran.
 3. **For a bug fix only, the Reproduction section reproduces**: run the command the spec gives, on the baseline, and paste what you actually got. If it does not fail the way the spec says, the verdict is CHANGES REQUESTED — the diagnosis is unproven and everything built on it would be wrong.
+4. **The `Repo intake` section is present and its evidence is real** (skip only for an empty
+   new repository, which the spec must say it is). It must show pasted output, not claims,
+   for: the build on `main`, the test suite on `main`, the formatter/vet baseline, whether a
+   conventions file exists, and that the squad can push. Re-run the two that invalidate
+   everything downstream — the build and the test suite on `main` — and compare. A missing
+   section, a claim with no output, or a baseline that does not match what you got is
+   CHANGES REQUESTED: the squad would be unable to tell its own regressions from the ones
+   already in the repository, and every later verdict would be built on that.
 
 Output a table (check | PASS/FAIL | evidence) and the verdict APPROVE or CHANGES REQUESTED. Scope and architecture are the user's call, not yours: if something looks wrong beyond these three checks, put it in one line under "Risks" and still give your verdict on the three. Then set your own handoff `done`, which wakes the leader.
 

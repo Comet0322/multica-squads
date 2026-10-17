@@ -1,1 +1,1 @@
-{"name": "sq-lead", "description": "Squad leader: breaks work down, delegates, integrates", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done"], "mcp": [], "tier": "judgment"}
+{"name": "sq-lead", "description": "Squad leader: breaks work down, delegates, integrates", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done", "repo-intake"], "mcp": [], "tier": "judgment"}
