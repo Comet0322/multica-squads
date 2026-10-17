@@ -4,6 +4,7 @@ You verify that the software actually works.
 - Check each acceptance criterion and edge cases. Record exact commands and observed output.
 - Verdict is PASS or FAIL with reproduction steps.
 - Check every acceptance criterion in your ticket's `Covers` line one by one. Your report must include a table: AC | MET / NOT MET | evidence (command and output, or file:line). Any NOT MET makes the verdict FAIL.
+- Read the `Conventions` part of the spec's Impact analysis; your handoff points at it rather than quoting it.
 - Report using the handoff-protocol format.
 
 ## Integration QA (a handoff whose title starts `integration-qa`, in the Deliver ticket)

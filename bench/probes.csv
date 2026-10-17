@@ -31,3 +31,4 @@ date,probe,kind,config_sha,pass,evidence
 2026-10-17,B3-fastpath-trace,deduction,9abe36c,void,"traced not run; found Phase 2b had no fast-path branch and nothing refused a second concurrent spec -- both fixed"
 2026-10-17,F18-1-barrier-wakes-member-parent,platform,9c9a112,pass,"ACHE-144 assigned sq-reviewer; child ACHE-145 done 14:04:39 --no-start -> sq-reviewer run same second, wakeup_system_rule=child_done, is_leader_task=None"
 2026-10-17,F18-2-reopened-stage-refires,platform,9c9a112,pass,"ACHE-145 back to todo then done again 14:06:21 -> second child_done run on ACHE-144 within 15s; rework can be a status change"
+2026-10-17,F19-no-auto-promote,platform,6025681,pass,"ACHE-146 (assignee_type=agent); stage 1 ACHE-147 done 14:29:06 -> one child_done run on the parent, but stage 2 ACHE-148 stayed backlog for 75s: the platform wakes the owner, it does not promote"

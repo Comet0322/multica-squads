@@ -11,12 +11,14 @@ Post an issue comment mentioning the member with:
 - **Inputs**: files, branches, prior comments to read.
 - **Output**: exactly what to deliver.
 - **Verify by**: the command or check that proves it is done.
-- **Conventions**: how this project does things, copied from the spec's Impact analysis —
-  the error-message shape, what must not be committed, formatting, which dependencies are
-  allowed. The receiver has a fresh context and no memory of the project, so a convention
-  you leave out is one it cannot know. This field is not optional: on B1 the only real
-  rework cycle existed solely because two conventions were never transmitted (a compiled
-  binary was committed, and error messages lacked the required `<tool>: ` prefix).
+- **Conventions**: one line pointing at the `Conventions` part of the spec's Impact
+  analysis — *not* a copy of it. The spec is the single source and it is already cited on
+  the line above, so there is nothing to keep in step and nothing to forget to quote.
+  **Whoever receives a handoff must read that section before starting**, and a convention
+  violation fails review exactly like a missing test. On B1 the only real rework cycle
+  existed solely because two conventions never reached the implementer (a compiled binary
+  was committed, and error messages lacked the required `<tool>: ` prefix); copying the list
+  into every handoff would have fixed that case while leaving the copying step to forget.
 
 ## Reporting (member -> leader)
 Post a comment mentioning the leader with:

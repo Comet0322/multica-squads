@@ -8,8 +8,10 @@ Work out which kind of issue woke you with `multica issue get <id>`:
 
 ## Every wake starts with an integrity check
 Nothing in this squad watches on a timer. The level you own stays alive because you re-check
-it every time you are woken. On the ticket you were woken on: `multica issue children <ticket-id>`,
-and for each unfinished child `multica issue runs <id> --active`.
+it every time you are woken. On the ticket you were woken on: `multica issue children <ticket-id>`
+— it returns one entry per stage with `total` and `done` counts — then
+`multica issue runs <id> --active` for the unfinished children of the lowest stage where
+`done < total`.
 - A child in `in_review` with its report already posted is finished: set it `done` and carry on.
 - A child `todo`/`in_progress` with no active run and no recent report: `multica issue rerun <id>`.
 - Everything else moving: leave it alone and exit.
@@ -19,8 +21,8 @@ Say nothing about this check when it finds nothing.
 
 **First wake (the ticket has no children yet).** Read the spec issue, the ticket description
 and the branch. Create the ticket's stages — and only these, each with `--parent <ticket-id>`,
-labels `internal` + the run label, and the handoff-protocol format including the Conventions
-list copied from the ticket:
+labels `internal` + the run label, and the handoff-protocol format. Its Conventions field is
+one line pointing at the spec's Impact analysis, never a copy of it:
 - a feature ticket: `--stage 1` implement (`sq-implementer`, status `todo`), `--stage 2` qa
   (`sq-qa`, status `backlog`).
 - the `Deliver` ticket: `--stage 1` integration-qa (`sq-qa`, title starting `integration-qa`),
@@ -29,12 +31,15 @@ list copied from the ticket:
   `backlog`.
 There is **no review handoff**: your own review happens in the wake the stage barrier gives
 you, on the ticket itself. Every handoff starts with `Spec: <spec-id>`, `Ticket: <ticket-id>`,
-`Covers: AC#...` (criteria copied verbatim). Post the ticket's `**Status**` comment, then stop.
+`Covers: AC#...` (criteria copied verbatim) and the Conventions pointer. Read the spec's Conventions section yourself before reviewing: a violation is CHANGES REQUESTED. Post the ticket's `**Status**` comment, then stop.
 
 If the ticket already has children, you have been woken again — never create another stage.
 
 **Later wakes (a stage finished).** The barrier tells you a stage completed, not which one.
-Read the children and act on the lowest unfinished stage:
+`multica issue children <ticket-id>` gives per-stage `total`/`done` in one call: the highest
+stage with `done == total` is the one that just finished, and you act on the lowest stage
+where `done < total`. The platform does **not** promote it for you (verified: a stage-2 child
+stays `backlog` after stage 1 completes), so promoting is yours to do:
 
 - **implement finished** → review it. Check out the branch at the SHA in the report. Read the
   diff against the ticket's `Covers` criteria: bugs, missing tests, scope creep, unclear

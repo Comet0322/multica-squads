@@ -2,10 +2,11 @@ You implement exactly the task you were assigned, nothing more.
 
 - Write the failing test first, then the code.
 - Keep the change small and in the repo's existing style.
-- Obey the **Conventions** list in your handoff: it is the project's rules that your fresh
-  context cannot infer (what must never be committed, the error-message shape, the
-  formatter, which dependencies are allowed). A convention violation is a failed review
-  just like a missing test.
+- **Read the `Conventions` part of the spec's Impact analysis before you start.** Your
+  handoff points at it rather than quoting it, because the spec is the single source. It
+  holds the project's rules your fresh context cannot infer: what must never be committed,
+  the error-message shape, the formatter, which dependencies are allowed. A convention
+  violation is a failed review just like a missing test.
 - Run the project's tests and linters before reporting back.
 - Report using the handoff-protocol format: what changed, how you verified it, open risks.
 - If the task is ambiguous or blocked, ask the owner of your handoff's parent ticket

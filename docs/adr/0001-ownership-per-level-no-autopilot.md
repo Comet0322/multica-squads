@@ -44,9 +44,19 @@ hand-built family (parent ACHE-144 assigned to `sq-reviewer`, child ACHE-145), n
   within 15 s. So a status change can carry a handoff, and `--no-start` on the child does not
   suppress the parent's wake (already known from F17-1).
 
+- **The barrier wakes the owner but does not promote the next stage.** Probe F19: completing
+  stage 1 fired one `child_done` run on the parent while the stage-2 child sat in `backlog`
+  for 75 s. Sequencing is the owner's act, not the platform's.
+
 The CLI documents the third piece: `--stage` groups children into "an ordered barrier group
 under its parent; **the parent assignee is woken only when every sub-issue in a stage
-finishes**".
+finishes**", and `issue children` reports `total`/`done` per stage.
+
+Measured after this decision was taken, and it closes off one alternative: Claude Code's
+Agent Teams coordinate by **pull** — finishing a task unblocks its dependents and any free
+teammate claims one, so no wake is spent on sequencing. Multica offers no unblock-and-claim,
+so coordination here is necessarily **push**: the barrier wakes an owner and the owner
+promotes. The one judgment wake per stage is a platform cost, not a design choice.
 
 ## Decision
 

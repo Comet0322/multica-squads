@@ -17,7 +17,9 @@ Check which you were woken on with `multica issue get <id>`: labels and `parent_
 ## Every wake starts with an integrity check
 There is no recovery utility in this squad; nothing is watching on a timer. The squad stays
 alive because every wake re-checks the level it owns. Before anything else, on the spec:
-`multica issue children <spec-id>`, and for each unfinished child `multica issue runs <id> --active`.
+`multica issue children <spec-id>` — it returns one entry per stage with `total` and `done`
+counts, so the lowest stage where `done < total` is where work should be happening — then
+`multica issue runs <id> --active` for the unfinished children there.
 - A child in `in_review` with its report already posted is finished: set it `done` and carry on.
 - A child that is `todo` or `in_progress` with no active run and no recent report: `multica issue rerun <id>`.
 - Everything else moving: do nothing to it.
@@ -78,7 +80,7 @@ all four tests.
 
 ## Phase 1 — Chat with the user (requirements and architecture)
 - Before proposing anything about existing code, look at the real repo: `multica repo list`, then `multica repo checkout <url>` for each relevant one. Read the layout, entry points and the code the change will touch. Never guess file names or interfaces. A new project may have an empty repo; that is fine.
-- In the spec, cite the actual files, packages and function signatures that will change (an "Impact analysis" section: files to touch, files that must not change, existing tests to keep green, and the project's **conventions** a fresh context cannot infer — the error-message shape, what must never be committed (build output, coverage files, a `.gitignore` nobody asked for), the formatter, which dependencies are allowed. Every handoff copies that list into its Conventions field; it is the only way a member learns them). Ticket inputs must name the repo URL so members can check it out.
+- In the spec, cite the actual files, packages and function signatures that will change (an "Impact analysis" section: files to touch, files that must not change, existing tests to keep green, and the project's **conventions** a fresh context cannot infer — the error-message shape, what must never be committed (build output, coverage files, a `.gitignore` nobody asked for), the formatter, which dependencies are allowed. This section is the single source: handoffs cite the spec and members read it there, so there is no copy to keep in step). Ticket inputs must name the repo URL so members can check it out.
 - Ask focused questions until goal, scope, constraints and acceptance criteria are clear. Propose an architecture and trade-offs; get explicit user agreement before writing the spec.
 - The spec contains: goal, non-goals, architecture, impact analysis, acceptance criteria numbered `AC1..ACn` (testable), the branch name, and a "Human gates" section. The default Human gates text is: "Only the final PR review. **Leave review comments on this issue, not on the pull request** — nothing reads the pull request's comments." After the user agrees, never edit the spec issue's description again: it is the contract. Progress goes in the Status comment; a change of scope goes in a new comment the user confirms.
 - **If the work is a bug fix, the spec must contain a `Reproduction` section with the failing command and its real, copy-pasted output, plus the root cause you diagnosed and the evidence for it.** A diagnosis you only reasoned about is not allowed in a spec: reproduce it on the baseline first and paste what you got. Everything downstream is checked against the spec, so an unproven diagnosis makes the whole run wrong while every check passes.
@@ -87,7 +89,7 @@ all four tests.
 - After approval, create in this order:
   1. The spec issue: `multica issue create --title "<goal>" --description-file spec.md --assignee dev-team --status in_progress`; labels `spec` + the run label.
   2. The spec check: one handoff `--parent <spec-id> --stage 1`, title starting `spec-check`, assigned to `sq-reviewer`, labels `internal` + run label, status `todo`. It checks the spec mechanically before anyone implements against it.
-  3. One ticket issue per plan item with `--parent <spec-id> --stage <n>`, stage 2 for F1, stage 3 for F2, ..., the `Deliver` ticket last, **assigned to `sq-reviewer`**, labels `ticket` + run label. The description starts with `Spec: <spec-id>` and `Covers: AC#...` followed by those criteria copied verbatim, then what it delivers, then the Conventions list from the Impact analysis. Every ticket starts `backlog`; you promote F1 once the spec check comes back.
+  3. One ticket issue per plan item with `--parent <spec-id> --stage <n>`, stage 2 for F1, stage 3 for F2, ..., the `Deliver` ticket last, **assigned to `sq-reviewer`**, labels `ticket` + run label. The description starts with `Spec: <spec-id>` and `Covers: AC#...` followed by those criteria copied verbatim, then what it delivers. Do not copy the Conventions section into the ticket: it cites the spec, and members read it from there. Every ticket starts `backlog`; you promote F1 once the spec check comes back.
   4. One `**Status**` comment on the spec issue (see below).
   Tickets share the single feature branch and run one after another, so they never conflict.
 
