@@ -71,17 +71,28 @@ def main():
 
     parent = mc("issue", "get", a.parent)
     family = [parent] + [i for i in mc("issue", "list") if i.get("parent_issue_id") == parent["id"]]
+    # Two kinds of restart must never be conflated: a PERSON stepping in (the run
+    # failed) and sq-medic recovering (the squad recovered). A person's action shows
+    # up either as a member timeline entry or as a run attributed to `direct_human`
+    # -- v4 ACHE-75 proved the second one can leave no timeline entry at all, which
+    # is why counting the timeline alone used to miss human wakes.
     human_events, last_end, first = 0, None, None
+    human_comment_ids, auto_recoveries = set(), 0
     for i in family:
         for e in mc("issue", "timeline", i["identifier"]):
             when = ts(e.get("created_at"))
             first = min(first, when) if first else when
             last_end = max(last_end, when) if last_end else when
             is_human = e.get("actor_type") == "member"
+            body = (e.get("content") or "") if e.get("type") == "comment" else ""
             # The requirement/approval chat is outside the issue timeline; any member
             # activity here (status change or comment) is an intervention.
             if is_human and (e.get("action") == "status_changed" or e.get("type") == "comment"):
                 human_events += 1
+                if e.get("type") == "comment":
+                    human_comment_ids.add(e.get("id"))
+            if not is_human and body.startswith("**Medic**"):
+                auto_recoveries += 1
     runs = []
     for i in family:
         runs += mc("issue", "runs", i["identifier"])
@@ -91,10 +102,24 @@ def main():
             seen.add(r["id"]); uniq.append(r)
     run_min = sum((ts(r["completed_at"]) - ts(r["started_at"])).total_seconds() for r in uniq
                   if r.get("completed_at") and r.get("started_at")) / 60
-    tokens = 0
+    # A run a person started by hand. Dedupe against the member comments already
+    # counted above: one human comment produces both a timeline entry and a run.
     for r in uniq:
+        at = r.get("attribution") or {}
+        if at.get("source") != "direct_human":
+            continue
+        ref = (at.get("evidence") or {}).get("ref_id")
+        if ref and ref in human_comment_ids:
+            continue
+        human_events += 1
+    tokens = peak_in = peak_cache = 0
+    for r in uniq:
+        run_in = run_cache = 0
         for u in r.get("usage") or []:
             tokens += u.get("input_tokens", 0) + u.get("output_tokens", 0)
+            run_in += u.get("input_tokens", 0) + u.get("output_tokens", 0)
+            run_cache += u.get("cache_read_tokens", 0)
+        peak_in, peak_cache = max(peak_in, run_in), max(peak_cache, run_cache)
     subs = family[1:]
     stalled = [i["identifier"] for i in subs if i["status"] not in ("done", "cancelled")]
     rework = sum(1 for i in subs if "rework" in i["title"].lower())
@@ -113,22 +138,41 @@ def main():
             if "QA VERDICT: FAIL" in body.upper() or "VERDICT: FAIL" in body.upper():
                 qa_fail += 1
 
+    cap = RUBRIC["success"].get("max_auto_recoveries", 3)
     success = (rate == 1.0 if rate is not None else False) and bool(existing) and bool(clean) \
-        and human_events == 0 and not stalled
+        and human_events == 0 and auto_recoveries <= cap and not stalled
     result = {"parent": a.parent, "success": success, "hidden_pass_rate": rate,
               "existing_green": existing, "build_clean": clean,
-              "human_interventions": human_events, "stalled": stalled}
+              "human_interventions": human_events, "auto_recoveries": auto_recoveries,
+              "stalled": stalled}
     print(json.dumps(result, indent=1))
     print("Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipline): fill in results.csv manual_scores")
     row = {"date": datetime.now().strftime("%Y-%m-%d %H:%M"), "task": a.task, "variant": a.variant,
            "attempt": a.attempt, "parent": a.parent, "config_sha": a.config_sha,
            "success": int(success), "hidden_pass_rate": "" if rate is None else round(rate, 3),
            "existing_green": int(bool(existing)), "build_clean": int(bool(clean)),
-           "human_interventions": human_events, "stalled_sub_issues": len(stalled),
+           "human_interventions": human_events, "auto_recoveries": auto_recoveries,
+           "stalled_sub_issues": len(stalled),
            "rework_issues": rework, "review_changes_requested": changes_req, "qa_fail": qa_fail,
            "leader_wakeups": sum(1 for r in uniq if r.get("is_leader_task")), "sub_issue_count": len(subs),
            "wall_minutes": round((last_end - first).total_seconds() / 60, 1) if first else "",
-           "agent_run_minutes": round(run_min, 1), "tokens": int(tokens), "manual_scores": ""}
+           "agent_run_minutes": round(run_min, 1), "tokens": int(tokens),
+           "peak_input_tokens": int(peak_in), "peak_cache_read_tokens": int(peak_cache),
+           "manual_scores": ""}
+    # Full per-agent usage and attribution for every run, so context peaks and who
+    # started what stay inspectable without re-querying a run that may age out.
+    detail = {"parent": a.parent, "task": a.task, "variant": a.variant, "attempt": a.attempt,
+              "config_sha": a.config_sha, "scored_at": row["date"], "result": result,
+              "runs": [{"id": r["id"], "issue_id": r.get("issue_id"), "agent_id": r.get("agent_id"),
+                        "is_leader_task": r.get("is_leader_task"), "kind": r.get("kind"),
+                        "started_at": r.get("started_at"), "completed_at": r.get("completed_at"),
+                        "attribution_source": (r.get("attribution") or {}).get("source"),
+                        "wakeup_system_rule": r.get("wakeup_system_rule"),
+                        "usage": r.get("usage")} for r in uniq]}
+    runs_dir = ROOT / "runs"
+    runs_dir.mkdir(exist_ok=True)
+    (runs_dir / f"{a.parent}.json").write_text(json.dumps(detail, indent=1))
+    print(f"per-run detail: bench/runs/{a.parent}.json")
     path = ROOT / "results.csv"
     new = not path.exists()
     with path.open("a", newline="") as f:
