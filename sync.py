@@ -202,8 +202,6 @@ def sync_workspace(only):
         sync_squads(agents)
     if "properties" in only:
         sync_properties()
-    if "autopilots" in only:
-        sync_autopilots()
 
 
 def sync_properties():
@@ -223,24 +221,6 @@ def sync_properties():
         for o in cfg.get("options", []):
             opts += ["--option", o]
         run("property", "create", "--name", name, "--type", cfg["type"], *flags, *opts)
-
-
-def sync_autopilots():
-    existing = {a["title"]: a for a in listing("autopilot", "list")}
-    for f in sorted((ROOT / "autopilots").glob("*.json")):
-        cfg = json.loads(f.read_text())
-        title = cfg["title"]
-        if title in existing:
-            print(f"autopilot update: {title}")
-            run("autopilot", "update", existing[title]["id"], "--description", cfg["description"],
-                "--agent", cfg["agent"])
-            continue
-        print(f"autopilot create: {title}")
-        r = run("autopilot", "create", "--title", title, "--agent", cfg["agent"],
-                "--mode", cfg["mode"], "--description", cfg["description"])
-        if r:
-            run("autopilot", "trigger-add", r["id"], "--cron", cfg["cron"],
-                "--timezone", cfg.get("timezone", "UTC"), "--label", title)
 
 
 def main():

@@ -1,0 +1,1 @@
+{"name":"Review verdict","type":"select","description":"The ticket owner's machine-readable verdict on the work a handoff delivered. Closed option set, and separate from QA's verdict so the platform itself rejects a cross-role write.","icon":"shield","options":["APPROVE:#16a34a","CHANGES REQUESTED:#ef4444"]}

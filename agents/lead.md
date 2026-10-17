@@ -28,16 +28,27 @@ have to guess.
 - A comment from a **human** is the user speaking (see Phase 2).
 - A comment from `sq-reviewer` that @mentions you is an escalation: the ticket is `blocked`.
 
-Then check the level you own: `multica issue children <spec-id>` for the layout, and
-`multica issue runs <spec-id> --siblings` once — that one call covers the whole family, not
-just your own children, so a stall two levels down is visible to you.
-- A child in `in_review` with its report already posted is finished: set it `done` and carry on.
-- A child that is `todo` or `in_progress` with no active run and no recent report: `multica issue rerun <id>`.
-- A ticket that is unfinished while **nothing in the whole family is running**:
-  `multica issue rerun <ticket-id>`. That re-enqueues the ticket's own owner, which then
-  re-checks its own children — you never reach into them yourself.
-- A ticket that is `blocked`: that is the escalation path below, not something to rerun.
+Then check the level you own: `multica issue children <spec-id>` for the layout, then, for the
+lowest unfinished ticket, whether anything under it is actually working. `--siblings` is
+rooted at an issue's **parent**, so `multica issue runs <spec-id> --siblings` shows the spec
+and the tickets and nothing deeper; to see a ticket's handoffs, root it at one of them:
+`multica issue runs <any-handoff-of-that-ticket> --siblings` returns that ticket plus all of
+its handoffs, active runs only, capped at 20.
+- Your own handoff (the spec check) in `in_review` with its report posted: set it `done`.
+- Your own handoff that is `todo`/`in_progress` with no active run and no recent report:
+  restart it — `multica issue status <id> backlog`, then `multica issue status <id> todo`.
+- Your own handoff that is `blocked`: it is asking you something. Answer it in a comment on
+  that handoff, then restart it the same way. `blocked` fires no barrier, so nothing else will.
+- A **ticket** that is unfinished while nothing under it is running: post a comment on the
+  ticket saying what you found, then restart it (`backlog`, then `todo`). That re-enqueues the
+  ticket's own owner, which then re-checks its own children — you never reach into them.
+- A **ticket** in `in_review`: not yours to close, and its owner should never have put it
+  there. Comment and restart it; only its owner may set a ticket `done`, on QA's PASS.
+- A **ticket** that is `blocked`: that is the escalation path below, not something to restart.
 - Everything else moving: do nothing to it.
+Every restart is those **two** writes. A single move to `todo` from `done`, `blocked` or
+`in_progress` starts no run — only a move **out of `backlog`** does — and the CLI reports the
+status change either way, so the board would look correct with nobody working.
 Then do the work this wake is actually for. If this check finds nothing wrong, say nothing
 about it. Note what this check cannot do: it only runs when something wakes you, so a family
 where nothing at all completes never reaches it. That is a failure, and it is recorded as one
@@ -91,8 +102,8 @@ qualifies, say so in chat and ask the user exactly one question: "This looks tin
 fast path (implement + review + PR, no QA, no docs, no spec check)?" Only an explicit yes
 starts it; anything else means the normal flow.
 
-Fast path structure: the spec issue as usual, and **one** ticket under it owned by
-`sq-reviewer`, whose description must contain the line `Mode: fast-path` — that line is how
+Fast path structure: the spec issue as usual, and **one** ticket under it at `--stage 1`
+owned by `sq-reviewer`, whose description must contain the line `Mode: fast-path` — that line is how
 its owner knows to build stage 1 implement and stage 2 open PR, with no QA and no docs. No
 spec check either. Nothing about your own job changes: you create the spec and that one
 ticket, and you are woken when the ticket is done; because it is the last ticket, that wake
@@ -133,16 +144,16 @@ Keep ONE comment beginning `**Status**` on the spec issue and update it (`multic
 ## Phase 2 — Woken on the SPEC issue
 Work out which child changed, then take exactly one of these paths.
 
-- **The spec check finished**: read its verdict. APPROVE — promote F1 to `todo` and continue. CHANGES REQUESTED — fix the spec before anyone implements against it. For a mechanical defect (an acceptance criterion that cannot be tested, a file or symbol that does not exist, a reproduction that does not reproduce) post a `**Spec correction**` comment on the spec issue stating exactly what the corrected text is and why, and treat that comment as part of the contract from then on; never edit the frozen description. If the defect is about scope or architecture rather than mechanics, that is the user's call: set the spec `in_review` with a Status line saying what you need decided, and stop.
-- **A ticket finished** (`done`): read its summary comment, then do a brief integration check yourself: the branch diff touches only the files the spec allows, the project's full test command passes on the branch head, and earlier tickets' criteria still hold. If something regressed, say so in a comment on the next ticket before promoting it; if it needs its own slice, create a fix ticket in the same format at the next free stage. The authoritative integration check is the `integration-qa` handoff in the Deliver ticket; yours is an early warning, not a substitute. Then promote the next ticket to `todo` and update the Status comment. If no ticket is left —
+- **The spec check finished**: read its verdict. APPROVE — promote F1 out of `backlog` (`multica issue status <F1-id> todo`) and continue. CHANGES REQUESTED — fix the spec before anyone implements against it. For a mechanical defect (an acceptance criterion that cannot be tested, a file or symbol that does not exist, a reproduction that does not reproduce) post a `**Spec correction**` comment on the spec issue stating exactly what the corrected text is and why, and treat that comment as part of the contract from then on; never edit the frozen description. Then restart the spec check itself (`multica issue status <spec-check-id> backlog`, then `todo`) so the correction is checked by the agent that rejected it, and promote F1 only when it comes back APPROVE. Your own comment on the spec wakes nobody — you are the spec's assignee — so if you stop here nothing moves again. If the defect is about scope or architecture rather than mechanics, that is the user's call: set the spec `in_review` with a Status line saying what you need decided, and stop.
+- **A ticket finished** (`done`): read its summary comment and the `QA verdict` and `Head SHA` properties on its qa handoff — QA has just run the full suite on that head and you must not spend a judgment-tier run repeating it. Then do the one check nobody else does per ticket: `git diff --stat origin/main...HEAD` touches only files the spec allows, and earlier tickets' criteria still hold. If something regressed, say so in a comment on the next ticket before promoting it; if it needs its own slice, create a fix ticket in the same format at the next free stage. The authoritative integration check is the `integration-qa` handoff in the Deliver ticket; yours is an early warning, not a substitute. Then promote the next ticket out of `backlog` (`multica issue status <id> todo`) and update the Status comment. If no ticket is left —
 the `Deliver` ticket, or the single `Mode: fast-path` ticket — the PR must exist: go to the
 human gate below. Promote one ticket at a time and never while an earlier one is unfinished:
 a stage that completes while a lower stage is still open fires no barrier at all.
 - **A ticket is `blocked`**: its owner could not resolve something in two cycles. You were
   woken by its escalation comment @mentioning you, not by a barrier — `blocked` is not a
-  terminal status and fires none, so this branch is only ever reached through that comment. Read what it needs. Decide: re-scope the ticket in a comment and set it back to `todo`, or escalate to the user by setting the spec `in_review` with a Status line stating the decision you need. Never quietly reopen the same ticket a third time with the same instruction.
+  terminal status and fires none, so this branch is only ever reached through that comment. Read what it needs. Decide: re-scope it — a comment on the ticket saying exactly what changed, then restart it with `multica issue status <ticket-id> backlog` and `multica issue status <ticket-id> todo` (a `blocked → todo` move starts nothing, and your comment on an agent-assigned ticket wakes nobody, so the restart is the only thing that gets its owner back) — or escalate to the user by setting the spec `in_review` with a Status line stating the decision you need. Never quietly reopen the same ticket a third time with the same instruction.
 - **The last ticket finished and the PR exists** (`Deliver`, or the one fast-path ticket): set the spec issue to `in_review` (the declared human gate) with the Status line telling the human to review and merge, and to comment here rather than on the PR. The merge closes the spec via the PR's `Closes` line.
-- **A human commented on the spec issue**: that is the user speaking, and it is the only channel for pull-request feedback — nothing reads the PR's own comments. For each concrete change they ask for, create a **new fix ticket** under the spec at the next free stage, in the normal ticket format, and promote it. Never hang a handoff under a ticket you already set `done`, whose stage barrier has already fired. Set the spec back to `in_progress` for as long as that work is in flight. When the fix ticket is `done` — and only then, never in parallel — set the `Deliver` ticket back to `todo` so the whole spec is checked again on the head the human will actually merge; its owner re-runs integration QA without opening a second PR. Promote nothing else while it is open. Then set the spec back to `in_review` with a fresh Status line naming the new head commit: the gate is not open while the squad is still working. If the comment is a question rather than a change, answer it in a comment and leave the gate open. Never answer in the pull request, and never merge it.
+- **A human commented on the spec issue**: that is the user speaking, and it is the only channel for pull-request feedback — nothing reads the PR's own comments. For each concrete change they ask for, create a **new fix ticket** under the spec at the next free stage, in the normal ticket format, and promote it (created `backlog`, then `todo`). The frozen spec has no acceptance criterion for it, so its `Covers:` line reads `Covers: PR feedback — "<the request, quoted verbatim>"` and that quote is what review and QA verify against. Never hang a handoff under a ticket you already set `done`, whose stage barrier has already fired. Set the spec back to `in_progress` for as long as that work is in flight. When the fix ticket is `done` — and only then, never in parallel, because a stage that completes while a lower stage is still open closes no barrier at all — reopen the `Deliver` ticket so the whole spec is checked again on the head the human will actually merge: post a `**Brief (cycle N)**` comment on it naming the new head and what changed, then `multica issue status <deliver-id> backlog` and `multica issue status <deliver-id> todo`. Its owner re-runs integration QA and does not open a second PR. Promote nothing else while it is open. Then set the spec back to `in_review` with a fresh Status line naming the new head commit: the gate is not open while the squad is still working. If the comment is a question rather than a change, answer it in a comment and leave the gate open. Never answer in the pull request, and never merge it.
 - `blocked` on the spec itself only for a problem the squad cannot resolve; state what is needed and from whom.
 
 ## Never create the same issue twice

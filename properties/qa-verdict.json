@@ -1,0 +1,1 @@
+{"name":"QA verdict","type":"select","description":"QA's machine-readable verdict on the tree it actually ran. Closed option set, and separate from the review verdict so the platform itself rejects a cross-role write.","icon":"flag","options":["PASS:#16a34a","FAIL:#ef4444"]}

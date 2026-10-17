@@ -12,24 +12,34 @@ This file is the standard; `bench/failures.md` is the record of what it has caug
 Nothing in this squad runs on a timer, so every step forward is one wake. The design is
 only alive if each row below is the **only** wake for its event.
 
+**A run starts on an issue in exactly three ways** (`service/issue_trigger.go:126-141`):
+created in a status other than `backlog`; its assignee changes while it is not `backlog`;
+its status moves **out of `backlog`** into something not `done`/`cancelled`. Every row below
+is one of those, a stage barrier, a `mention://` link, or chat. A transition that is none of
+them moves nothing — and says nothing, because the CLI reports the status change anyway.
+
 | # | Event | Mechanism | Woken |
 |---|---|---|---|
 | 1 | the user says something in chat | chat | `sq-lead` |
-| 2 | the leader promotes a ticket `backlog` → `todo` | status change starts a run | `sq-reviewer` (the ticket's assignee) |
-| 3 | an owner promotes a stage `backlog` → `todo` | status change starts a run | that handoff's assignee |
+| 2 | the leader promotes a ticket out of `backlog` | status change starts a run | `sq-reviewer` (the ticket's assignee) |
+| 3 | an owner promotes a stage out of `backlog` | status change starts a run | that handoff's assignee |
 | 4 | a handoff finishes (`done`) | stage barrier (`child_done`) | the **parent's** assignee |
 | 5 | a ticket finishes (`done`) | stage barrier on the spec | `sq-lead` (squad assignee → leader only) |
-| 6 | an agent cannot continue (`blocked`) | an `@mention` of its owner in a comment on its own issue | that owner |
+| 6 | an agent cannot continue (`blocked`) | a roster `mention://` link to its owner, in a comment on its own issue | that owner |
 | 7 | a human comments on the spec issue | comment on a squad-assigned issue | `sq-lead` |
 | 8 | the human merges the PR | Forgejo webhook + `Closes <SPEC-ID>` | nothing; the spec goes `done` |
-| 9 | a level is stalled and its owner is awake | `multica issue rerun <ticket-id>` | that ticket's owner |
+| 9 | an owner restarts a child: rework, an answer to a `blocked` child, a stalled stage, a reopened ticket | `status <id> backlog` (starts nothing), then `status <id> todo` — **two** writes | that child's assignee |
 
 Forbidden, because they produce a **second** wake for one event:
-- an `@mention` of your owner in a report (row 4 already wakes it, ~1 s later, and the two
-  are not deduplicated — they are on two different issues),
-- a comment *and* a status change for the same transition (post the comment first with no
-  mention; the status change is the wake),
-- a `rerun` on an issue that was just commented on.
+- a `mention://` link to your owner in a report (row 4 already wakes it, ~1 s later, and the
+  two are not deduplicated — they are on two different issues),
+- any agent comment on the squad-assigned **spec** issue by someone other than the leader,
+- a `rerun` on an issue whose comment can wake its owner by itself.
+
+Forbidden, because they produce **no** wake while looking like one:
+- `done → todo` or `blocked → todo` as a single write (row 9 exists for this),
+- a comment as a way of asking an agent to do something, without a `mention://` link,
+- `blocked` on its own as a way of escalating.
 
 ## W — wakes
 
@@ -46,7 +56,11 @@ Forbidden, because they produce a **second** wake for one event:
   suppress the child-done notification entirely, so the completion is lost.
 - **W6** Does any stage complete while a **lower** stage is non-terminal? The barrier only
   evaluates on the completing child and requires every stage ≤ its own to be terminal, so
-  that completion wakes nobody.
+  that completion wakes nobody. One stage, and one ticket, is restarted at a time.
+- **W7** Is every start and restart a transition **out of `backlog`**? Grep every
+  `status <id> todo` and check what the issue's status is at that moment. This is the item
+  that catches the most dangerous class of defect here, because the failure is silent: the
+  board shows `todo`, no agent is running, and nothing is watching.
 
 ## O — ownership
 
@@ -110,13 +124,19 @@ Forbidden, because they produce a **second** wake for one event:
 
 - **$1** Does any instruction create a run that does no work? (B1: 18 of 74 runs started
   within 3 s of a comment — the report-mention double wake.)
-- **$2** Does any issue approach the platform's 12-trigger `child_done` pause?
+- **$2** Does any issue accumulate an unbounded number of wakes? (The 12-trigger pause seen
+  on v4's `ACHE-75` applied to an **agent-created** wakeup rule, not to the platform barrier,
+  so this is a cost question now, not a correctness one.)
 - **$3** Is anything re-read or re-run that an earlier stage already recorded?
 
 ## Platform facts this standard depends on
 
 | Fact | Source |
 |---|---|
+| a run starts only on create-not-in-backlog, an assignee change, or a move out of `backlog`; `done → todo` and `blocked → todo` start nothing | `service/issue_trigger.go:126-141`, the one predicate both write paths call |
+| an agent's comment on an issue assigned to another **agent** starts nothing without a `mention://` link; on a **squad**-assigned issue any agent comment wakes the leader | `handler/comment.go` assignee fallback (member-only) + the squad-leader fallback |
+| a mention must be the link form `[@Name](mention://agent/<id>)`; a plain `@name` parses as nothing | `util/mention.go:16`; the runtime prompt states the form and its effect |
+| `--siblings` is rooted at the issue's **parent**: that parent plus every child of it, active only, capped at 20 — it never reaches grandchildren | `queries/agent.sql:2553` + `multica issue runs --help` |
 | the barrier fires only on non-terminal → terminal, where terminal = `done` or `cancelled` | `handler/issue_child_done.go:99` |
 | the barrier's system comment names the closed stage, the finished sub-issue and the next stage | `handler/issue_child_done.go:366`, `stageProgressSummary` |
 | the barrier closes only when every stage ≤ the completing child's stage is terminal | `stageBarrierClosed`, same file `:571` |

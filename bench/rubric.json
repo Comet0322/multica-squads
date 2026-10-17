@@ -23,10 +23,12 @@
    "no_stalled_sub_issue"
   ],
   "max_auto_recoveries": 3,
-  "human_interventions": "Any action by a person on the run's issues: a member-authored comment or status change, OR a run whose attribution.source is `direct_human` (a hand-started wake leaves no timeline entry, so the timeline alone undercounts). Deduped by the triggering comment. The requirements chat before the run is not counted.",
-  "auto_recoveries": "`**Medic**` comments by sq-medic in the issue family. Allowed and capped: the squad recovered, the human did not.",
+  "human_interventions": "Any action by a PERSON on the run's issues: a member-authored comment or status change, or a run that nothing else explains (no platform wakeup rule, no delegating agent task, not already counted as a member comment). `attribution.source == direct_human` is NOT the test -- it names the human at the root of the causal chain, so it both false-positives on a barrier wake in a human-built family and misses a hand-fired rule, which reports `trigger_owner` (measured table in bench/failures.md). A scored run is hands-off, so PR feedback on the spec issue -- a real mechanism, verified at tier B -- counts as an intervention here and simply must not occur during a scored run.",
+  "auto_recoveries": "Recovery by a non-human actor. Config v7 has no such actor (`squad-medic` and `sq-medic` were removed in ADR 0001), so this is structurally 0 and the cap is vacuous; it is kept only so pre-v7 rows stay comparable. v7 recovers only inside a wake that happens for another reason, which is why a family where nothing completes is recorded as a failure.",
   "candidate_conditions": {
-   "negative_final_verdicts": "A handoff left on a CHANGES REQUESTED or FAIL `Verdict` property under a closed ticket means a failure was closed over. Measurable only because the verdict is typed (probe F21). Recorded from 2026-10-17; NOT part of `success` yet, because adding a condition breaks comparability with the v1-v6 rows."
+   "negative_final_verdicts": "A handoff left on `CHANGES REQUESTED` (`Review verdict`) or `FAIL` (`QA verdict`) under a closed ticket means a failure was closed over. Measurable because the verdicts are typed and role-separated. Recorded from 2026-10-17; NOT part of `success` yet, because adding a condition breaks comparability with the v1-v6 rows.",
+   "double_wakes": "Runs whose attribution evidence kind is `comment`: one event producing two wakes (a report that mentions its owner, or an agent commenting on the squad-assigned spec). Target 0; B1 measured 18 of 74 runs. Cost plus a duplicate-action hazard, not a defect in the delivered code.",
+   "verdict_role_mismatch": "A verdict written by the wrong role. Should be impossible since the two properties were split; a non-zero value means an agent used the pre-v7 `Verdict` property."
   }
  },
  "headline_metrics": {
@@ -43,7 +45,12 @@
   "human_interventions",
   "auto_recoveries",
   "stalled_sub_issues",
+  "ticket_count",
   "rework_issues",
+  "rework_reopens",
+  "negative_final_verdicts",
+  "double_wakes",
+  "verdict_role_mismatch",
   "review_changes_requested",
   "qa_fail",
   "leader_wakeups",
@@ -52,7 +59,8 @@
   "agent_run_minutes",
   "tokens",
   "peak_input_tokens",
-  "peak_cache_read_tokens"
+  "peak_cache_read_tokens",
+  "peak_context_tokens"
  ],
  "manual_1_to_5_not_summed": [
   "spec_quality",

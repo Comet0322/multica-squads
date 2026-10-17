@@ -97,11 +97,6 @@ def main():
     human_events, last_end, first = 0, None, None
     human_comment_ids, auto_recoveries, medic_times = set(), 0, []
     reopens = 0
-    # Every agent comment, by issue, so the double-wake invariant can be measured: in v7 a
-    # report must NOT @mention its owner, because the mention wakes the owner on the child
-    # and the barrier wakes it again on the parent a second later, and the platform dedupes
-    # only per (issue, agent). B1 had 18 of 74 runs starting within 3 s of a comment.
-    comment_times = {}
     for i in family:
         for e in mc("issue", "timeline", i["identifier"]):
             when = ts(e.get("created_at"))
@@ -115,8 +110,6 @@ def main():
                 human_events += 1
                 if e.get("type") == "comment":
                     human_comment_ids.add(e.get("id"))
-            if not is_human and e.get("type") == "comment" and when:
-                comment_times.setdefault(i["id"], []).append(when)
             if not is_human and body.startswith("**Medic**"):
                 auto_recoveries += 1
                 medic_times.append(when)
@@ -135,17 +128,20 @@ def main():
             seen.add(r["id"]); uniq.append(r)
     run_min = sum((ts(r["completed_at"]) - ts(r["started_at"])).total_seconds() for r in uniq
                   if r.get("completed_at") and r.get("started_at")) / 60
-    # A run that began within 5 s of an agent comment on the same issue is a
-    # comment-triggered wake -- an @mention that should not have been there. Zero is the
-    # target; it is a protocol violation and a cost, not a failure of the delivered code.
+    # A comment-triggered run: one event that produced two wakes. The timing heuristic this
+    # replaced counted the DESIGNED rework wake as a violation, because a rework posts the
+    # brief and then restarts the issue seconds later. `attribution.evidence.kind` says it
+    # exactly: `issue_assignment` for a status-promoted run, `issue_wakeup` for a barrier,
+    # `comment` for a comment wake (B1: 30 / 27 / 17 of 74 runs). Human comments are already
+    # counted as interventions, so only agent-authored ones are a protocol violation here.
     double_wakes = 0
     for r in uniq:
-        started = ts(r.get("created_at") or r.get("started_at"))
-        if not started:
+        at = r.get("attribution") or {}
+        if ((at.get("evidence") or {}).get("kind")) != "comment":
             continue
-        if any(0 <= (started - c).total_seconds() <= 5
-               for c in comment_times.get(r.get("issue_id"), [])):
-            double_wakes += 1
+        if ((at.get("evidence") or {}).get("ref_id")) in human_comment_ids:
+            continue
+        double_wakes += 1
     # A run a person started by hand. `attribution.source` CANNOT be used for this:
     # it names the human or agent at the ROOT of the causal chain, not who started
     # this run. Measured on real data (see bench/failures.md):
@@ -194,7 +190,10 @@ def main():
     subs = family[1:]
     stalled = [i["identifier"] for i in subs if i["status"] not in ("done", "cancelled")]
     rework = sum(1 for i in subs if "rework" in i["title"].lower())
-    tickets = [i for i in subs if i.get("parent_issue_id") == parent["id"]]
+    # Direct children of the spec are the tickets AND the spec-check handoff, which is not a
+    # ticket; it is the only `internal`-labelled child at that level.
+    tickets = [i for i in subs if i.get("parent_issue_id") == parent["id"]
+               and not i["title"].lower().startswith("spec-check")]
 
     rate = existing = clean = None
     if a.repo and a.branch:
@@ -205,21 +204,25 @@ def main():
     # final state, read rather than interpreted. In a clean run NOTHING should end negative:
     # a handoff left on CHANGES REQUESTED or FAIL under a ticket that was closed means a
     # failure was closed over. Recorded, not yet part of `success` (that is a rubric change).
-    # One `Verdict` vocabulary serves two roles, so also check the value came from the role
-    # that owns it: APPROVE/CHANGES REQUESTED is a review verdict, PASS/FAIL is QA's. A value
-    # from the other pair means the wrong agent wrote it, and its owner would read it as
-    # nobody's verdict.
+    # `Review verdict` and `QA verdict` are separate two-value properties, so the ROLE comes
+    # from the property name and nothing has to be guessed from a title (an earlier version
+    # keyed it off `title.startswith("qa")`, which no instruction guarantees). The pre-v7
+    # `Verdict` property is still read so B1 and earlier stay scoreable; a v7 run that uses
+    # it at all is a protocol violation, since its definition is no longer in `properties/`.
     verdicts, negative_final, role_mismatch = {}, 0, []
     for i in family:
         for pr in mc("issue", "property", "list", i["identifier"]) or []:
-            if pr.get("name") == "Verdict" and pr.get("display"):
-                verdicts[i["identifier"]] = pr["display"]
-                if pr["display"] in ("CHANGES REQUESTED", "FAIL"):
-                    negative_final += 1
-                is_qa = i["title"].lower().startswith(("qa", "integration-qa"))
-                allowed = ("PASS", "FAIL") if is_qa else ("APPROVE", "CHANGES REQUESTED")
-                if pr["display"] not in allowed:
-                    role_mismatch.append(f'{i["identifier"]}={pr["display"]}')
+            name, val = pr.get("name"), pr.get("display")
+            if not val or name not in ("Review verdict", "QA verdict", "Verdict"):
+                continue
+            verdicts[f'{i["identifier"]}/{name}'] = val
+            if val in ("CHANGES REQUESTED", "FAIL"):
+                negative_final += 1
+            if name == "Verdict":
+                role_mismatch.append(f'{i["identifier"]}=legacy Verdict:{val}')
+            elif val not in (("PASS", "FAIL") if name == "QA verdict"
+                             else ("APPROVE", "CHANGES REQUESTED")):
+                role_mismatch.append(f'{i["identifier"]}={name}:{val}')
 
     # Legacy prose counts. These match on the phrase anywhere in a comment, so they
     # OVER-count when a later comment quotes an earlier verdict (measured on B1: 2 real

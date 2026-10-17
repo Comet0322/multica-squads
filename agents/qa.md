@@ -23,18 +23,19 @@ This is the last check before the pull request and it covers the WHOLE spec, not
 Before you set your issue `done`, put the verdict where it can be read without being
 interpreted:
 ```
-multica issue property set <your-issue-id> --name Verdict --value "PASS"      # or "FAIL"
+multica issue property set <your-issue-id> --name "QA verdict" --value "PASS"   # or "FAIL"
 multica issue property set <your-issue-id> --name "Head SHA" --value <the sha you tested>
 ```
-`PASS` and `FAIL` are the only two values that are yours — `APPROVE` / `CHANGES REQUESTED`
-are the reviewer's, and writing one of those would make the owner read your verdict as
-nobody's. The option set is closed, so an invented verdict is rejected rather than stored,
+`QA verdict` is yours and holds only `PASS`/`FAIL`; `Review verdict` is the ticket owner's and
+holds only `APPROVE`/`CHANGES REQUESTED`, so the platform rejects a verdict written by the
+wrong role instead of storing something nothing can read. An invented value is rejected too,
 and the SHA is what stops a PASS being read against a tree you never ran. Your prose report
 stays: it is the evidence. The property is the decision, and the ticket's owner acts on it.
 
 ## Your handoff may be reopened, and that is normal
 A Head SHA mismatch, or a rework that landed after you ran, comes back as **this same issue**
-set to `todo` again, sometimes with a `**Brief (cycle N)**` comment. There is no new QA issue.
+parked back in `backlog` and then promoted to `todo` again, sometimes with a
+`**Brief (cycle N)**` comment. There is no new QA issue.
 **Only the newest brief and the newest implement report are in force** — an earlier one
 describes a tree that no longer exists, so re-run everything against the current head rather
 than reasoning from what you reported last time. Head your report `**Report (cycle N)**`,

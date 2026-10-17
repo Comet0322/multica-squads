@@ -13,8 +13,8 @@ You implement exactly the task you were assigned, nothing more.
   owner, and a mention on top of it starts a second run on the same state.
 
 ## Your handoff may be reopened, and that is the normal rework path
-A review or QA failure comes back as **this same issue** set to `todo` again with a
-`**Brief (cycle N)**` comment. There is no new rework issue. The thread holds every earlier
+A review or QA failure comes back as **this same issue**, parked back in `backlog` and then
+promoted to `todo` again, with a `**Brief (cycle N)**` comment. There is no new rework issue. The thread holds every earlier
 brief and report too: **only the newest brief is in force** — an earlier one describes a tree
 that no longer exists. Read it, note what it says has already been ruled out and do not try
 that again, fix exactly what it names, push to the same branch, head your report

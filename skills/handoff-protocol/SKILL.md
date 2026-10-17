@@ -12,23 +12,44 @@ own children; everyone else does their one task and finishes it.
 **Finishing your own issue IS the handoff.** Set it `done` and the stage barrier wakes your
 owner within seconds. Nothing has to be nudged and nothing has to be created to pass work on.
 
-## One event, one wake
+## One event, one wake — and only three things start a run
 
-Nothing here runs on a timer, so every step forward is exactly one wake, and a second wake
-for the same event is a hazard, not a safety net: two runs read the same state and both
-promote the stage or both open the same rework.
+Nothing here runs on a timer, so every step forward is exactly one wake. A second wake for
+the same event is a hazard, not a safety net: two runs read the same state and both promote
+the stage or both open the same rework. A *missing* wake is worse, and it is silent.
 
+A run begins on an issue in exactly three ways (`service/issue_trigger.go:126-141`, the one
+predicate both write paths use):
+1. the issue is **created** in any status other than `backlog`,
+2. its **assignee changes** while it is not in `backlog`,
+3. its status moves **out of `backlog`** into something that is not `done`/`cancelled`.
+
+Nothing else does. In particular **`done → todo` and `blocked → todo` start nothing**, and
+`multica issue status` still prints "status changed to todo", so the board looks right while
+no one is working. A comment you write on an issue assigned to another *agent* also starts
+nothing unless it carries an explicit mention link.
+
+What follows from that:
 - **Finishing** (`done`) wakes your owner through the stage barrier. **Do not @mention your
   owner in your report.** The mention wakes it on your issue and the barrier wakes it on the
   parent about a second later; the two are different issues, so the platform does not
   deduplicate them. In B1, 18 of 74 runs started within 3 s of a comment for exactly this
   reason.
-- **Promoting** (`backlog` → `todo`) wakes the assignee: a status change starts a run on its
-  own. So when a brief goes with it, post the brief comment **first and without a mention**,
-  then change the status. That one status change is the wake.
-- **Escalating** (`blocked`) wakes nobody by itself — see below. It is the only case where
-  you @mention.
-- Never `rerun` an issue you have just commented on.
+- **Starting or restarting a child** — a first promotion, a rework, an answer to a blocked
+  child, a stage that must run again — is always the same two writes, in this order:
+  ```
+  multica issue status <id> backlog      # from done/todo/in_progress/blocked: starts nothing
+  multica issue status <id> todo         # out of backlog: THIS is the wake
+  ```
+  Any brief goes in a comment **before** the first write, with no mention. Reopening with a
+  single `status <id> todo` from `done` is the most dangerous mistake available here.
+- **Waking an agent you cannot restart** — your owner, or a peer you may not touch — only
+  ever happens for an escalation, and only through a mention link in the roster form
+  `[@Name](mention://agent/<agent-id>)`. A plain `@name` is dead text that parses as nothing.
+- Do not `rerun` an issue you have just commented on **when that comment can wake its owner
+  by itself** — a comment on the squad-assigned spec issue, or any comment carrying a mention.
+  On an agent-assigned handoff a plain comment wakes nobody, so a comment plus a restart is
+  exactly one wake.
 
 ## Who may change what
 - **Your own issue**: its status, its `Verdict` and `Head SHA` properties, and comments on it.
@@ -38,8 +59,9 @@ promote the stage or both open the same rework.
   or an @mention of a peer. Sequencing belongs to one agent per level.
 
 ## Briefing (an owner to one of its children)
-Create every child `backlog`, then promote the first stage — creating an issue has no
-`--no-start`, and a child parked in `backlog` is inert.
+Create every child `backlog`, then promote the first stage out of it — creating an issue in
+any other status starts a run immediately and `issue create` has no `--no-start`, while a
+child parked in `backlog` is inert until it is promoted.
 
 The brief for the first cycle is the child's **description**, written when the owner creates
 it. A brief for any later cycle is a **comment** on that same issue (see "Sending work
@@ -65,14 +87,13 @@ owner:
 - **Risks / open questions**.
 - **Verdict** (reviewers and QA): in the report, and set as data before you set the issue
   `done`:
-  `multica issue property set <issue-id> --name Verdict --value "PASS"` and
-  `--name "Head SHA" --value <sha>`. The option set is closed, so a paraphrase is rejected
-  rather than stored as something nothing can read, and `multica issue property list <id>`
-  returns it resolved by name. The prose is the evidence; the property is the decision; the
-  SHA is what stops a verdict being read against a tree nobody tested.
-  **One role, one pair of values**: a review verdict is `APPROVE` / `CHANGES REQUESTED`, a QA
-  verdict is `PASS` / `FAIL`. A value from the other pair means the wrong agent wrote it, and
-  its owner must treat it as no verdict at all.
+  `multica issue property set <issue-id> --name "QA verdict" --value "PASS"` (QA; a ticket's
+  owner uses `--name "Review verdict" --value "APPROVE"` on the child it judged) and
+  `--name "Head SHA" --value <sha>`. There are two separate properties on purpose, each with
+  a closed two-value option set, so the platform itself rejects a verdict written by the wrong
+  role instead of leaving prose to police it. `multica issue property list <id>` returns both
+  resolved by name. The prose is the evidence; the property is the decision; the SHA is what
+  stops a verdict being read against a tree nobody tested.
 
 Reference acceptance criteria by number (AC1, AC2, ...) from the spec. Keep one task per
 handoff and do no work outside your role.
@@ -83,23 +104,29 @@ handoff and do no work outside your role.
 this squad.
 
 So escalation is two actions, in this order:
-1. Post a comment **on your own issue** that @mentions your owner (`sq-reviewer` for a
-   handoff under a ticket, `sq-lead` for a ticket or a handoff under the spec), stating what
-   you tried, what is still wrong and exactly what you need decided.
+1. Post a comment **on your own issue** mentioning your owner in the roster link form
+   (`sq-reviewer` for a handoff under a ticket, `sq-lead` for a ticket or a handoff under the
+   spec), stating what you tried, what is still wrong and exactly what you need decided.
 2. `multica issue status <your-id> blocked`.
 
 The mention is the wake (measured: a mention in a comment woke `sq-lead` on an issue assigned
-to someone else). Use `blocked` only for a problem you genuinely cannot resolve — missing
+to someone else), and it is the only one — so if you set `blocked` without it, nothing
+anywhere will notice. Your owner answers in a comment and then restarts you with the two
+writes above; it cannot reach you any other way. Use `blocked` only for a problem you genuinely cannot resolve — missing
 access, contradictory requirements, an external dependency, or two failed cycles on one
 problem. Ambiguity you can resolve by reading the spec or the code is not a block.
 
 ## Sending work back, and keeping cycles straight
-Rework reopens the existing issue — the owner posts the brief as a comment, then sets it back
-to `todo`. Nothing new is created, so one issue accumulates several briefs and reports, and
-**the thread must say which cycle each belongs to**:
+Rework reopens the existing issue — the owner posts the brief as a comment, then restarts it
+with the two writes above. Nothing new is created, so one issue accumulates several briefs and
+reports, and **the thread must say which cycle each belongs to**:
 
-- An owner heads a later brief `**Brief (cycle N)**`, N counting from 2.
-- Whoever works it heads its report `**Report (cycle N)**` with the same N.
+- An owner heads a later brief `**Brief (cycle N)**`. **N is 1 + the number of comments on
+  this issue that already begin `**Brief (cycle`** — count them, never guess, because your
+  context is fresh and the thread is the only record.
+- Whoever works it heads its report `**Report (cycle N)**` with the same N as the brief it is
+  answering. A judgment posted on a *ticket* (a review of one of its children) is headed the
+  same way, with the cycle of the child it judged.
 - **The newest brief and the newest report are the only ones in force.** An earlier report
   describes a tree that no longer exists; never act on it, and never answer it.
 
@@ -109,11 +136,18 @@ memory of the earlier cycle, so without this it can spend the cycle repeating a 
 attempt — and after two failed cycles on one problem the owner stops looping and escalates.
 
 **Reopening a stage invalidates the stages above it, so reset them.** When an owner reopens
-stage *k*, every stage above *k* that is already `done` goes back to `backlog` with
-`multica issue status <id> backlog --no-start`. Two reasons, both measured: a later wake works
+stage *k*, every stage above *k* that is already `done` goes back to `backlog` —
+`multica issue status <id> backlog`, which starts nothing. The one exception is a stage whose
+output cannot be produced twice, an already-open pull request above all: leave it `done` and
+say so, or the next barrier will tell its owner to promote it and a second PR gets opened.
+Two reasons for the reset, both measured: a later wake works
 out what happened from the stage layout, and a stage left `done` makes it read work as
 finished that is about to be redone; and the verdict property on that stage is still the old
 one, because a property only ever holds its final value and never appears in the timeline.
+
+Only one stage is ever restarted at a time. A stage that completes while a **lower** stage is
+still open closes no barrier and wakes nobody, so promote the next one on the wake the first
+one gives you, exactly as on the first pass.
 
 Fix exactly what the newest brief names. Do not start over, do not widen the change, push to
 the same branch, report, and set the issue `done` again. Reopening re-fires the barrier when
