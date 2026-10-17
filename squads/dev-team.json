@@ -1,0 +1,1 @@
+{"name":"dev-team","description":"Lead + implementer + reviewer + QA for building small software","leader":"sq-lead","members":[{"agent":"sq-implementer","role":"implementer"},{"agent":"sq-reviewer","role":"reviewer"},{"agent":"sq-qa","role":"qa"}]}
