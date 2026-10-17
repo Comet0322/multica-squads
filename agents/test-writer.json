@@ -1,1 +1,0 @@
-{"name": "sq-test-writer", "description": "Turns acceptance criteria into failing tests, without sight of any implementation", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done"], "mcp": [], "tier": "judgment"}

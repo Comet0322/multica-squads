@@ -8,7 +8,7 @@ Delivered means `done`, not `in_review`. Barriers fire only on `done`/`cancelled
 
 - **The spec-check handoff is assigned to you** → section 1.
 - **A ticket you own, with no children** → section 2.
-- **A ticket you own, a stage just closed** → section 3 or 4.
+- **A ticket you own, a stage just closed** → section 3, 4 or 5.
 
 Read the newest comment on the issue that woke you: the barrier's system comment names which stage closed and which is next. **Never infer that from `issue children` counts** — after a reopen they lie.
 
@@ -26,12 +26,13 @@ The contract is the spec's description **plus every `**Spec correction**` commen
 
 Then: report, set `Result` = `PASS` or `REWORK`, set yourself `done`. `REWORK` must name the exact section and what the text should say instead. Commit nothing.
 
-# 2. A ticket's first wake: create its two stages
+# 2. A ticket's first wake: create its three stages
 
-Only these two, `--parent <ticket-id>`, `--status backlog`, labels `internal` + the run label:
+Only these three, `--parent <ticket-id>`, `--status backlog`, labels `internal` + the run label:
 
-- `--stage 1` test — `--assignee sq-test-writer`, title starting `test:`
+- `--stage 1` test — `--assignee sq-qa`, title starting `test:`
 - `--stage 2` implement — `--assignee sq-implementer`, title starting `implement:`
+- `--stage 3` docs — `--assignee sq-doc`, title starting `docs:`
 
 Each description carries `Spec: <spec-id>`, `Ticket: <ticket-id>`, `Covers: AC#...`, the repo URL and the branch. **Never copy the acceptance criteria** — they are read from the spec.
 
@@ -43,36 +44,48 @@ Judge the tests against **the spec's AC text**, never against the ticket. The ti
 
 1. Each AC on the `Covers:` line has at least one test, and that test would fail if the behaviour were wrong — not merely if a file were missing.
 2. Re-run the tests at `Red SHA`. **They must fail, and fail for the right reason**: an assertion about behaviour, not a compile error, not a missing fixture. A test never seen to fail proves nothing about the change that makes it pass.
-3. The stage touched test files only.
+3. The stage touched test files only (plus any stub needed to compile).
 
 `PASS` → set `Result` on the stage-1 handoff, then promote stage 2 (`status <id> todo`).
-`REWORK` → section 5.
+`REWORK` → section 6.
 
 # 4. Stage 2 closed (the tests should pass)
+
+This is the full check.
 
 1. The ticket's tests pass at `Head SHA`, and the whole suite passes.
 2. `git diff --numstat <Red SHA>..<Head SHA>` shows **0 deleted lines in test files**. Added tests are fine; a changed or deleted red test is not.
 3. The diff touches only files the spec's `Impact analysis` allows.
-4. Behaviour the user sees is documented in this ticket.
-5. Build, vet and formatter clean.
-6. **If this is the last ticket**, also: every `AC1..ACn` in the spec has a test that fails without the change, and the whole suite is green on this head. That is the integration check — there is no separate one.
+4. Build, vet and formatter clean.
+5. **If this is the last ticket**, also: every `AC1..ACn` in the spec has a test that fails without the change, and the whole suite is green on this head. That is the integration check — there is no separate one.
 
-`PASS` → set `Result` and `Head SHA` on the stage-2 handoff; then set `Result` = `PASS` on the **ticket** and the ticket `done`. That wakes the leader.
-`REWORK` → section 5.
+Output a table: check | PASS/REWORK | pasted evidence. Scope and architecture are the leader's call — anything beyond these checks goes in one line under `Risks` and does not change your result.
 
-Output a table: check | PASS/REWORK | pasted evidence. Scope and architecture are the leader's call — anything beyond these checks goes in one line under `Risks` and does not change your verdict.
+`PASS` → set `Result` and `Head SHA` on the stage-2 handoff, then promote stage 3.
+`REWORK` → section 6.
 
-# 5. Sending a stage back
+# 5. Stage 3 closed (the docs)
 
-First count this ticket's rework: `multica issue timeline <ticket-id>` and each child's — the number of `done → backlog` transitions among its stages.
+Short, because stage 2 already did the work:
+
+1. The docs stage touched **documentation files only** — `git diff --name-only <stage-2 Head SHA>..<stage-3 Head SHA>`. A source or test file here is a `REWORK`.
+2. The whole suite still passes on the stage-3 head.
+3. Behaviour a user can see is documented, or the stage's report says plainly that none changed and it committed nothing.
+
+`PASS` → set `Result` on the stage-3 handoff; then set `Result` = `PASS` and `Head SHA` (the stage-3 head) on the **ticket**, and the ticket `done`. That wakes the leader.
+`REWORK` → section 6.
+
+# 6. Sending a stage back
+
+First count this ticket's rework: `multica issue timeline` on the ticket and on each of its stages — the number of `done → backlog` transitions among them.
 
 **Already 2 or more** → stop reworking. Set `Result` = `REWORK` on the ticket, report why it is not converging, and set the ticket `done`. The leader takes it to the human. Never send the same stage back a third time.
 
 **Otherwise:**
 
 1. `**Brief (cycle N)**` comment on the stage being sent back, naming exactly what to fix.
-2. If you are reopening **stage 1**, first set stage 2 to `backlog` — a stage that completes while a lower stage is open closes no barrier at all.
-3. Restart the stage: `status <id> backlog`, then `status <id> todo`. **Two writes** — `done → todo` starts nothing.
+2. **Reset every stage above it to `backlog` first** — a stage that completes while a lower stage is open closes no barrier at all, so a stage left `done` above a reopened one strands the ticket.
+3. Restart that stage: `status <id> backlog`, then `status <id> todo`. **Two writes** — `done → todo` starts nothing.
 
 **Implementation revealed the test itself is wrong** (stage 2 finished with the tests still failing and its report names a wrong test): that is a stage-1 rework. Reopen stage 1, not stage 2.
 

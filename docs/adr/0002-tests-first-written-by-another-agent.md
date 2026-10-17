@@ -40,12 +40,25 @@ Two measured facts shaped the replacement:
 
 **1. Tests are written before the code, by an agent that never sees it.**
 
-Every ticket has exactly two stages: `test` (`sq-test-writer`, judgment tier) then
-`implement` (`sq-implementer`, execution tier). The test agent reads the acceptance criteria
-from the spec and writes tests that fail; the implementer makes them pass and **may never
-change or delete a line of a test file that existed at `Red SHA`**. `sq-qa` and `sq-doc` are
-retired; documentation is part of the implement stage of the ticket whose behaviour it
-describes.
+Every ticket has exactly three stages: `test` (`sq-qa`, moved to the judgment tier),
+`implement` (`sq-implementer`) and `docs` (`sq-doc`). `sq-qa` writes tests that fail against
+the spec's criteria; the implementer makes them pass and **may never change or delete a line
+of a test file that existed at `Red SHA`**; `sq-doc` documents what changed and may touch
+documentation files only.
+
+The roles keep their v7 names deliberately: nothing is created or archived on the platform,
+squad membership does not churn, run attribution stays continuous across versions, and
+`bench/score.py`'s agent-name logic keeps working. `sq-qa` is the same job it always had —
+verifying behaviour against the acceptance criteria — moved to before the code exists, which
+is why its tier moves from execution to judgment. `sq-reviewer` keeps owning every ticket,
+as it did in v7.
+
+Docs is the **last** stage, not the first and not folded into the implementer, because it
+commits to the same branch: the head a human merges must be a head that was verified. So the
+owner's check splits — the full evidential check closes stage 2, and stage 3 closes on a
+cheap re-check (documentation files only, suite still green). That costs one extra barrier
+wake and one light-tier run per ticket; v7 paid for the same ordering with a paragraph of
+prose about `Deliver` instead.
 
 This moves the independent check from after implementation to before it, and converts
 verification from judgement into evidence:
@@ -85,19 +98,21 @@ Good:
 - A weakened test is the one failure this design cannot otherwise detect, and it is now a
   `git` command rather than a request in an instruction.
 - The branch count in the leader collapses to a four-row table; the ticket has one shape.
-  Deleted outright: three ticket shapes, two roles, `blocked`, `mention://`, agent-to-agent
-  escalation, the fast path, the `Deliver` ticket, and the `Review verdict`/`QA verdict`
-  split.
+  Deleted outright: three ticket shapes, `blocked`, `mention://`, agent-to-agent escalation,
+  the fast path, the `Deliver` ticket, and the `Review verdict`/`QA verdict` split. No role
+  is deleted; `sq-qa`'s moves.
 - PR feedback needs no special path. A fix ticket is an ordinary ticket, it becomes the last
   ticket, and the last ticket's verification *is* the integration check on the head the human
   merges. v7 needed a paragraph to reopen `Deliver` for this.
 - Three Opus agents instead of two, but the judgement budget moves from re-reading diffs to
-  writing tests rather than growing.
+  writing tests rather than growing. One extra light-tier run and one extra owner wake per
+  ticket buy the docs ordering guarantee.
 
 Bad, and accepted:
 
-- Post-hoc independent QA is gone. The 7-0 record says it never paid; if a run ever ships a
-  defect that a second empirical pass would have caught, this is the decision to revisit.
+- Post-hoc independent QA is gone — `sq-qa` now runs before the code instead of after it.
+  The 7-0 record says the post-hoc pass never paid; if a run ever ships a defect a second
+  empirical pass would have caught, this is the decision to revisit.
 - A stall is still unrecoverable without a human, exactly as ADR 0001 chose. The surface is
   smaller — the only wakes are a promotion and a barrier, both measured reliable — but a
   leader that dies mid-wake needs one human message on the spec.
@@ -111,7 +126,7 @@ Bad, and accepted:
 No claim until these pass, in order:
 
 1. A promotion out of `backlog` starts a run on the handoff's assignee.
-2. A `child_done` barrier wakes the ticket's owner (`sq-verifier`), not the leader.
+2. A `child_done` barrier wakes the ticket's owner (`sq-reviewer`), not the leader.
 3. A stage reopened with two writes runs again, and the owner promotes the right next stage.
 4. Two reworks put `Result = REWORK` on the ticket and the spec `in_review` with
    `Gate = Decision needed`.

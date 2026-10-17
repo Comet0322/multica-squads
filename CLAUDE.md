@@ -15,25 +15,26 @@ Everything here is pushed to Multica with `./sync.py`; Multica itself is the ups
 - `bench/` — rubric, tasks, per-run scorer, aggregate report (see `bench/README.md`). Reliability metric is pass^n over at most 3 runs per variant (user cap), following tau-bench; no composite score.
 
 ## Current squad (`dev-team`, config v8 — written 2026-10-18, NOT yet verified)
-Leader `sq-lead` + `sq-verifier`, `sq-test-writer`, `sq-implementer`. `sq-qa`, `sq-doc` and `sq-reviewer` are retired (ADR 0002); `squad-medic`/`pr-watch` were already gone in v7 (ADR 0001).
+Leader `sq-lead` + `sq-reviewer`, `sq-qa`, `sq-implementer`, `sq-doc` — **the v7 names, kept on purpose**: nothing is created or archived on the platform, squad membership does not churn, run attribution stays continuous, and `bench/score.py`'s agent-name logic keeps working. What changed is the jobs: `sq-qa` writes the tests **before** the code (tier execution → judgment) and `sq-doc` is each ticket's last stage. `squad-medic`/`pr-watch` were already gone in v7 (ADR 0001).
 Vocabulary is in `GLOSSARY.md`. Design rationale: `docs/adr/0002-tests-first-written-by-another-agent.md`. Audit standard: `docs/design-review.md`.
 
 **Test-first, and the tests are written by an agent that never sees the implementation.** That is the whole independence mechanism — there is no post-hoc QA pass.
 
 ```
 spec                    squad → sq-lead      frozen after approval; corrections are comments
-├ stage 1  spec-check   sq-verifier
-├ stage 2  ticket F1    sq-verifier          verification happens here, in the owner's barrier wake
-│  ├ stage 1  test      sq-test-writer       red: tests that fail for the right reason
-│  └ stage 2  implement sq-implementer       green + the README for what it changed
+├ stage 1  spec-check   sq-reviewer
+├ stage 2  ticket F1    sq-reviewer          verification happens here, in the owner's barrier wake
+│  ├ stage 1  test      sq-qa                red: tests that fail for the right reason
+│  ├ stage 2  implement sq-implementer       green, nothing else
+│  └ stage 3  docs      sq-doc               documentation files only
 └ stage 3  ticket F2    ...
 ```
 
-- **Every ticket has the same two stages.** No ticket shapes, no `Deliver` ticket, no fast path.
+- **Every ticket has the same three stages.** No ticket shapes, no `Deliver` ticket, no fast path. Docs is **last** because it commits to the same branch: the head a human merges must be a head that was verified.
 - **`done` is the only verb a member has.** No `@mention`, no `blocked`, no comment on an issue it does not own. An agent that cannot finish the work still finishes the issue and says why.
 - **Nothing copies the acceptance criteria.** Tickets carry `Covers: AC#` only; everyone reads the text from the spec (description + every `**Spec correction**`, newest in force), so there is no copy to go stale.
 - **The verifier judges the tests against the spec, not the ticket** — which is also how a ticket citing a nonexistent AC gets caught.
-- Stage 1 closed: each AC has a test, and re-running at `Red SHA` **fails for the right reason** (an assertion, not a compile error). Stage 2 closed: tests pass, suite green, `git diff --numstat <Red SHA>..<Head SHA>` shows **0 deleted test lines**, diff scope allowed. The last ticket's stage 2 is also the integration check — there is no separate one.
+- Stage 1 closed: each AC has a test, and re-running at `Red SHA` **fails for the right reason** (an assertion, not a compile error). Stage 2 closed (the full check): tests pass, suite green, `git diff --numstat <Red SHA>..<Head SHA>` shows **0 deleted test lines**, diff scope allowed; the last ticket's stage 2 is also the integration check, there is no separate one. Stage 3 closed (cheap): documentation files only, suite still green.
 - **Rework is counted, not stored**: the owner counts `done → backlog` in the timeline. At two it stops, sets the ticket `Result = REWORK` and closes it; the leader then sets `Gate = Decision needed` and the spec `in_review`. The human is the only escalation target.
 - The leader's entire logic is a four-row table on `(which child closed, its Result)`; the PR is opened by the leader as the terminal step, never by a stage.
 - PR feedback is a comment on the spec → an ordinary new ticket → it becomes the last ticket, so its own verification is the integration check on the head the human merges. Nothing is reopened.

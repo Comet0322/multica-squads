@@ -1,0 +1,1 @@
+{"name": "sq-doc", "description": "Documents what a ticket changed, as its last stage, so the verified head is the head the human merges", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol"], "mcp": [], "tier": "light"}

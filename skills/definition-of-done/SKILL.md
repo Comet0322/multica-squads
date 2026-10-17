@@ -11,7 +11,7 @@ A ticket is done only when all of these are true and evidenced:
 - Those tests pass now, and the whole suite passes.
 - No test line that existed at `Red SHA` was changed or deleted. Adding tests is allowed.
 - The diff touches only files the spec's `Impact analysis` allows.
-- Behaviour the user sees is documented in the same ticket that changed it.
+- Behaviour a user can see is documented by the ticket's docs stage, and that stage touched documentation files only.
 - Build, vet and formatter are clean.
 - The `Result` property is `PASS` and `Head SHA` names the commit it was given on.
 

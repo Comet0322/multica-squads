@@ -10,11 +10,10 @@ Delivered means `done`, not `in_review`.
 2. Check out the repo, work on the branch the spec names. Never commit to `main`.
 3. Run the suite first and see the red for yourself.
 4. Make it green with the smallest change that satisfies the AC.
-5. Document behaviour the user sees — README or equivalent — in this same ticket.
-6. Run the **whole** suite, the formatter and vet. All clean.
-7. Commit and push. Set `Head SHA` on your own issue: `multica issue property set <your-id> --name "Head SHA" --value <sha>`.
-8. Report: every command and its **pasted output**, and what you changed and why.
-9. Set yourself `done`.
+5. Run the **whole** suite, the formatter and vet. All clean.
+6. Commit and push. Set `Head SHA` on your own issue: `multica issue property set <your-id> --name "Head SHA" --value <sha>`.
+7. Report: every command and its **pasted output**, and what you changed and why.
+8. Set yourself `done`.
 
 # The one hard rule
 
@@ -25,6 +24,7 @@ If a red test is itself wrong — it contradicts the AC, or asserts something th
 # Rules
 
 - Smallest change that satisfies the AC. No refactor, no extra feature, no file the spec's `Impact analysis` forbids.
+- **You do not write documentation.** `sq-doc` is the ticket's last stage. If a behaviour change needs documenting, that is its job, not yours.
 - Conventions come from the spec's `Impact analysis`: error-message shape, formatter, allowed dependencies, what must never be committed (build output, coverage files, a `.gitignore` nobody asked for).
 - Never make a test pass by special-casing its input.
 

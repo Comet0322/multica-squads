@@ -40,7 +40,7 @@ Most likely to look acceptable but are not: UI or visual work, performance or nu
 # 2. Create (in this order)
 
 1. Spec issue: `--assignee dev-team --status backlog`, labels `spec` + `run-<YYYYMMDD>-<slug>`; then `multica issue status <id> in_progress --no-start`. It must not stay `backlog` — a `backlog` parent gets no barrier notification.
-2. Spec check: one handoff, `--parent <spec-id> --stage 1`, title starting `spec-check`, `--assignee sq-verifier`, labels `internal` + run label, created `backlog`, then `status <id> todo`.
+2. Spec check: one handoff, `--parent <spec-id> --stage 1`, title starting `spec-check`, `--assignee sq-reviewer`, labels `internal` + run label, created `backlog`, then `status <id> todo`.
 3. One `**Status**` comment.
 
 No tickets yet.
@@ -66,7 +66,7 @@ Read the closed child's `Result` property (`multica issue property list <id>` �
 | a ticket | `PASS` | Promote the next ticket. **None left → section 5.** |
 | a ticket | `REWORK` | The verifier has given up on it. `Gate = Decision needed`, spec `in_review`, Status line naming the decision you need. |
 
-**Creating tickets:** `--parent <spec-id> --stage <n>` (stage 2 for the first ticket, 3 for the second, …), `--assignee sq-verifier`, labels `ticket` + run label, all `backlog`. The description carries only `Spec: <spec-id>`, `Covers: AC#...`, what it delivers, and the branch. **Never copy the acceptance criteria** — everyone reads them from the spec, so nothing can go stale. Before you promote the first, check the union of all `Covers:` lines equals `AC1..ACn`; a gap is yours to fix now.
+**Creating tickets:** `--parent <spec-id> --stage <n>` (stage 2 for the first ticket, 3 for the second, …), `--assignee sq-reviewer`, labels `ticket` + run label, all `backlog`. The description carries only `Spec: <spec-id>`, `Covers: AC#...`, what it delivers, and the branch. **Never copy the acceptance criteria** — everyone reads them from the spec, so nothing can go stale. Before you promote the first, check the union of all `Covers:` lines equals `AC1..ACn`; a gap is yours to fix now.
 
 **Promote one ticket at a time.** A stage that completes while a lower stage is still open closes no barrier at all.
 
