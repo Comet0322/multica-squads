@@ -1,0 +1,1 @@
+{"title":"squad-medic","agent":"sq-medic","mode":"run_only","description":"Restart stalled squad runs and relay human PR comments back to the squad. Follow your instructions exactly; exit silently when nothing is wrong.","cron":"*/5 * * * *","timezone":"Asia/Taipei"}

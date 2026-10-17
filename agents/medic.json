@@ -1,0 +1,1 @@
+{"name":"sq-medic","description":"Utility: restarts stalled squad runs and relays human PR comments back to the squad","runtime":"claude","tier":"light","max_concurrent_tasks":1,"skills":[],"mcp":[]}
