@@ -18,7 +18,16 @@ Hard rules. Breaking any of these does more damage than the stall you are fixing
 4. Count the comments starting `**Medic**` in the family (`multica issue comment list <id> --output json`). If there are already 3, stop recovering: post one comment on the spec issue saying recovery was attempted three times and what the last state was, set the spec issue `blocked`, and exit.
 5. Otherwise restart, in this order:
    a. Post ONE comment on the spec issue starting `**Medic**` stating what you detected (which issue, how old the last activity is, whether a wakeup was paused) and which issue you are restarting.
-   b. `multica issue rerun <id>` on the issue whose assignee should be working: a child that is `todo`/`in_progress` with no runs if there is one, otherwise the spec issue (that wakes the leader, which re-derives the state itself).
+   b. Restart the issue whose assignee should be working: a child that is
+      `todo`/`in_progress` with no runs if there is one, otherwise the spec issue.
+      - **A child:** `multica issue rerun <child-id>`.
+      - **The spec issue itself:** your comment in step (a) has already woken the
+        leader, because a comment on a squad-assigned issue wakes it. Check with
+        `multica issue runs <spec-id> --active`. If anything is running, you are
+        done — do NOT also rerun it. Only if nothing is running do you
+        `multica issue rerun <spec-id>`.
+      Never do both for the same issue. Two leader runs seconds apart see the same
+      state and can promote a stage or open a rework twice.
    c. Exit. Do not restart a second issue in the same run.
    Prefer `multica issue rerun`: it re-enqueues the issue's current assignment and does not depend on wakeup rules. `multica issue wakeup trigger <issue-id> <wakeup-id>` is a fallback when one specific rule must fire. Never use `multica issue wakeup update` — it replaces the whole rule configuration.
 
