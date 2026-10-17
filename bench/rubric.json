@@ -1,44 +1,61 @@
 {
-  "version": 3,
-  "runs_per_variant": 3,
-  "max_runs_per_variant": 3,
-  "max_scored_runs_per_version": 12,
-  "budget": {
-    "non_cache_tokens_per_version": 3000000,
-    "abort_run_above_non_cache_tokens": 400000,
-    "note": "Cache-read tokens are recorded (peak_cache_read_tokens) but not capped; leader wakeups dominate them."
-  },
-  "evidence_kinds": {
-    "scored_run": "A complete hands-off execution of a task, judged by `success` below and recorded in results.csv. Budgeted.",
-    "deterministic_probe": "A cheap repeatable check of one mechanism whose outcome does not depend on chance (fault injection, a chat-only prompt). Recorded in probes.csv, not counted against the run budget."
-  },
-  "success": {
-    "description": "A run succeeds only if ALL hold. Reliability is judged over repeated runs, not one run.",
-    "all_of": [
-      "hidden_pass_rate == 1.0",
-      "existing_tests_green",
-      "build_vet_gofmt_clean",
-      "human_interventions == 0",
-      "auto_recoveries <= max_auto_recoveries",
-      "no_stalled_sub_issue"
-    ],
-    "max_auto_recoveries": 3,
-    "human_interventions": "Any action by a person on the run's issues: a member-authored comment or status change, OR a run whose attribution.source is `direct_human` (a hand-started wake leaves no timeline entry, so the timeline alone undercounts). Deduped by the triggering comment. The requirements chat before the run is not counted.",
-    "auto_recoveries": "`**Medic**` comments by sq-medic in the issue family. Allowed and capped: the squad recovered, the human did not."
-  },
-  "headline_metrics": {
-    "pass_hat_n": "all n runs succeed (consistency; the main answer to 'is it stable')",
-    "pass_at_n": "at least one of n runs succeeds (capability ceiling)",
-    "success_rate": "successes / n",
-    "failure_mode_ledger": "bench/failures.md — every observed failure classified (platform, spec-wrong, integration-miss, review-miss, tooling, cost, other) with its evidence and the design change it caused."
-  },
-  "improvement_claim_rule": "With n<=3 runs, pass^n has no resolution (3/3 gives a 95% lower bound near 0.37 by the rule of three). A version may therefore claim an improvement only by showing (a) the failure mode it targeted does not recur, AND (b) a deterministic probe for that mode passes. Never by a higher pass count alone.",
-  "per_run_record": [
-    "hidden_pass_rate", "existing_tests_green", "build_vet_gofmt_clean", "human_interventions",
-    "auto_recoveries", "stalled_sub_issues", "rework_issues", "review_changes_requested", "qa_fail",
-    "leader_wakeups", "sub_issue_count", "wall_minutes", "agent_run_minutes", "tokens",
-    "peak_input_tokens", "peak_cache_read_tokens"
+ "version": 3,
+ "runs_per_variant": 3,
+ "max_runs_per_variant": 3,
+ "max_scored_runs_per_version": 12,
+ "budget": {
+  "non_cache_tokens_per_version": 3000000,
+  "abort_run_above_non_cache_tokens": 400000,
+  "note": "Cache-read tokens are recorded but not capped: `usage` is summed per run, so cache_read = context size x request count and leader wakeups dominate it. The context a run actually accumulates is peak_context_tokens (cache_write); B1's worst run was 62,953, nowhere near a limit. MEASURED COST: B1, a tiny greenfield CLI, used 318,052 non-cache tokens for one whole run family - 80% of abort_run_above_non_cache_tokens and 11% of the per-version budget. An A-layer task on an existing repo reads more, so the per-run abort threshold may be too tight; raise it deliberately rather than discovering it mid-run."
+ },
+ "evidence_kinds": {
+  "scored_run": "A complete hands-off execution of a task, judged by `success` below and recorded in results.csv. Budgeted.",
+  "deterministic_probe": "A cheap repeatable check of one mechanism whose outcome does not depend on chance (fault injection, a chat-only prompt). Recorded in probes.csv, not counted against the run budget."
+ },
+ "success": {
+  "description": "A run succeeds only if ALL hold. Reliability is judged over repeated runs, not one run.",
+  "all_of": [
+   "hidden_pass_rate == 1.0",
+   "existing_tests_green",
+   "build_vet_gofmt_clean",
+   "human_interventions == 0",
+   "auto_recoveries <= max_auto_recoveries",
+   "no_stalled_sub_issue"
   ],
-  "manual_1_to_5_not_summed": ["spec_quality", "pr_and_handoff_quality", "maintainability", "scope_discipline"],
-  "notes": "No single composite score: weights would be arbitrary. Compare variants on pass_hat_n first, then cost and rework. A variant costing more but passing more often can be the right trade. Per-run per-agent usage and attribution are kept in bench/runs/<parent>.json."
+  "max_auto_recoveries": 3,
+  "human_interventions": "Any action by a person on the run's issues: a member-authored comment or status change, OR a run whose attribution.source is `direct_human` (a hand-started wake leaves no timeline entry, so the timeline alone undercounts). Deduped by the triggering comment. The requirements chat before the run is not counted.",
+  "auto_recoveries": "`**Medic**` comments by sq-medic in the issue family. Allowed and capped: the squad recovered, the human did not."
+ },
+ "headline_metrics": {
+  "pass_hat_n": "all n runs succeed (consistency; the main answer to 'is it stable')",
+  "pass_at_n": "at least one of n runs succeeds (capability ceiling)",
+  "success_rate": "successes / n",
+  "failure_mode_ledger": "bench/failures.md \u2014 every observed failure classified (platform, spec-wrong, integration-miss, review-miss, tooling, cost, other) with its evidence and the design change it caused."
+ },
+ "improvement_claim_rule": "With n<=3 runs, pass^n has no resolution (3/3 gives a 95% lower bound near 0.37 by the rule of three). A version may therefore claim an improvement only by showing (a) the failure mode it targeted does not recur, AND (b) a deterministic probe for that mode passes. Never by a higher pass count alone.",
+ "per_run_record": [
+  "hidden_pass_rate",
+  "existing_tests_green",
+  "build_vet_gofmt_clean",
+  "human_interventions",
+  "auto_recoveries",
+  "stalled_sub_issues",
+  "rework_issues",
+  "review_changes_requested",
+  "qa_fail",
+  "leader_wakeups",
+  "sub_issue_count",
+  "wall_minutes",
+  "agent_run_minutes",
+  "tokens",
+  "peak_input_tokens",
+  "peak_cache_read_tokens"
+ ],
+ "manual_1_to_5_not_summed": [
+  "spec_quality",
+  "pr_and_handoff_quality",
+  "maintainability",
+  "scope_discipline"
+ ],
+ "notes": "No single composite score: weights would be arbitrary. Compare variants on pass_hat_n first, then cost and rework. A variant costing more but passing more often can be the right trade. Per-run per-agent usage and attribution are kept in bench/runs/<parent>.json."
 }

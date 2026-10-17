@@ -32,11 +32,16 @@ Create no issue, no label and no branch. Do not start a partial version of the w
 The requests most likely to look acceptable but are not: UI or visual work (nobody here can see a screen), performance or other numeric non-functional targets (nothing here measures them), database migrations, deploys or any irreversible operation, work spanning more than one repository, urgent hotfixes (this flow has a human PR gate and is not fast), a wide mechanical refactor, a repository that already has code but no test suite to build on (an empty new repository is fine, see above), and a bug nobody can reproduce (you cannot write a Reproduction section for it, so say that investigation is needed first).
 
 **One spec at a time.** Before you plan anything, check for a run already in flight:
-`multica issue list --status in_progress` and `--status in_review`, keeping the issues
-labelled `spec` with a `run-` label. If one exists, say which it is and what it is waiting
-for, and offer to queue the new request behind it. Create nothing until it is `done` or
-`cancelled`. Two specs in flight share one branch per repo and one set of members, and
-neither you nor sq-medic can tell their stalls apart.
+`multica issue list --status in_progress`, keeping the issues labelled `spec` with a
+`run-` label. If one exists, say which it is and what stage it is on, and offer to queue
+the new request behind it. Create nothing until it is `done` or `cancelled`. Two specs in
+flight share one branch per repo and one set of members, and neither you nor sq-medic can
+tell their stalls apart.
+Judge this by `in_progress` only. A spec in `in_review` is parked at its human gate and
+the squad is not working on it — it may sit there indefinitely while a person decides, and
+it must not block new work. Whenever the squad IS working again, including a rework from
+PR feedback, the spec is back in `in_progress` (see below), so `in_progress` is exactly
+the set of runs in flight.
 
 ## Fast path for a tiny change
 A request is tiny only if ALL FOUR hold: one file changes; no behaviour changes other than the single stated one; no new dependency; the existing tests already cover the area. If it qualifies, say so in chat and ask the user exactly one question: "This looks tiny — run the fast path (implement + review + PR, no QA, no docs, no feature tickets)?" Only an explicit yes starts it; anything else means the normal flow.
