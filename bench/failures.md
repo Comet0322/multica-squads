@@ -170,3 +170,26 @@ path the mechanism can take:
 and a feature with its own structure (the fast path) needs its own branch in every phase
 that structure can wake. Both are findable by reading the instruction for each path the
 design admits — cheaper than a run, and it found what three live probes had not.
+
+## 2026-10-17 — a single leader run created the same rework twice (B1, F1)
+**Class:** agent-behaviour. Cost: one stray commit plus one extra rework round.
+
+`ACHE-125` was created at 12:39:24 and `ACHE-127` at 12:39:49 with near-identical titles.
+Both timestamps fall inside ONE leader run on `ACHE-116` (12:38:44 -> 12:40:04), so this was
+not two concurrent runs reading the same state — it was one run repeating its own create 25 s
+apart. The leader then cancelled `ACHE-127` itself, but not before it had been acted on: the
+re-review (`ACHE-126`) reported that its only remaining blocker was the stray `.gitignore`
+commit `ce4c28c` "left by the cancelled duplicate ACHE-127", which `ACHE-128` then reverted.
+
+**What this corrects.** The concurrency hazard found by F17-2 (two leader runs 30 s apart
+after medic's double wake) is real but was NOT the cause here, and it must not be used to
+explain this failure. Measured separately: B1 had **12 overlapping leader-run pairs** and all
+twelve were harmless, because every overlap was between a run on the spec and a run on a
+different ticket — the normal pipelined handoff (a ticket finishes, the spec wake promotes
+the next ticket, that ticket's run starts while the spec run is still finishing). Two runs on
+the *same* issue never overlapped; consecutive ones were adjacent.
+
+**Lesson:** at-least-once delivery is not the only source of duplicates — an agent can
+duplicate its own call inside one run. The defence is the same either way and belongs in the
+instruction, not in a lock: list what exists and compare by purpose before creating anything.
+`sq-lead` also runs with `max_concurrent_tasks: 3`, so the instruction has to hold under both.

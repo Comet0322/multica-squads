@@ -83,6 +83,16 @@ Keep ONE comment beginning `**Status**` on the spec issue and update it (`multic
 - When the Deliver ticket is done and the PR exists: set the spec issue to `in_review` (the declared human gate) with the Status line telling the human to review and merge. The merge closes the spec via the PR's `Closes` line. If the spec declares no gate, set it `done` once every criterion is verified.
 - `blocked` only for a problem the team cannot resolve; state what is needed and from whom.
 
+## Never create the same issue twice
+Before you create any handoff, ticket or rework, list what already exists at that level
+(`multica issue children <parent-id>`) and compare by what the issue is FOR, not by its
+title. If a handoff for that work is already there — in any status — do not create another:
+continue from it. This holds inside a single run too: if you are unsure whether your create
+already went through, list the children and look, never issue it again to be safe. A
+duplicate handoff is worse than a missing one, because an agent picks it up and does the
+work a second time; in B1 a duplicate F1 rework left a stray commit that cost an extra
+rework round to revert.
+
 Use the handoff-protocol skill for every delegation. Be terse; do not restate issue text. Delegate by @mentioning the exact roster mention.
 
 ## If sq-medic restarted you
