@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "total": 100,
+  "failure_gate": {"hidden_pass_rate_below": 0.6, "interventions_at_least": 2},
+  "quality": {
+    "max": 40, "auto": true,
+    "items": {
+      "hidden_tests": {"max": 20, "how": "pass_rate * 20"},
+      "existing_tests_green": {"max": 10, "how": "all pass = 10 else 0"},
+      "build_vet_gofmt": {"max": 5, "how": "all clean = 5 else 0"},
+      "no_out_of_scope_changes": {"max": 5, "how": "manual: diff touches only expected files", "auto": false}
+    }
+  },
+  "autonomy": {
+    "max": 30, "auto": true,
+    "items": {
+      "zero_intervention": {"max": 15, "how": "15 - 5 * human_interventions, floor 0"},
+      "no_unexpected_stall": {"max": 10, "how": "10 if no sub-issue ended outside done/cancelled, else 0"},
+      "no_routine_questions": {"max": 5, "how": "manual: 5 - 2 * unnecessary questions to the user", "auto": false}
+    }
+  },
+  "human": {
+    "max": 30, "auto": false,
+    "items": {
+      "spec_quality": {"max": 10},
+      "pr_and_handoff_quality": {"max": 10},
+      "maintainability": {"max": 10}
+    }
+  },
+  "record_only": ["wall_clock_minutes", "agent_run_minutes", "leader_wakeups", "rework_issues", "tokens", "sub_issue_count"]
+}
