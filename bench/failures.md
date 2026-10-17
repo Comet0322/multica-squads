@@ -273,3 +273,46 @@ fires no barrier at all).
 that *asserted* a platform behaviour ("that fires the barrier", "the highest done stage is
 the one that finished") instead of citing a measured one. Every such assertion in the config
 is now either sourced or deleted.
+
+## 2026-10-18 — T3 / v7 attempt 1: nothing failed, two things worth writing down
+
+The first v7 run (spec `ACHE-152`, config `cbb276a`) succeeded hands-off: hidden 6/6,
+existing green, build/vet/gofmt clean, `main` untouched, 0 interventions, 0 rework,
+26.6 min. No entry here is a failure. These two are recorded because a clean run is the
+only place to see them.
+
+**1. An unavoidable duplicate wake, absorbed (cost, not defect).** The `child_done` barrier
+is one `mode: continuous` rule on `issue.status_changed` with condition
+`{children_done, each_stage: true}`. It keeps no record of having fired, so it re-evaluates
+on **any** child status change and wakes the owner again whenever some stage is fully
+terminal. The owner's own promotion of the next stage is such a change, so every stage
+transition costs one extra owner wake for the stage that just closed. Measured: stage 1
+closed at 16:31:17, and at 16:32:24 — the instant F1 went `backlog → todo` — the same rule
+fired again with `stage: 1, total: 1, outcome: woke`. The second leader run returned
+`no_action — "Stage-1 barrier re-fired; F1 (ACHE-154) already promoted and running, nothing
+to advance"`. This is the first time the rule "every owner wake re-checks its own level and
+leaves anything moving alone" has been observed earning its keep against a real duplicate;
+an owner whose first act were to advance a stage would have promoted twice. Written into
+`CLAUDE.md` and as row 10 of the wake inventory in `docs/design-review.md`, where no row had
+covered it.
+
+**2. Two reporting defects of my own, one in the config and one in the scorer.**
+- `lead.md` §146 calls the `**Status**` comment "the human's only progress view" and says to
+  keep one and update it. The leader did exactly that — and also posted 5 narrative progress
+  comments on the spec, so the human has 6 things to read where the design promises 1. The
+  instruction forbids no other comment, which is the hole: §152 and §161 legitimately need
+  `**Spec correction**` and answers-to-humans, so the fix is a positive rule ("progress goes
+  in the Status comment and nowhere else"), not a blanket ban. Not fixed yet; it changes
+  synced config, so it waits for the user's call on the remaining runs.
+  Upside confirmed by the same 5 comments: a leader's own comment on the squad-assigned spec
+  wakes nobody (5 comments, 0 comment-kind runs), so `handler/squad.go:1155` self-suppression
+  holds in practice.
+- `score.py`'s `double_wakes` reported 1. It is the spec's **first** leader run, whose
+  `attribution.evidence.kind` is `comment` pointing at the Status comment created 1 s
+  earlier, while the run was actually started by the spec's own `backlog → in_progress`
+  promotion 23 s before that. So the metric mis-classifies the opening wake of every family.
+  It is a candidate condition, not part of `success`, so the result stands; the fix is to
+  ignore a comment-kind wake whose issue left `backlog` within the same minute. Unfixed,
+  together with `rework_reopens` (F3), which still matches `done → todo` and is therefore
+  structurally 0 for every v7 run — both live in the bench tooling the user asked me to stop
+  touching, so both need the user's call.

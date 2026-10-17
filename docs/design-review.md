@@ -29,6 +29,17 @@ them moves nothing — and says nothing, because the CLI reports the status chan
 | 7 | a human comments on the spec issue | comment on a squad-assigned issue | `sq-lead` |
 | 8 | the human merges the PR | Forgejo webhook + `Closes <SPEC-ID>` | nothing; the spec goes `done` |
 | 9 | an owner restarts a child: rework, an answer to a `blocked` child, a stalled stage, a reopened ticket | `status <id> backlog` (starts nothing), then `status <id> todo` — **two** writes | that child's assignee |
+| 10 | an owner promotes the next stage while a lower stage is already complete | the **same** `child_done` rule re-evaluating (it is `mode: continuous` on `issue.status_changed`, condition `children_done / each_stage`) | that owner, a second time, for the stage that already closed |
+
+Row 10 is not a design choice and cannot be removed: the barrier rule has no memory of
+having fired, so it re-fires on **any** child status change while some stage is fully
+terminal — and row 3, the owner's own promotion, is such a change. One extra owner wake per
+stage transition is therefore structural. The only defence is that every owner wake starts
+by re-checking its own level and leaves anything already moving alone; measured working in
+T3/v7-a1 (stage-1 barrier re-fired at 16:32:24 as F1 was promoted; the second leader run
+logged `no_action — "Stage-1 barrier re-fired; F1 already promoted and running"`). An owner
+whose first act is to advance a stage, rather than to look at what is already running,
+promotes twice.
 
 Forbidden, because they produce a **second** wake for one event:
 - a `mention://` link to your owner in a report (row 4 already wakes it, ~1 s later, and the
