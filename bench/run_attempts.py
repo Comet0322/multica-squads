@@ -18,10 +18,16 @@ REQ = {
 - `kv import`:從 stdin 讀一個 JSON 物件,把每個 key 寫入(覆蓋已存在的 key、保留其他 key)。無效 JSON 或值不是字串:stderr 報錯、exit 1、store 完全不變(要么全部成功要么全部不寫)。
 - 既有指令與其 exit code 不可改變。README 要說明這兩個指令。
 流程:所有工作在 feature branch feat/kv-export-import-{variant}-a{n} 上(從 main 開出,不直接動 main);階段為實作、review、QA、文件,最後 stage 5 由 sq-implementer 用 forgejo-pr skill 對 main 開 PR(描述含 'Closes <parent issue 編號>' 與具體 sub-issue 編號及判定)。**不要 merge PR**。Human gates:只有 PR 這一關,PR 開好後 parent 設為 in_review。其餘全程自主、不要問我。我同意這份需求與流程,請直接寫 spec、建 parent 與 sub-issue 並啟動。""",
+ "T3": """第 {n} 次基準測試(變體 {variant})。請在 workspace 已註冊的 repo kv-bugs(http://127.0.0.1:13000/squadadmin/kv-bugs.git)上修 bug,請先 checkout 並閱讀現有程式碼再寫 spec。使用者回報三個症狀,根因請你們自己診斷:
+1. `kv list` 沒有按字母順序印出 key(例如 `b` 排在 `aa` 前面)。預期:純位元組遞增排序。
+2. 任何 `kv set` / `kv del` 之後,store 檔案的權限被改掉(0644 或 0640 變成 0600),導致共用的其他使用者讀不到。預期:既有 store 檔案的權限要保留。
+3. 同時對同一個 store 檔案執行大量 `kv set` / `kv del` 會遺失更新(有些 process 寫入的 key 消失、已刪除的 key 又回來)。預期:每個成功的並行寫入都反映在最終 store。
+三個問題都要加回歸測試,不可改變任何指令的 CLI 介面;既有測試要維持綠燈(若必須修改請在 PR 中說明理由)。
+流程:所有工作在 feature branch fix/kv-bugs-{variant}-a{n} 上(從 main 開出,不直接動 main);階段為實作、review、QA、文件,最後 stage 5 由 sq-implementer 用 forgejo-pr skill 對 main 開 PR(描述含 'Closes <parent issue 編號>' 與具體 sub-issue 編號及判定)。**不要 merge PR**。Human gates:只有 PR 這一關,PR 開好後 parent 設為 in_review。其餘全程自主、不要問我。我同意這份需求與流程,請直接寫 spec、建 parent 與 sub-issue 並啟動。""",
 }
-BRANCH = {"T2": "feat/kv-export-import-{variant}-a{n}"}
-HIDDEN = {"T2": ROOT / "hidden" / "T2"}
-LOCAL = {"T2": "/home/comet/Code/kv-cli"}
+BRANCH = {"T2": "feat/kv-export-import-{variant}-a{n}", "T3": "fix/kv-bugs-{variant}-a{n}"}
+HIDDEN = {"T2": ROOT / "hidden" / "T2", "T3": ROOT / "hidden" / "T3"}
+LOCAL = {"T2": "/home/comet/Code/kv-cli", "T3": "/home/comet/Code/kv-bugs"}
 
 
 def sh(*c, **k):

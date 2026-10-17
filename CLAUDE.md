@@ -42,3 +42,7 @@ All four are tiny greenfield tasks: they prove the pipeline, **not** that comple
 - Run the squad hands-off when testing; never press status buttons mid-run (it invalidates the run).
 - Commit after each config change; scorer records the squads-repo sha.
 - Confirm with the user before outward-facing actions (creating repos, pushing to remotes, spending lots of agent runs).
+
+## Benchmark results log
+- T2 / v1 (config 8f1289f): 3/3 success, pass^3 true, 0 interventions, 0 rework. Task too easy to exercise review/QA loops (caveats in bench/README.md).
+- T3 added (repo `kv-bugs`, tag `bench-base-t3`, hidden tests `bench/hidden/T3`): three symptom reports incl. concurrent lost updates; baseline fails 4 hidden tests, reference fix passes.
