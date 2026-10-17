@@ -134,14 +134,20 @@ def main():
             recoveries_matched += 1
             continue
         human_events += 1
-    tokens = peak_in = peak_cache = 0
+    # `usage` is summed over every request in a run, so cache_read = context size x
+    # number of requests and CANNOT measure a context peak on its own (B1: a run with
+    # 1,207,032 cache reads had accumulated only 59,797 tokens of context, re-read 20
+    # times). cache_write is the context actually accumulated; that is the D-tier metric.
+    tokens = peak_in = peak_cache = peak_ctx = 0
     for r in uniq:
-        run_in = run_cache = 0
+        run_in = run_cache = run_ctx = 0
         for u in r.get("usage") or []:
             tokens += u.get("input_tokens", 0) + u.get("output_tokens", 0)
             run_in += u.get("input_tokens", 0) + u.get("output_tokens", 0)
             run_cache += u.get("cache_read_tokens", 0)
+            run_ctx += u.get("cache_write_tokens", 0)
         peak_in, peak_cache = max(peak_in, run_in), max(peak_cache, run_cache)
+        peak_ctx = max(peak_ctx, run_ctx)
     subs = family[1:]
     stalled = [i["identifier"] for i in subs if i["status"] not in ("done", "cancelled")]
     rework = sum(1 for i in subs if "rework" in i["title"].lower())
@@ -180,6 +186,7 @@ def main():
            "wall_minutes": round((last_end - first).total_seconds() / 60, 1) if first else "",
            "agent_run_minutes": round(run_min, 1), "tokens": int(tokens),
            "peak_input_tokens": int(peak_in), "peak_cache_read_tokens": int(peak_cache),
+           "peak_context_tokens": int(peak_ctx),
            "manual_scores": ""}
     # Full per-agent usage and attribution for every run, so context peaks and who
     # started what stay inspectable without re-querying a run that may age out.
