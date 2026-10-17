@@ -347,3 +347,89 @@ config the whole repository shares — the very thing that caused this.
 
 **Not retrofitted.** T3/v7-a1's branch is left exactly as it is: rewriting a scored run's
 history to make it look better is not available. The row stands with this entry attached.
+
+## 2026-10-18 — T3 / v8 pass^3: what three hands-off runs exposed
+
+Three attempts, three successes, `pass^3` true, 0 human interventions, 0 stalls, 88 runs all
+`completed`. The successes are in the results log; what follows is what the runs found that
+no amount of reading the config would have.
+
+### F1. v8 has no rule for an acceptance criterion that already holds on `main` (design gap)
+
+The highest-value finding, and it is not a bug — it is a question the instructions never ask.
+TDD demands a test that fails before the code exists. An AC describing behaviour `main`
+already has cannot produce one. Two attempts hit it and **resolved it two different ways,
+neither of which is written down anywhere**:
+
+- **a2, on the ticket (`ACHE-204`).** The reviewer kept AC4 ("a new store is 0600") as an AC,
+  demanded a test, and named the substitute for red evidence itself: *"This test passes at the
+  red commit, because AC4 is current behaviour. Show that it would fail if the behaviour were
+  wrong: apply a throwaway mutation to `save()`, then paste the failing output."* That is
+  mutation proof standing in for a red run. `sq-qa` complied and reported honestly that the
+  AC4 test passes at `Red SHA` while the AC3 tests still fail.
+- **a3, on the spec (`ACHE-211`).** The reviewer rejected the spec instead, and invented a
+  second issue level for it: AC3, AC4, AC8 and AC9 were demoted out of `Acceptance criteria`
+  into a new **`Guards`** section — *"already hold on `main`. Each must be covered by a test
+  or check that passes on every stage-2 head. No failing test at `Red SHA` is required."*
+
+Both are defensible and both converged without a human. But the squad is improvising a
+concept the design owes it, and the two improvisations are incompatible: one keeps the item
+as an AC and weakens the evidence, the other keeps the evidence strict and reclassifies the
+item. `reviewer.md` §1 check 4 ("testable before the code exists") is the ambiguous line, and
+`qa.md`'s "a test that passes is a bug in your work" is what makes the ambiguity bite.
+
+Not fixed: it changes synced config, and it deserves a decision rather than a patch.
+
+### F2. The pinned commit identity is not being used — and 2 of 3 attempts still carry a person's email
+
+The fix recorded in the previous entry (`handoff-protocol` pins
+`git -c user.name=squadbot -c user.email=squadbot@localhost`) did **not** take. Across 28
+commits on the three branches, **zero** are authored `squadbot <squadbot@localhost>`. What
+they are instead:
+
+| attempt | deviating commit | author | agent |
+|---|---|---|---|
+| a1 | `33ac0a1` | `multica-agent <github@multica.ai>` | sq-doc |
+| a2 | `2f9e33f` | `multica-squad <jerrymark611@gmail.com>` | sq-doc |
+| a3 | `40428c1` | `Comet0322 <jerrymark611@gmail.com>` | sq-implementer |
+| a3 | `fddae22` | `sq-doc <sq-doc@noreply.local>` | sq-doc |
+
+The remaining 24 are `sq-<name>@multica.local`. So four distinct identities appeared, the
+runtime is filling them in, and **the human's address still reaches a scored branch in 2 of
+3 runs** — the exact failure the previous entry claimed to have closed. The runs are
+genuinely hands-off (0 member timeline entries in all three), so this is a self-contradicting
+evidence problem, not an intervention. Prescribing the identity in prose is evidently not
+enough; it needs either a verification step in `reviewer.md` §4 (`git log --format='%ae'
+<Red SHA>..<Head SHA>`) or a fix outside the instructions.
+
+### F3. a3 opened its PR as `squadadmin`, the account that may merge
+
+PRs #6 and #7 (a1, a2) were opened by `squadbot`. **PR #8 (a3) was opened by `squadadmin`.**
+`tools/forgejo-pr.sh` always authenticates with `FORGEJO_TOKEN` (squadbot), so a3 did not use
+it; `forgejo/.env` also holds `FORGEJO_ADMIN_TOKEN`, and nothing stops an agent reading it.
+
+This matters more than the author field. `main` is protected so that **only `squadadmin` may
+merge** — that is the whole mechanism making the human gate real. A squad run holding the
+admin credential could merge its own PR. Nothing did, and the gate held in all three runs,
+but the separation is a convention rather than a constraint.
+
+### F4. The hidden-test harness collided with the squad's own test helper (measurement bug, fixed)
+
+a3 scored 0% hidden on the first measurement. Not a defect in its code: `main_test.go:217`
+declares a helper named `parallel`, as did `zz_hidden_t3_test.go:122`, so package `main`
+failed to build and nothing was measured at all. Four helpers in the hidden file had been
+left without the `hid3` prefix the rest of it uses. Renamed (`ac2ea96`), re-validated on
+`bench-base-t3` where it still fails exactly the four documented tests and passes the other
+two, then re-run on all three branches: **18/18 each**, over three repetitions.
+
+The lesson is about the harness, not the squad: a black-box test file dropped into the
+repository root shares a namespace with the tests under test, so every identifier in it must
+be prefixed. A collision reads as a total failure, which is the most expensive kind of
+measurement error.
+
+### F5. `report.py`'s rework column was blind to v7+ (fixed)
+
+It printed `rework_issues`, which counts issues with "rework" in the title — the pre-v7
+mechanism. v7 and v8 reopen a stage in place and create no such issue, so the aggregate read
+`0.0` for v8 while two of its three runs had a real rework cycle. Now prints both
+`rwIss` and `rwOpen`.
