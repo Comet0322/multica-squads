@@ -4,19 +4,24 @@
 Idempotent: resources are matched by name; existing ones are updated.
 Order: skills -> mcp -> agents -> squads. Never deletes anything.
 
-Usage: ./sync.py [--dry-run] [--workspace ID|SLUG] [--only skills,mcp,agents,squads]
+Target workspaces come from workspaces.json ({"workspaces": ["slug", ...]} or
+{"workspaces": "all"} for every workspace where you are admin/owner). Override
+with repeated --workspace. Workspaces where you are not admin/owner are skipped.
+
+Usage: ./sync.py [--dry-run] [--workspace ID|SLUG ...] [--only skills,mcp,agents,squads]
 """
 import argparse, json, re, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 ARGS = None
+WS = None
 
 
 def run(*cmd, read_only=False):
     full = ["multica", *cmd]
-    if ARGS.workspace:
-        full += ["--workspace-id", ARGS.workspace]
+    if WS:
+        full += ["--workspace-id", WS]
     if ARGS.dry_run and not read_only:
         print("  [dry-run]", " ".join(full))
         return None
@@ -98,7 +103,10 @@ def sync_agents(skill_ids, mcp_ids):
         cfg = json.loads(f.read_text())
         name = cfg["name"]
         instr = f.with_suffix(".md").read_text().strip() if f.with_suffix(".md").exists() else ""
-        rt = runtimes.get(cfg["runtime"]) or sys.exit(f"no runtime for provider {cfg['runtime']}")
+        rt = runtimes.get(cfg["runtime"])
+        if not rt:
+            print(f"agent SKIP: {name} (no online '{cfg['runtime']}' runtime in this workspace)")
+            continue
         flags = ["--description", cfg.get("description", ""), "--instructions", instr,
                  "--max-concurrent-tasks", str(cfg.get("max_concurrent_tasks", 6)),
                  "--model", cfg.get("model", ""),
@@ -124,6 +132,10 @@ def sync_squads(agent_ids):
     for f in sorted((ROOT / "squads").glob("*.json")):
         cfg = json.loads(f.read_text())
         name = cfg["name"]
+        need = [cfg["leader"]] + [m["agent"] for m in cfg.get("members", [])]
+        if missing := [n for n in need if n not in agent_ids]:
+            print(f"squad SKIP: {name} (missing agents: {', '.join(missing)})")
+            continue
         instr = f.with_suffix(".md").read_text().strip() if f.with_suffix(".md").exists() else ""
         if name in existing:
             print(f"squad update: {name}")
@@ -147,19 +159,59 @@ def sync_squads(agent_ids):
                 run("squad", "member", "add", sid, "--member-id", aid, "--role", m["role"])
 
 
-def main():
-    global ARGS
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--workspace")
-    ap.add_argument("--only", default="skills,mcp,agents,squads")
-    ARGS = ap.parse_args()
-    only = set(ARGS.only.split(","))
+def me():
+    p = subprocess.run(["multica", "auth", "status"], capture_output=True, text=True)
+    out = p.stdout + p.stderr
+    m = re.search(r"\(([^)]+@[^)]+)\)", out)
+    return m.group(1) if m else None
+
+
+def target_workspaces():
+    all_ws = json.loads(subprocess.run(["multica", "workspace", "list", "--output", "json"],
+                                       capture_output=True, text=True, check=True).stdout)
+    if ARGS.workspace:
+        want = ARGS.workspace
+    else:
+        want = json.loads((ROOT / "workspaces.json").read_text())["workspaces"]
+    if want == "all":
+        return all_ws
+    sel = [w for w in all_ws if w["id"] in want or w["slug"] in want or w["name"] in want]
+    for x in want:
+        if not any(x in (w["id"], w["slug"], w["name"]) for w in sel):
+            print(f"WARN: workspace '{x}' not found or not accessible")
+    return sel
+
+
+def is_admin(email):
+    global WS
+    members = listing("workspace", "member", "list")
+    return any(m["email"] == email and m["role"] in ("owner", "admin") for m in members)
+
+
+def sync_workspace(only):
     skills = sync_skills() if "skills" in only else {s["name"]: s["id"] for s in listing("skill", "list")}
     mcp = sync_mcp() if "mcp" in only else {s["name"]: s["id"] for s in listing("workspace", "mcp", "list")}
     agents = sync_agents(skills, mcp) if "agents" in only else {a["name"]: a["id"] for a in listing("agent", "list")}
     if "squads" in only:
         sync_squads(agents)
+
+
+def main():
+    global ARGS, WS
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--workspace", action="append", help="ID, slug or name; repeatable")
+    ap.add_argument("--only", default="skills,mcp,agents,squads")
+    ARGS = ap.parse_args()
+    only = set(ARGS.only.split(","))
+    email = me()
+    for w in target_workspaces():
+        WS = w["id"]
+        print(f"\n=== workspace {w['name']} ({w['slug']})")
+        if not is_admin(email):
+            print("SKIP: you are not admin/owner here")
+            continue
+        sync_workspace(only)
 
 
 main()
