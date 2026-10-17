@@ -5,7 +5,25 @@ mechanism exists and works. These runs are real squad runs (they cost agent time
 they are not scored runs and do not count against the budget in `rubric.json`.
 
 ## B1 — greenfield, with the mid-run change request riding along (scenarios 1 + 10)
-One small new CLI in an empty repo, run hands-off from chat to open PR.
+One small new CLI in a fresh repo, run hands-off from chat to open PR.
+
+Repo: `http://127.0.0.1:13000/squadadmin/csvstat.git` — created 2026-10-17 with only a
+README, `squadbot` as a write collaborator, `main` protected (no direct push, merge
+whitelisted to `squadadmin`), and the same VCS webhook connection as kv-cli.
+
+**Opening message** (to `sq-lead`, verbatim, so the probe is repeatable):
+
+> I want a small Go CLI called `csvstat` in the csvstat repo. Given a CSV file as its
+> first argument it prints one line per column: the column name, how many non-empty
+> values it has, and then, for a column whose non-empty values are all numbers, the
+> min, max and mean; for any other column, how many distinct values it has and the
+> most common one. It should read from stdin when no file is given. Bad input should
+> exit non-zero with a message on stderr. Keep it to the standard library.
+
+**The mid-run change request** (scenario 10): once the spec issue is frozen and the
+first feature ticket is in flight, send exactly one more chat message:
+
+> One change: I'd rather have the output as JSON than as lines of text.
 
 Pass conditions:
 1. The PR exists, the branch is pushed by `squadbot`, `main` is untouched.
