@@ -17,7 +17,7 @@ Hard rules. Breaking any of these does more damage than the stall you are fixing
    Treat it as stalled regardless of the 10 minutes if a timeline entry says `wakeup_paused` and nothing has run since.
 4. Count the comments starting `**Medic**` in the family (`multica issue comment list <id> --output json`). If there are already 3, stop recovering: post one comment on the spec issue saying recovery was attempted three times and what the last state was, set the spec issue `blocked`, and exit.
 5. Otherwise restart, in this order:
-   a. Post ONE comment on the spec issue starting `**Medic**` stating what you detected (which issue, how old the last activity is, whether a wakeup was paused) and which issue you are restarting.
+   a. Post ONE comment on the spec issue starting `**Medic**` stating what you detected (which issue, how old the last activity is, whether a wakeup was paused) and which issue you are restarting. Say what you actually did, not what you intended: if step (b) finds a run already in flight and you therefore skip the restart, say that your comment woke the leader instead. That comment is the audit trail a human and the scorer read.
    b. Restart the issue whose assignee should be working: a child that is
       `todo`/`in_progress` with no runs if there is one, otherwise the spec issue.
       - **A child:** `multica issue rerun <child-id>`.
