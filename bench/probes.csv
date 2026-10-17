@@ -3,3 +3,4 @@ date,probe,kind,config_sha,pass,evidence
 2026-10-17 17:19,M2-bot-can-push-branch,mechanism,2dac481,1,probe/v6-bot-push pushed; Forgejo records the commit author as squadbot
 2026-10-17 17:19,M3-bot-cannot-merge-kv-cli,mechanism,2dac481,1,"GET branches/main with the bot token: user_can_push=false, user_can_merge=false"
 2026-10-17 17:19,M4-main-protected-kv-bugs,mechanism,2dac481,1,"GET branches/main with the bot token: protected=true, user_can_push=false, user_can_merge=false"
+2026-10-17 17:24,T2-hard-hidden-tests-validated,task-validation,78f99d5,1,"baseline bench-base-t2: 9 feature tests FAIL, 4 regression tests PASS, existing tests green; reference impl: 13/13 PASS x3 runs, build/vet/gofmt clean"
