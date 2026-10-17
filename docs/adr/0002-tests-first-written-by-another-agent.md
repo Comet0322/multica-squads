@@ -133,3 +133,37 @@ No claim until these pass, in order:
 
 Then T3 three times hands-off: pass^3. The config is frozen unless a probe fails — the
 missing piece in v7 was a terminating condition, not more auditing.
+
+## Validation — result (2026-10-18)
+
+All four probes passed (`bench/probes/v8-config-probes.md`), then T3 three times hands-off:
+**3/3, pass^3 true, 0 human interventions, 0 stalls, 88 runs all `completed`.** The two
+decisions this ADR records are accepted.
+
+What the three runs add beyond the probes, all of which had exactly one ticket:
+
+- **Multi-ticket promotion** (leader table row 3) ran 9 times across the series, always one
+  ticket at a time, and the `Head SHA` chain is unbroken in all three: each ticket's recorded
+  head is its stage-3 commit, and the last ticket's head is the PR head.
+- **Both rework paths were entered for real reasons and both converged in one cycle**, which
+  is the part no static audit could have produced:
+  - a2, `reviewer.md` §3 → §6: an AC on the ticket's `Covers:` line had no test. Sent back to
+    **stage 1**, the owner of tests — the right target per the §4 table.
+  - a3, `lead.md` §4 row 2: the spec check **rejected the spec**. The leader posted a
+    `**Spec correction**`, briefed the check and restarted it with two writes. The rejection
+    was substantive: `//go:build unix` is wrong for `syscall.Flock` (undefined on solaris and
+    aix), and four of the nine ACs described behaviour `main` already had.
+- **Per-level ownership holds under load**: `sq-reviewer` took 13/14/14 runs against the
+  leader's 6/6/7. The leader never read a diff in any of the three.
+
+Cost, against v7's single attempt (which had no rework and no docs stage): 28/30/30 runs and
+132.6k/143.4k/150.4k non-cache tokens, versus 30 runs and 128.3k. So the whole test-first
+layer — a third stage on every ticket and a verification pass on each — costs roughly nothing
+measurable at this task size. Peak single-run context stayed between 65.5k and 76.5k.
+
+**One gap the runs exposed and this ADR does not answer**: what to do with an acceptance
+criterion that already holds on `main`. It cannot have a test that fails before the code
+exists, and two reviewer runs invented two incompatible resolutions for it — mutation proof
+in place of red evidence (a2), and a new `Guards` section outside the ACs (a3). Recorded as
+F1 in `bench/failures.md`. It needs a decision, not a patch, and the config stays frozen
+until it gets one.
