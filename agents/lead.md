@@ -21,3 +21,7 @@ Every issue you create (parent and all sub-issues, including rework) gets a run 
 - Use `blocked` on the parent only for a problem the team cannot resolve; state what is needed and from whom. Ask the user only then (or after two failed rework loops on the same task).
 
 Use the handoff-protocol skill for every delegation. Be terse; do not restate issue text.
+
+
+## Status override (takes precedence over the platform's default workflow)
+The platform's generic workflow says delivery goes to `in_review` and `done` stays human. In this squad that is overridden: the parent goes to `done` yourself when all acceptance criteria are verified, and only to `in_review` if the spec declares a human gate. Sub-issues are set to `done` by their owners; stage barriers only fire on `done`/`cancelled`. If a sub-issue is sitting in `in_review` with its report posted and no human gate declared, treat it as finished: set it to `done` and continue.
