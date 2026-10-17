@@ -70,7 +70,25 @@ def main():
     a = ap.parse_args()
 
     parent = mc("issue", "get", a.parent)
-    family = [parent] + [i for i in mc("issue", "list") if i.get("parent_issue_id") == parent["id"]]
+    # v6 nests three levels deep (spec -> ticket -> handoff), so the family must be walked
+    # transitively. Taking only direct children saw 36 of B1's 74 runs and reported zero
+    # rework issues and zero review/QA verdicts, because those all live on handoff issues.
+    # `issue list` is capped at 100 rows, so page it.
+    everything, off = [], 0
+    while True:
+        batch = mc("issue", "list", "--limit", "100", "--offset", str(off))
+        everything += batch
+        off += 100
+        if len(batch) < 100:
+            break
+    by_parent = {}
+    for i in everything:
+        by_parent.setdefault(i.get("parent_issue_id"), []).append(i)
+    family, queue = [parent], [parent["id"]]
+    while queue:
+        for child in by_parent.get(queue.pop(), []):
+            family.append(child)
+            queue.append(child["id"])
     # Two kinds of restart must never be conflated: a PERSON stepping in (the run
     # failed) and sq-medic recovering (the squad recovered). A person's action shows
     # up either as a member timeline entry or as a run attributed to `direct_human`
@@ -151,6 +169,7 @@ def main():
     subs = family[1:]
     stalled = [i["identifier"] for i in subs if i["status"] not in ("done", "cancelled")]
     rework = sum(1 for i in subs if "rework" in i["title"].lower())
+    tickets = [i for i in subs if i.get("parent_issue_id") == parent["id"]]
 
     rate = existing = clean = None
     if a.repo and a.branch:
@@ -180,7 +199,7 @@ def main():
            "success": int(success), "hidden_pass_rate": "" if rate is None else round(rate, 3),
            "existing_green": int(bool(existing)), "build_clean": int(bool(clean)),
            "human_interventions": human_events, "auto_recoveries": auto_recoveries,
-           "stalled_sub_issues": len(stalled),
+           "stalled_sub_issues": len(stalled), "ticket_count": len(tickets),
            "rework_issues": rework, "review_changes_requested": changes_req, "qa_fail": qa_fail,
            "leader_wakeups": sum(1 for r in uniq if r.get("is_leader_task")), "sub_issue_count": len(subs),
            "wall_minutes": round((last_end - first).total_seconds() / 60, 1) if first else "",
@@ -205,10 +224,18 @@ def main():
     (runs_dir / f"{a.parent}.json").write_text(json.dumps(detail, indent=1))
     print(f"per-run detail: bench/runs/{a.parent}.json")
     path = ROOT / "results.csv"
-    new = not path.exists()
+    # Appending with a header that no longer matches `row` shifts every value against its
+    # column name, which reads as plausible nonsense rather than as an error. Refuse instead.
+    if path.exists():
+        header = next(csv.reader(path.open()), [])
+        if header and header != list(row):
+            raise SystemExit(
+                "bench/results.csv header does not match the scorer's columns.\n"
+                f"  file:   {','.join(header)}\n  scorer: {','.join(row)}\n"
+                "Rewrite the file with the new columns before scoring.")
     with path.open("a", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(row))
-        if new:
+        if not path.exists() or path.stat().st_size == 0:
             w.writeheader()
         w.writerow(row)
 

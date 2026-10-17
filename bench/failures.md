@@ -193,3 +193,33 @@ the *same* issue never overlapped; consecutive ones were adjacent.
 duplicate its own call inside one run. The defence is the same either way and belongs in the
 instruction, not in a lock: list what exists and compare by purpose before creating anything.
 `sq-lead` also runs with `max_concurrent_tasks: 3`, so the instruction has to hold under both.
+
+## 2026-10-17 — the scorer walked one level of a three-level family
+**Class:** tooling. Found by re-auditing conclusions, not by a run.
+
+`family = [parent] + [direct children]` predates v6's three levels. On B1 it saw **36 of 74
+runs**, so `tokens` undercounted by 60% (128,879 vs 318,052), and `rework_issues`,
+`review_changes_requested` and `qa_fail` scanned ticket issues only — but reworks are
+handoffs and every reviewer/QA verdict is posted on a handoff, so all three were
+structurally pinned at 0 for any v6 run. A human comment on a handoff issue was invisible
+to the intervention count as well. The family is now walked transitively (paging
+`issue list`, which caps at 100). Re-scored, B1 reports 29 sub-issues, 318,052 tokens and
+34 leader wakeups, matching an independent count.
+
+This was the SECOND defect in the same file. The first (the intervention metric) was found
+by checking the metric against measured attribution data; this one was invisible to that
+check because it is not about what a field means but about which issues are looked at.
+
+**Lesson:** validating a metric against one run does not validate the set it was computed
+over. Check the denominator too — "zero rework issues" from a scorer and "zero rework
+issues" in the issue tree are different claims.
+
+## 2026-10-17 — a stale results.csv header read as plausible data
+**Class:** tooling. Caught while reading the re-scored row, before it reached a conclusion.
+
+`score.py` wrote the header only when creating the file, so adding a column left every
+later value shifted one place against its column name. The shifted B1 row read as
+`rework_issues=7, qa_fail=3` when the truth was `ticket_count=7, rework_issues=4,
+qa_fail=0` — wrong in a way that looks like a finding rather than an error, and it briefly
+produced one. `score.py` now compares the file's header with its own columns and refuses to
+append on a mismatch.
