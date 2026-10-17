@@ -14,4 +14,6 @@ Add `kv export` and `kv import`:
 `main.go`, `internal/kvstore/*` (new method(s) + tests), `README.md`. Anything else is out of scope.
 
 ## Hidden acceptance tests
-`bench/hidden/T2/` (to be written and reviewed before first scored run).
+`bench/hidden/T2/zz_hidden_t2_test.go` — black-box (builds the binary, drives it via `KV_FILE`), so it does not depend on how the squad structures internals. Covers: export of empty store (`{}`), content + sorted keys, special characters round trip, import merge/overwrite, import `{}` no-op, import rejected atomically (invalid JSON, non-object, number/null/nested values, empty stdin, trailing garbage; exit 1, stderr set, store unchanged), and regression of existing commands/exit codes.
+Validated: on unmodified `main` all new tests fail and the regression test passes; a reference implementation passes all. Note `null` values are a deliberate trap (Go's json decodes null into a string silently).
+Not specified by the requirement, so deliberately not tested: extra args to `export`/`import`, output whitespace.

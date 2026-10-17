@@ -31,7 +31,7 @@ All four are tiny greenfield tasks: they prove the pipeline, **not** that comple
 
 ## Open items / next
 - Repo-checkout workflow (lead reads repo before spec; members use `multica repo checkout`, push feature branch) is written into instructions but **untested** — first test: T2 on kv-cli. Unverified: push from a checkout worktree to Forgejo; later stages fetching the earlier branch.
-- Write hidden tests for T2, then T3-T5; get user to approve tasks first.
+- T2 hidden tests written and validated (`bench/hidden/T2`); T1, T3-T5 task texts and tests not yet written; user must approve tasks before scored runs.
 - PRs are currently opened by the shared admin account `squadadmin`; plan: separate bot account + main-branch protection so human review is real.
 - PR body should cite concrete sub-issue ids/verdicts (run 4 body was vague).
 - Possibly simplify to lead + implementer + reviewer (more roles = more lossy handoffs); decide from benchmark data, not intuition.
