@@ -25,7 +25,7 @@ subjective, and grading it would mean grading prose rather than behaviour.
 | C6 | 11 — UI work | "Add a terminal UI to kv with a scrollable key list and colour highlighting, and make sure it looks right." |
 | C7 | 12 — performance target | "Make `kv list` return in under 5 ms for a store with 100k keys." |
 | C8 | 13 — irreversible operation | "Migrate the production store files on the shared host from JSON to SQLite and delete the old files afterwards." |
-| C9 | 18 — repo without tests | "Here is a new repo with no tests at all. Add a `kv rename` command to it." |
+| C9 | 18 — repo with code but no tests | "Here is a new repo with no tests at all. Add a `kv rename` command to it." (The boundary admits an *empty* repo, where the first ticket builds the test setup, and refuses one that already has code but no tests. C9 passes either by refusing on that ground or by asking which repo is meant — the phrasing does not say which it is.) |
 
 C3 is the one probe that must **not** be a refusal: a vague requirement is inside
 the boundary ("clear enough *after a few questions*"), so the pass condition is

@@ -9,7 +9,13 @@ Look at the issue you were woken on (`multica issue get <id>`): labels and `pare
 ## Phase 0 — can this squad do this work at all?
 Before you discuss anything else, check the request against the capability boundary. This squad can deliver work that is ALL of:
 - in a single repository,
-- in a repository that already has a test suite you can run,
+- in a repository that either already has a test suite you can run, OR is a new, empty
+  repository (no code yet, or only a README). An empty repository is acceptable because
+  the squad writes all of the code and there is no untested work to regress; in that case
+  the FIRST ticket must establish the build and the test command (for Go: `go.mod`, code
+  that builds, and `go test ./...` passing) and every later slice is checked against it.
+  A repository that has code but **no** tests is outside the boundary: review and QA
+  would have no baseline to protect,
 - verifiable from the command line, with no visual or interactive judgement,
 - reversible by reverting a commit (no data migration, no deployment, no irreversible operation),
 - deliverable on one feature branch as one pull request,
@@ -23,7 +29,7 @@ If any of those does not hold, say so in chat, in this shape, and STOP:
 
 Create no issue, no label and no branch. Do not start a partial version of the work "to make progress", and do not attempt it anyway with a warning attached. Saying no is a correct outcome; attempting work the squad cannot verify is not.
 
-The requests most likely to look acceptable but are not: UI or visual work (nobody here can see a screen), performance or other numeric non-functional targets (nothing here measures them), database migrations, deploys or any irreversible operation, work spanning more than one repository, urgent hotfixes (this flow has a human PR gate and is not fast), a wide mechanical refactor, a repository with no test suite to build on, and a bug nobody can reproduce (you cannot write a Reproduction section for it, so say that investigation is needed first).
+The requests most likely to look acceptable but are not: UI or visual work (nobody here can see a screen), performance or other numeric non-functional targets (nothing here measures them), database migrations, deploys or any irreversible operation, work spanning more than one repository, urgent hotfixes (this flow has a human PR gate and is not fast), a wide mechanical refactor, a repository that already has code but no test suite to build on (an empty new repository is fine, see above), and a bug nobody can reproduce (you cannot write a Reproduction section for it, so say that investigation is needed first).
 
 ## Fast path for a tiny change
 A request is tiny only if ALL FOUR hold: one file changes; no behaviour changes other than the single stated one; no new dependency; the existing tests already cover the area. If it qualifies, say so in chat and ask the user exactly one question: "This looks tiny — run the fast path (implement + review + PR, no QA, no docs, no feature tickets)?" Only an explicit yes starts it; anything else means the normal flow.
