@@ -19,3 +19,6 @@ A run succeeds only if hidden tests all pass, existing tests green, build/vet/go
 - `wall_minutes` includes time spent waiting for the human PR merge.
 - `tokens` = input + output only (cache tokens excluded).
 - "Intervention" = a member-authored status change or comment on the run's issues. The requirement chat is not counted.
+
+## Records are never deleted
+Every attempt keeps its own feature branch (`feat/<task>-<variant>-a<N>`), open PR (not merged), parent/sub-issues and run label. `main` and the task's baseline tag stay untouched, so attempts are independent and all evidence stays available.

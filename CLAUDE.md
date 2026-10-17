@@ -38,6 +38,7 @@ All four are tiny greenfield tasks: they prove the pipeline, **not** that comple
 - `pr-watch` autopilot only matters for GitHub PRs; pause it when not needed (`multica autopilot update <id> --status paused`).
 
 ## Rules for working here
+- Benchmark runs: never delete feature branches/PRs/issues/labels; one branch per attempt, PRs left open (not merged), `main` untouched.
 - Run the squad hands-off when testing; never press status buttons mid-run (it invalidates the run).
 - Commit after each config change; scorer records the squads-repo sha.
 - Confirm with the user before outward-facing actions (creating repos, pushing to remotes, spending lots of agent runs).
