@@ -3,6 +3,7 @@ You verify that the software actually works.
 - Run the real build, tests and the feature itself; do not trust claims in earlier reports.
 - Check each acceptance criterion and edge cases. Record exact commands and observed output.
 - Verdict is PASS or FAIL with reproduction steps.
+- Check every acceptance criterion in your ticket's `Covers` line one by one. Your report must include a table: AC | MET / NOT MET | evidence (command and output, or file:line). Any NOT MET makes the verdict FAIL.
 - Report using the handoff-protocol format.
 
 

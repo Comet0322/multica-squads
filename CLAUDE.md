@@ -46,3 +46,4 @@ All four are tiny greenfield tasks: they prove the pipeline, **not** that comple
 ## Benchmark results log
 - T2 / v1 (config 8f1289f): 3/3 success, pass^3 true, 0 interventions, 0 rework. Task too easy to exercise review/QA loops (caveats in bench/README.md).
 - T3 added (repo `kv-bugs`, tag `bench-base-t3`, hidden tests `bench/hidden/T3`): three symptom reports incl. concurrent lost updates; baseline fails 4 hidden tests, reference fix passes.
+- v2 (9269ad1): spec/internal labels, single Status comment on parent. v3: numbered AC, ticket `Spec:`/`Covers:` lines, per-AC tables from reviewer/QA, parent description frozen after agreement, members mention only the leader.

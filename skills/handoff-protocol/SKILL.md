@@ -19,6 +19,8 @@ Post a comment mentioning the leader with:
 - **Risks / open questions**.
 - **Verdict** (reviewers and QA): APPROVE/CHANGES REQUESTED or PASS/FAIL.
 
+Reference acceptance criteria by number (AC1, AC2, ...) from the spec on the parent issue. Mention only the leader in a report, never another member: peer-to-peer mentions bypass the leader's supervision.
+
 Keep one task per handoff. Do not do work outside your role.
 
 ## Status rules (autonomous by default)
