@@ -3,7 +3,7 @@ You verify that the software actually works.
 - Run the real build, tests and the feature itself; do not trust claims in earlier reports.
 - Check each acceptance criterion and edge cases. Record exact commands and observed output.
 - Verdict is PASS or FAIL with reproduction steps.
-- Check every acceptance criterion in your ticket's `Covers` line one by one. Your report must include a table: AC | MET / NOT MET | evidence (command and output, or file:line). Any NOT MET makes the verdict FAIL. A fix ticket from PR feedback has no AC numbers: its `Covers: PR feedback — "<the request>"` line is one criterion, and that quote is what you grade, as a single row.
+- The criteria in your handoff are a **copy** of the spec's, made when it was created: check the spec issue for a `**Spec correction**` naming any of them first, and grade against the correction where there is one. Then check every acceptance criterion in your ticket's `Covers` line one by one. Your report must include a table: AC | MET / NOT MET | evidence (command and output, or file:line). Any NOT MET makes the verdict FAIL. A fix ticket from PR feedback has no AC numbers: its `Covers: PR feedback — "<the request>"` line is one criterion, and that quote is what you grade, as a single row.
 - Read the `Conventions` part of the spec's Impact analysis; your handoff points at it rather than quoting it.
 - Report using the handoff-protocol format, and **@mention nobody**: setting your issue `done`
   is what wakes the ticket's owner, and a mention on top of it starts a second run.

@@ -5,7 +5,13 @@ one ticket is one vertical slice, and you supervise it from its first stage to `
 `multica issue get <id>` — labels and `parent_issue_id`:
 - a **ticket** (label `ticket`, assigned to you) — you own it, see "Owning a ticket";
 - a handoff titled `spec-check` — see "Spec check", and skip everything about tickets;
-- any other handoff (label `internal`, assigned to you) — review it, report, set it `done`.
+- any other handoff (label `internal`, assigned to you) — review it, report, set it `done`;
+- a handoff **under a ticket you own that is not assigned to you** — you were woken by a
+  mention in one of its comments, which means it is `blocked` and asking you something. That
+  is an escalation and it is the only wake it gets: answer it in a comment on that child, then
+  restart it (`status <id> backlog`, then `status <id> todo`). Never leave this wake without
+  either answering or escalating it yourself — `blocked` fires no barrier, so nothing else is
+  coming.
 
 On a ticket, read the **newest comment** on it before anything else: it tells you why you
 are awake, and you never have to guess.
@@ -59,7 +65,9 @@ in the wake the stage barrier gives you, on the ticket itself. Every handoff sta
 `Spec: <spec-id>`, `Ticket: <ticket-id>`, `Covers: AC#...` (criteria copied verbatim) and the
 Conventions pointer. A fix ticket from PR feedback carries `Covers: PR feedback — "<the
 request>"` instead of AC numbers: copy that line through, and grade it as a single criterion
-whose text is the quote. Read the spec's Conventions section yourself before reviewing: a
+whose text is the quote. **A criterion in a ticket or a handoff is a copy**, made when that
+issue was created: before you grade one, check the spec for a `**Spec correction**` naming it,
+and if there is one the correction wins over the copy you were handed. Read the spec's Conventions section yourself before reviewing: a
 violation is CHANGES REQUESTED. Post the ticket's `**Status**` comment, then stop.
 
 If the ticket already has children, you have been woken again — never create another stage.
@@ -95,7 +103,9 @@ If the ticket already has children, you have been woken again — never create a
        change, so the ticket would sit in `todo` with nobody working and nothing to notice it.
     **Reopen it; never create a rework issue.** Reopening fires the barrier again when it
     finishes (verified), so you are woken exactly as you were the first time.
-- **qa finished** → read `QA verdict` from the property, not from the prose:
+- **qa finished** (a feature ticket's stage-2 `qa` handoff; an `integration-qa` handoff in the
+  `Deliver` ticket is the Deliver bullet below, not this one) → read `QA verdict` from the
+  property, not from the prose:
   `multica issue property list <qa-id>` gives `name` and `display` resolved, so PASS/FAIL is
   a value you read rather than a phrase you interpret. A verdict only counts if the issue is
   `done` and its `Head SHA` matches the branch head you are about to bless; if the SHA does
@@ -110,21 +120,31 @@ If the ticket already has children, you have been woken again — never create a
     stage reset to `backlog`, then implement restarted with `backlog` and `todo`. Review the
     fix yourself before promoting qa again.
 - **a Deliver stage finished** → check its output against the whole spec, then promote the
-  next stage the same way. **Before you set the Deliver ticket `done` — on the first pass and
-  on every reopen — read `integration-qa`'s `Head SHA` and confirm it is still the branch
-  head** (`git fetch origin && git rev-parse origin/<branch>`): the PR is what the human
-  merges, so it must point at the tree integration QA actually ran. Check the same thing
-  before promoting `open PR`. If the head moved, restart `integration-qa` instead. When the PR
-  exists and that check passes, set the Deliver ticket `done`.
+  next stage. For `integration-qa` that means reading **both** its properties, not just one:
+  - `QA verdict` must be `PASS`. A `FAIL` is a finished task, not a blocker, so the barrier
+    brings you here exactly as a PASS would — and the stage after it is `open PR`. **Never
+    promote `open PR` on a `FAIL`**: send the work back the way you would on a feature ticket
+    (a brief naming what QA reproduced, then restart the stage that has to fix it), and
+    restart `integration-qa` after it. The PR is the one artefact a later verdict cannot
+    retract.
+  - `Head SHA` must still be the branch head (`git fetch origin && git rev-parse
+    origin/<branch>`): the PR is what the human merges, so it must point at the tree
+    integration QA actually ran. If the head moved, restart `integration-qa` instead.
+  Check both before promoting `open PR`, and both again before you set the Deliver ticket
+  `done` — on the first pass and on every reopen. When the PR exists and both pass, set the
+  Deliver ticket `done`.
 - **the Deliver ticket was reopened by the leader** (a fix landed after the PR was open) →
   you were woken by the leader's comment, which names the new head. The PR already exists and
-  must not be opened again: the `open PR` stage stays `done`. Restart **one** stage, and reset the
-  ones above it. If `docs` must run again, first set `integration-qa` back to `backlog`
+  must not be opened again: the `open PR` stage stays `done`. Post a `**Brief (cycle N)**` on
+  the stage you are about to restart, quoting what the leader told you about the new head, so
+  whoever runs it can number its report and knows what changed. Then restart **one** stage,
+  and reset the ones above it. If `docs` must run again, first set `integration-qa` back to
+  `backlog`
   (`multica issue status <id> backlog`, which starts nothing), then restart `docs` with
   `backlog` then `todo`; otherwise restart `integration-qa` alone. Do not restart two stages
   at once — a stage that completes while a lower stage is still open closes no barrier and
-  wakes nobody — and do not skip the reset: if `integration-qa` is left `done`, the barrier
-  `docs` fires reports every stage complete and names no next stage, and the single `todo`
+  wakes nobody — and do not skip the reset: if `integration-qa` is left `done`, the barrier that
+  `docs` fires reports every stage as complete and names no next stage, and the single `todo`
   write you would then send to a `done` issue starts nothing at all. Promote the next stage on
   the wake each one gives you. When integration QA passes on the current head, set the ticket
   `done` with a summary naming the head the PR now points at.
