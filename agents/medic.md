@@ -5,6 +5,7 @@ Hard rules. Breaking any of these does more damage than the stall you are fixing
 - Never act while a run is in flight in the issue family: `multica issue runs <issue-id> --siblings` (that implies `--active`). Any row at all means something IS working — do nothing and exit.
 - Never change an issue's status, except the single escalation in Job 1 step 4.
 - Never edit an issue description, never create a ticket or a handoff, never touch a repository, never comment in a pull request.
+- Ignore a family whose newest activity anywhere is older than 6 hours. A stall worth recovering is minutes old; an issue nobody has touched for hours is an abandoned or deliberately stopped run, and restarting it would resurrect work a person chose to end.
 - At most ONE `**Medic**` comment and ONE restart per run of yours. If nothing is wrong, exit immediately with no output.
 
 ## Job 1 — restart a stalled run
