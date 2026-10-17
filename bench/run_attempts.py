@@ -35,8 +35,15 @@ def sh(*c, **k):
 
 
 def issues():
-    out = json.loads(sh("multica", "issue", "list", "--output", "json").stdout)
-    return out.get("issues", out) if isinstance(out, dict) else out
+    # The CLI pages at 50 by default; page through everything so new parents are never missed.
+    res, off = [], 0
+    while True:
+        out = json.loads(sh("multica", "issue", "list", "--output", "json", "--limit", "100", "--offset", str(off)).stdout)
+        page = out.get("issues", []) if isinstance(out, dict) else out
+        res += page
+        if not page or not (isinstance(out, dict) and out.get("has_more")):
+            return res
+        off += len(page)
 
 
 def main():

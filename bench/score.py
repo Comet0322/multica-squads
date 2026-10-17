@@ -97,7 +97,7 @@ def main():
             tokens += u.get("input_tokens", 0) + u.get("output_tokens", 0)
     subs = family[1:]
     stalled = [i["identifier"] for i in subs if i["status"] not in ("done", "cancelled")]
-    rework = sum(1 for i in subs if i["title"].lower().startswith("rework"))
+    rework = sum(1 for i in subs if "rework" in i["title"].lower())
 
     rate = existing = clean = None
     if a.repo and a.branch:

@@ -73,3 +73,47 @@ Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipl
 task   variant             n succ  pass^n  pass@n interv rework  wake    min    tokens
 T2     v1                  3    3    True    True    0.0    0.0   7.0    6.4     39803
 
+== T3/v1 config a9880e2
+[a1] chat done (175s): session: 01a14845-b264-7680-820e-5f1e1aa5d74f 我寫好了 spec，建立了 parent 和 5 個 sub-issue。parent **ACHE-45** 已設為 `in_progress`，Stage 1 已交給 sq-implementer 開工。這些根因是我讀 `m
+[a1] parent ACHE-45
+[a1] 13:14:25 ACHE-45=in_progress ACHE-46=in_progress ACHE-47=backlog ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog
+[a1] 13:20:08 ACHE-45=in_progress ACHE-46=done ACHE-47=backlog ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog
+[a1] 13:20:24 ACHE-45=in_progress ACHE-46=done ACHE-47=todo ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog
+[a1] 13:20:39 ACHE-45=in_progress ACHE-46=done ACHE-47=in_progress ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog
+[a1] 13:22:44 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog
+[a1] 13:23:31 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=in_progress ACHE-52=backlog
+[a1] 13:24:18 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=backlog
+[a1] 13:24:34 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=in_progress
+[a1] 13:25:52 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done
+[a1] 13:26:08 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-54=backlog
+[a1] 13:26:23 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=in_progress ACHE-54=backlog
+[a1] 13:26:39 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=backlog
+[a1] 13:26:55 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done
+[a1] 13:27:10 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=in_progress
+[a1] 13:27:42 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=backlog ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] 13:27:57 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] 13:28:13 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=in_progress ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] 13:29:16 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=done ACHE-49=backlog ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] 13:29:31 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=done ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] 13:29:47 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=done ACHE-49=in_progress ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] 13:30:19 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=done ACHE-49=done ACHE-50=backlog ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] 13:30:50 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=done ACHE-49=done ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] 13:31:06 ACHE-45=in_progress ACHE-46=done ACHE-47=done ACHE-48=done ACHE-49=done ACHE-50=done ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] 13:31:37 ACHE-45=in_review ACHE-46=done ACHE-47=done ACHE-48=done ACHE-49=done ACHE-50=done ACHE-51=done ACHE-52=done ACHE-53=done ACHE-54=done
+[a1] score: {
+ "parent": "ACHE-45",
+ "success": true,
+ "hidden_pass_rate": 1.0,
+ "existing_green": true,
+ "build_clean": true,
+ "human_interventions": 0,
+ "stalled": []
+}
+Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipline): fill in results.csv manual_scores
+[a2] chat done (135s): session: 01a14858-281e-7414-8999-6b536f814618 I寫好了 spec，建了 parent issue 和 5 個 sub-issue，stage 1 已經啟動，交給 sq-implementer 處理。後面我會自主推進各階段，只會在 PR 開好後停下來等你審核。  **Pare
+[a2] ABANDONED: leader created no squad-assigned parent issue
+[a3] chat done (120s): session: 01a1485a-3871-73a5-8efa-1d3d9f6b5231 I read the repo and diagnosed all three bugs, wrote the spec, created the parent and five sub-issues, and started 
+[a3] ABANDONED: leader created no squad-assigned parent issue
+task   variant             n succ  pass^n  pass@n interv rework  wake    min    tokens
+T3     v1                  1    1    True    True    0.0    0.0  10.0   20.1     79253
+
