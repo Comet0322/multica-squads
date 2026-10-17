@@ -1,0 +1,4 @@
+date,task,variant,attempt,parent,config_sha,success,hidden_pass_rate,existing_green,build_clean,human_interventions,stalled_sub_issues,rework_issues,review_changes_requested,qa_fail,leader_wakeups,sub_issue_count,wall_minutes,agent_run_minutes,tokens,manual_scores
+2026-10-17 11:14,T2,v1,1,ACHE-27,8f1289f,1,1.0,1,1,0,0,0,0,0,7,5,6.5,7.0,43048,
+2026-10-17 11:22,T2,v1,2,ACHE-33,8f1289f,1,1.0,1,1,0,0,0,0,0,7,5,6.1,6.3,41991,
+2026-10-17 11:28,T2,v1,3,ACHE-39,8f1289f,1,1.0,1,1,0,0,0,0,0,7,5,5.5,6.0,34371,

@@ -1,0 +1,75 @@
+== T2/v1 config 8f1289f
+[a1] chat done (115s): session: 01a147d3-b374-798b-8acd-f783277dd2f2 Spec、parent issue 和 5 個 sub-issue 都建好了，實作階段已經啟動，接下來會自己往下推進。  **Parent：ACHE-27「kv export / kv import (v1-a1)」** - 狀
+[a1] parent ACHE-27
+[a1] 11:08:54 ACHE-27=in_progress ACHE-28=backlog ACHE-29=backlog ACHE-30=backlog ACHE-31=backlog ACHE-32=in_progress
+[a1] 11:09:26 ACHE-27=in_progress ACHE-28=backlog ACHE-29=backlog ACHE-30=backlog ACHE-31=backlog ACHE-32=done
+[a1] 11:09:41 ACHE-27=in_progress ACHE-28=todo ACHE-29=backlog ACHE-30=backlog ACHE-31=backlog ACHE-32=done
+[a1] 11:09:57 ACHE-27=in_progress ACHE-28=in_progress ACHE-29=backlog ACHE-30=backlog ACHE-31=backlog ACHE-32=done
+[a1] 11:11:16 ACHE-27=in_progress ACHE-28=done ACHE-29=backlog ACHE-30=backlog ACHE-31=backlog ACHE-32=done
+[a1] 11:11:32 ACHE-27=in_progress ACHE-28=done ACHE-29=in_progress ACHE-30=backlog ACHE-31=backlog ACHE-32=done
+[a1] 11:12:19 ACHE-27=in_progress ACHE-28=done ACHE-29=done ACHE-30=backlog ACHE-31=backlog ACHE-32=done
+[a1] 11:12:35 ACHE-27=in_progress ACHE-28=done ACHE-29=done ACHE-30=in_progress ACHE-31=backlog ACHE-32=done
+[a1] 11:13:54 ACHE-27=in_progress ACHE-28=done ACHE-29=done ACHE-30=done ACHE-31=backlog ACHE-32=done
+[a1] 11:14:10 ACHE-27=in_progress ACHE-28=done ACHE-29=done ACHE-30=done ACHE-31=todo ACHE-32=done
+[a1] 11:14:26 ACHE-27=in_progress ACHE-28=done ACHE-29=done ACHE-30=done ACHE-31=done ACHE-32=done
+[a1] 11:14:41 ACHE-27=in_review ACHE-28=done ACHE-29=done ACHE-30=done ACHE-31=done ACHE-32=done
+[a1] score: {
+ "parent": "ACHE-27",
+ "success": true,
+ "hidden_pass_rate": 1.0,
+ "existing_green": true,
+ "build_clean": true,
+ "human_interventions": 0,
+ "stalled": []
+}
+Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipline): fill in results.csv manual_scores
+[a2] chat done (100s): session: 01a147da-cd16-7084-b5bd-6891ade3f3a9 The spec, parent issue and sub-issues are in place, and stage 1 has started.  **Parent:** ACHE-33 "kv-cli: add kv 
+[a2] parent ACHE-33
+[a2] 11:16:25 ACHE-33=in_progress ACHE-34=in_progress ACHE-35=backlog ACHE-36=backlog ACHE-37=backlog ACHE-38=backlog
+[a2] 11:17:28 ACHE-33=in_progress ACHE-34=done ACHE-35=backlog ACHE-36=backlog ACHE-37=backlog ACHE-38=backlog
+[a2] 11:17:44 ACHE-33=in_progress ACHE-34=done ACHE-35=in_progress ACHE-36=backlog ACHE-37=backlog ACHE-38=backlog
+[a2] 11:18:49 ACHE-33=in_progress ACHE-34=done ACHE-35=done ACHE-36=backlog ACHE-37=backlog ACHE-38=backlog
+[a2] 11:19:05 ACHE-33=in_progress ACHE-34=done ACHE-35=done ACHE-36=in_progress ACHE-37=backlog ACHE-38=backlog
+[a2] 11:19:37 ACHE-33=in_progress ACHE-34=done ACHE-35=done ACHE-36=done ACHE-37=backlog ACHE-38=backlog
+[a2] 11:19:52 ACHE-33=in_progress ACHE-34=done ACHE-35=done ACHE-36=done ACHE-37=in_progress ACHE-38=backlog
+[a2] 11:20:40 ACHE-33=in_progress ACHE-34=done ACHE-35=done ACHE-36=done ACHE-37=done ACHE-38=backlog
+[a2] 11:21:12 ACHE-33=in_progress ACHE-34=done ACHE-35=done ACHE-36=done ACHE-37=done ACHE-38=todo
+[a2] 11:21:28 ACHE-33=in_progress ACHE-34=done ACHE-35=done ACHE-36=done ACHE-37=done ACHE-38=done
+[a2] 11:22:00 ACHE-33=in_review ACHE-34=done ACHE-35=done ACHE-36=done ACHE-37=done ACHE-38=done
+[a2] score: {
+ "parent": "ACHE-33",
+ "success": true,
+ "hidden_pass_rate": 1.0,
+ "existing_green": true,
+ "build_clean": true,
+ "human_interventions": 0,
+ "stalled": []
+}
+Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipline): fill in results.csv manual_scores
+[a3] chat done (100s): session: 01a147e1-7a74-7241-badc-31b623f7e2bc The spec is written, the parent issue and all 5 sub-issues are created, and stage 1 has started.  **Parent: ACHE-3
+[a3] parent ACHE-39
+[a3] 11:23:43 ACHE-39=in_progress ACHE-40=in_progress ACHE-41=backlog ACHE-42=backlog ACHE-43=backlog ACHE-44=backlog
+[a3] 11:24:15 ACHE-39=in_progress ACHE-40=done ACHE-41=backlog ACHE-42=backlog ACHE-43=backlog ACHE-44=backlog
+[a3] 11:24:31 ACHE-39=in_progress ACHE-40=done ACHE-41=in_progress ACHE-42=backlog ACHE-43=backlog ACHE-44=backlog
+[a3] 11:25:36 ACHE-39=in_progress ACHE-40=done ACHE-41=done ACHE-42=backlog ACHE-43=backlog ACHE-44=backlog
+[a3] 11:25:52 ACHE-39=in_progress ACHE-40=done ACHE-41=done ACHE-42=in_progress ACHE-43=backlog ACHE-44=backlog
+[a3] 11:26:24 ACHE-39=in_progress ACHE-40=done ACHE-41=done ACHE-42=done ACHE-43=backlog ACHE-44=backlog
+[a3] 11:26:40 ACHE-39=in_progress ACHE-40=done ACHE-41=done ACHE-42=done ACHE-43=in_progress ACHE-44=backlog
+[a3] 11:27:28 ACHE-39=in_progress ACHE-40=done ACHE-41=done ACHE-42=done ACHE-43=done ACHE-44=backlog
+[a3] 11:27:44 ACHE-39=in_progress ACHE-40=done ACHE-41=done ACHE-42=done ACHE-43=done ACHE-44=todo
+[a3] 11:28:00 ACHE-39=in_progress ACHE-40=done ACHE-41=done ACHE-42=done ACHE-43=done ACHE-44=in_progress
+[a3] 11:28:16 ACHE-39=in_progress ACHE-40=done ACHE-41=done ACHE-42=done ACHE-43=done ACHE-44=done
+[a3] 11:28:33 ACHE-39=in_review ACHE-40=done ACHE-41=done ACHE-42=done ACHE-43=done ACHE-44=done
+[a3] score: {
+ "parent": "ACHE-39",
+ "success": true,
+ "hidden_pass_rate": 1.0,
+ "existing_green": true,
+ "build_clean": true,
+ "human_interventions": 0,
+ "stalled": []
+}
+Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipline): fill in results.csv manual_scores
+task   variant             n succ  pass^n  pass@n interv rework  wake    min    tokens
+T2     v1                  3    3    True    True    0.0    0.0   7.0    6.4     39803
+
