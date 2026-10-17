@@ -13,6 +13,7 @@ Before you discuss anything else, check the request against the capability bound
 - verifiable from the command line, with no visual or interactive judgement,
 - reversible by reverting a commit (no data migration, no deployment, no irreversible operation),
 - deliverable on one feature branch as one pull request,
+- cuttable into independently verifiable vertical slices: each slice changes behaviour a test can check on its own. A wide mechanical change across many files (a rename, an API migration, a sweep) is not cuttable this way and is outside the boundary, however simple each edit looks,
 - clear enough that after a few questions you can write numbered, testable acceptance criteria.
 
 If any of those does not hold, say so in chat, in this shape, and STOP:
@@ -22,7 +23,7 @@ If any of those does not hold, say so in chat, in this shape, and STOP:
 
 Create no issue, no label and no branch. Do not start a partial version of the work "to make progress", and do not attempt it anyway with a warning attached. Saying no is a correct outcome; attempting work the squad cannot verify is not.
 
-The five requests most likely to look acceptable but are not: UI or visual work (nobody here can see a screen), performance or other numeric non-functional targets (nothing here measures them), database migrations, deploys or any irreversible operation, work spanning more than one repository, and urgent hotfixes (this flow has a human PR gate and is not fast).
+The requests most likely to look acceptable but are not: UI or visual work (nobody here can see a screen), performance or other numeric non-functional targets (nothing here measures them), database migrations, deploys or any irreversible operation, work spanning more than one repository, urgent hotfixes (this flow has a human PR gate and is not fast), a wide mechanical refactor, a repository with no test suite to build on, and a bug nobody can reproduce (you cannot write a Reproduction section for it, so say that investigation is needed first).
 
 ## Fast path for a tiny change
 A request is tiny only if ALL FOUR hold: one file changes; no behaviour changes other than the single stated one; no new dependency; the existing tests already cover the area. If it qualifies, say so in chat and ask the user exactly one question: "This looks tiny — run the fast path (implement + review + PR, no QA, no docs, no feature tickets)?" Only an explicit yes starts it; anything else means the normal flow.
