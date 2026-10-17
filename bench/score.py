@@ -101,6 +101,7 @@ def main():
     # the only way out), so it must not be counted as a protocol violation. It is told apart
     # from a report-mention by what follows it on the same issue: a move to `blocked`.
     comment_at, blocked_at = {}, {}
+    reopened_at, left_backlog, brief_at = {}, {}, {}
     for i in family:
         for e in mc("issue", "timeline", i["identifier"]):
             when = ts(e.get("created_at"))
@@ -117,16 +118,37 @@ def main():
             if not is_human and body.startswith("**Medic**"):
                 auto_recoveries += 1
                 medic_times.append(when)
-            # v7 sends work back by reopening the SAME handoff, so a rework cycle is a
-            # done -> todo transition, not a new issue. Exact, and no prose is parsed.
             if e.get("type") == "comment" and when:
                 comment_at[e.get("id")] = when
+                if body.startswith("**Brief (cycle") and when:
+                    brief_at.setdefault(i["id"], []).append(when)
             if e.get("action") == "status_changed":
                 d = e.get("details") or {}
+                # Pre-v7 sent work back with a single `done -> todo` write. v7 and v8 cannot:
+                # only a move OUT of `backlog` starts a run, so a restart is `done -> backlog`
+                # then `backlog -> todo`. Counting every `done -> backlog` would over-count,
+                # because reopening stage 1 also resets the stages above it, which the owner
+                # then promotes normally. The reopened stage is the one that gets a
+                # `**Brief (cycle N)**` comment -- a marker both lead.md and reviewer.md
+                # mandate -- so pair the two and the collateral resets drop out.
                 if d.get("from") == "done" and d.get("to") in ("todo", "in_progress"):
-                    reopens += 1
+                    reopens += 1                                   # legacy single-write form
+                if d.get("from") == "done" and d.get("to") == "backlog" and when:
+                    reopened_at.setdefault(i["id"], []).append(when)
+                if d.get("from") == "backlog" and when:
+                    left_backlog.setdefault(i["id"], []).append(when)
                 if d.get("to") == "blocked" and when:
                     blocked_at.setdefault(i["id"], []).append(when)
+    # A `done -> backlog` is a real rework cycle only if a `**Brief (cycle N)**` comment
+    # follows it on the same issue before the next one; otherwise it is a stage reset that
+    # happened because a LOWER stage was reopened, and the owner promotes it again normally.
+    for iid, downs in reopened_at.items():
+        briefs = sorted(brief_at.get(iid, []))
+        for n, down in enumerate(sorted(downs)):
+            nxt = sorted(downs)[n + 1] if n + 1 < len(downs) else None
+            if any(bt >= down and (nxt is None or bt < nxt) for bt in briefs):
+                reopens += 1
+
     runs = []
     for i in family:
         runs += mc("issue", "runs", i["identifier"])
@@ -142,6 +164,11 @@ def main():
     # exactly: `issue_assignment` for a status-promoted run, `issue_wakeup` for a barrier,
     # `comment` for a comment wake (B1: 30 / 27 / 17 of 74 runs). Human comments are already
     # counted as interventions, so only agent-authored ones are a protocol violation here.
+    # One more exclusion, measured on T3/v7-a1: the FIRST run on a spec is started by the
+    # spec's own `backlog -> in_progress` promotion, but its attribution points at the Status
+    # comment posted a second earlier, so it arrives as `kind: comment`. A comment wake on an
+    # issue that left `backlog` just before the run started is that opening wake, not a
+    # duplicate.
     double_wakes, escalations = 0, 0
     for r in uniq:
         at = r.get("attribution") or {}
@@ -150,6 +177,10 @@ def main():
             continue
         ref = ev.get("ref_id")
         if ref in human_comment_ids:
+            continue
+        started = ts(r.get("started_at"))
+        if started and any(0 <= (started - t).total_seconds() <= 120
+                           for t in left_backlog.get(r.get("issue_id"), [])):
             continue
         when = comment_at.get(ref)
         if when and any(0 <= (b - when).total_seconds() <= 120
@@ -219,25 +250,40 @@ def main():
     # final state, read rather than interpreted. In a clean run NOTHING should end negative:
     # a handoff left on CHANGES REQUESTED or FAIL under a ticket that was closed means a
     # failure was closed over. Recorded, not yet part of `success` (that is a rubric change).
-    # `Review verdict` and `QA verdict` are separate two-value properties, so the ROLE comes
-    # from the property name and nothing has to be guessed from a title (an earlier version
-    # keyed it off `title.startswith("qa")`, which no instruction guarantees). The pre-v7
-    # `Verdict` property is still read so B1 and earlier stay scoreable; a v7 run that uses
-    # it at all is a protocol violation, since its definition is no longer in `properties/`.
+    # v8 has ONE verdict property, `Result` (PASS/REWORK), because it has one writer:
+    # `sq-reviewer` owns the spec check and every ticket. The v7 split into `Review verdict`
+    # and `QA verdict` existed so the platform itself would reject a cross-role write; with a
+    # single writer there is no cross-role write to reject. Both legacy names are still read
+    # so v1-v7 rows stay scoreable.
+    #
+    # `verdict_role_mismatch` therefore changes meaning rather than disappearing: it now
+    # reports an agent reaching for a RETIRED vocabulary. A run that carries `Result`
+    # anywhere is v8-shaped, and any legacy verdict property on such a run is a violation --
+    # those definitions are no longer in `properties/`. Nothing can be said about WHO wrote a
+    # property: property changes never enter the timeline.
+    CURRENT, LEGACY = "Result", ("Review verdict", "QA verdict", "Verdict")
+    NEGATIVE = ("REWORK", "CHANGES REQUESTED", "FAIL")
     verdicts, negative_final, role_mismatch = {}, 0, []
+    props = {}
     for i in family:
         for pr in mc("issue", "property", "list", i["identifier"]) or []:
             name, val = pr.get("name"), pr.get("display")
-            if not val or name not in ("Review verdict", "QA verdict", "Verdict"):
-                continue
-            verdicts[f'{i["identifier"]}/{name}'] = val
-            if val in ("CHANGES REQUESTED", "FAIL"):
+            if val and name in (CURRENT,) + LEGACY:
+                props.setdefault(i["identifier"], []).append((name, val))
+    is_v8 = any(n == CURRENT for rows in props.values() for n, _ in rows)
+    for ident, rows in props.items():
+        for name, val in rows:
+            verdicts[f"{ident}/{name}"] = val
+            if val in NEGATIVE:
                 negative_final += 1
-            if name == "Verdict":
-                role_mismatch.append(f'{i["identifier"]}=legacy Verdict:{val}')
+            if name == CURRENT:
+                if val not in ("PASS", "REWORK"):
+                    role_mismatch.append(f"{ident}={name}:{val}")
+            elif is_v8 or name == "Verdict":
+                role_mismatch.append(f"{ident}=retired {name}:{val}")
             elif val not in (("PASS", "FAIL") if name == "QA verdict"
                              else ("APPROVE", "CHANGES REQUESTED")):
-                role_mismatch.append(f'{i["identifier"]}={name}:{val}')
+                role_mismatch.append(f"{ident}={name}:{val}")
 
     # Legacy prose counts. These match on the phrase anywhere in a comment, so they
     # OVER-count when a later comment quotes an earlier verdict (measured on B1: 2 real

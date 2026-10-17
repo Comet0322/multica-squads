@@ -4,7 +4,7 @@
  "variant": "v7",
  "attempt": 1,
  "config_sha": "cbb276a",
- "scored_at": "2026-10-18 00:52",
+ "scored_at": "2026-10-18 02:24",
  "result": {
   "parent": "ACHE-152",
   "success": true,
@@ -15,7 +15,7 @@
   "auto_recoveries": 0,
   "rework_reopens": 0,
   "negative_final_verdicts": 0,
-  "double_wakes": 1,
+  "double_wakes": 0,
   "escalations": 0,
   "verdict_role_mismatch": [],
   "stalled": []
