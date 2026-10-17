@@ -223,3 +223,53 @@ later value shifted one place against its column name. The shifted B1 row read a
 qa_fail=0` — wrong in a way that looks like a finding rather than an error, and it briefly
 produced one. `score.py` now compares the file's header with its own columns and refuses to
 append on a mismatch.
+
+## 2026-10-17 — v7 design audit: four defects that would have stopped a run
+**Class:** design. Found by reading the config against `docs/design-review.md` and the
+platform source, not by running it. All four are v7-specific: they are consequences of
+moving ownership down a level and of deleting the medic.
+
+1. **Every escalation path was a dead end.** `reviewer.md` claimed setting a ticket
+   `blocked` "fires the spec's barrier"; it does not — `isTerminalChildStatus` is `done` or
+   `cancelled` only (`handler/issue_child_done.go:99`). The leader's `blocked` branch was
+   therefore unreachable, and with no medic a `blocked` issue is a permanent stall. Fixed:
+   escalation is an @mention comment on your own issue **first** (measured wake), then
+   `blocked`.
+2. **One finished handoff woke its owner twice.** The protocol required a report to
+   @mention its owner, and setting the issue `done` fires the barrier about a second later;
+   deduplication is per (issue, agent) (`HasPendingTaskForIssueAndAgent`), and these are two
+   different issues. Measured in B1: `ACHE-122`'s report woke `sq-lead` at 12:36:25 and the
+   barrier woke it on `ACHE-116` at 12:36:26 — **18 of B1's 74 runs** started within 3 s of
+   a comment. Harmless in v6, where the second run only chatted; in v7 the owner's wake
+   promotes stages and reopens issues, so two runs on one state can do it twice. Fixed:
+   reports @mention nobody, and `score.py` now counts `double_wakes`.
+3. **Deciding which stage finished from `total`/`done` counts breaks after a reopen.** After
+   a QA FAIL the qa handoff stays `done` carrying a stale `FAIL`, so once the reopened
+   implement stage completes, both stages read complete, the owner concludes "qa finished",
+   re-reads FAIL and reopens implement again — forever, with the two-cycle escape landing in
+   defect 1. Fixed two ways: the owner reads the barrier's own system comment, which names
+   the closed stage, the finished sub-issue and the next stage
+   (`handler/issue_child_done.go:366`), and reopening a stage now resets the higher stages to
+   `backlog --no-start`.
+4. **The fast path had no implementation below the leader.** `reviewer.md` knew two ticket
+   shapes, so a fast-path ticket would have been given a qa stage the user explicitly
+   declined, no stage would have opened the PR, and "no ticket `done` without QA's PASS" made
+   it unclosable; `lead.md` had no branch for "the only ticket finished", so the spec would
+   never have reached its human gate. The same class of hole B3's trace found in the leader,
+   reproduced in the new owner. Fixed: a `Mode: fast-path` ticket shape, its own closing
+   rule, and a last-ticket branch in the leader.
+
+Also fixed: a stall below the ticket level was invisible to everyone (the leader now checks
+`runs --siblings` across the family and reruns the *ticket*, which re-enqueues its owner);
+`qa.md` and `doc.md` never learned the reopen/cycle rules that `implementer.md` got;
+the reviewer's integrity check sat above the dispatch that says which kind of issue woke it;
+one `Verdict` vocabulary served two roles with nothing checking who wrote which value
+(`score.py` now reports `verdict_role_mismatch`); and a fix ticket after the PR was open left
+the merged head with no whole-spec check (the leader now reopens `Deliver` once the fix
+ticket is `done` — never in parallel, because a stage completing while a lower stage is open
+fires no barrier at all).
+
+**Lesson:** the two defects that mattered most came from the same source — an instruction
+that *asserted* a platform behaviour ("that fires the barrier", "the highest done stage is
+the one that finished") instead of citing a measured one. Every such assertion in the config
+is now either sourced or deleted.

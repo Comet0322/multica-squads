@@ -1,6 +1,6 @@
 ---
 name: handoff-protocol
-description: The format for briefing work, reporting it, and sending it back; who may change what; and how cycles on one issue stay unambiguous
+description: The format for briefing work, reporting it, and sending it back; which single action wakes the next agent; who may change what; and how cycles on one issue stay unambiguous
 ---
 
 # Handoff protocol
@@ -12,15 +12,35 @@ own children; everyone else does their one task and finishes it.
 **Finishing your own issue IS the handoff.** Set it `done` and the stage barrier wakes your
 owner within seconds. Nothing has to be nudged and nothing has to be created to pass work on.
 
+## One event, one wake
+
+Nothing here runs on a timer, so every step forward is exactly one wake, and a second wake
+for the same event is a hazard, not a safety net: two runs read the same state and both
+promote the stage or both open the same rework.
+
+- **Finishing** (`done`) wakes your owner through the stage barrier. **Do not @mention your
+  owner in your report.** The mention wakes it on your issue and the barrier wakes it on the
+  parent about a second later; the two are different issues, so the platform does not
+  deduplicate them. In B1, 18 of 74 runs started within 3 s of a comment for exactly this
+  reason.
+- **Promoting** (`backlog` → `todo`) wakes the assignee: a status change starts a run on its
+  own. So when a brief goes with it, post the brief comment **first and without a mention**,
+  then change the status. That one status change is the wake.
+- **Escalating** (`blocked`) wakes nobody by itself — see below. It is the only case where
+  you @mention.
+- Never `rerun` an issue you have just commented on.
+
 ## Who may change what
 - **Your own issue**: its status, its `Verdict` and `Head SHA` properties, and comments on it.
 - **An owner, on its own children only**: their status (including reopening one), their
   properties, and briefs on them.
 - **Never**: another member's issue, a sibling's status, your parent's status or description,
-  or an @mention of a peer. Sequencing belongs to one agent per level — two agents promoting
-  the same stage will have the same work done twice.
+  or an @mention of a peer. Sequencing belongs to one agent per level.
 
 ## Briefing (an owner to one of its children)
+Create every child `backlog`, then promote the first stage — creating an issue has no
+`--no-start`, and a child parked in `backlog` is inert.
+
 The brief for the first cycle is the child's **description**, written when the owner creates
 it. A brief for any later cycle is a **comment** on that same issue (see "Sending work
 back"). Both carry:
@@ -38,25 +58,44 @@ back"). Both carry:
   required `<tool>: ` prefix.
 
 ## Reporting (a child to its owner)
-Post a comment on your own issue, @mentioning your owner — the ticket's owner for a handoff
-under a ticket, `sq-lead` for one under the spec:
+Post a comment on your own issue — **with no @mention**; finishing it is what wakes your
+owner:
 - **Done**: what changed (files, branch, commit SHA).
 - **Verified**: the commands you ran and their real output. Pasted output, never a claim.
 - **Risks / open questions**.
-- **Verdict** (reviewers and QA): APPROVE/CHANGES REQUESTED or PASS/FAIL in the report, and
-  set as data before you set the issue `done`:
+- **Verdict** (reviewers and QA): in the report, and set as data before you set the issue
+  `done`:
   `multica issue property set <issue-id> --name Verdict --value "PASS"` and
   `--name "Head SHA" --value <sha>`. The option set is closed, so a paraphrase is rejected
   rather than stored as something nothing can read, and `multica issue property list <id>`
   returns it resolved by name. The prose is the evidence; the property is the decision; the
   SHA is what stops a verdict being read against a tree nobody tested.
+  **One role, one pair of values**: a review verdict is `APPROVE` / `CHANGES REQUESTED`, a QA
+  verdict is `PASS` / `FAIL`. A value from the other pair means the wrong agent wrote it, and
+  its owner must treat it as no verdict at all.
 
 Reference acceptance criteria by number (AC1, AC2, ...) from the spec. Keep one task per
 handoff and do no work outside your role.
 
+## Escalating (the one case where you @mention)
+`blocked` is **not** a terminal status, so it fires no stage barrier and wakes nobody. A
+`blocked` issue with nothing else done is a permanent stall — there is no recovery utility in
+this squad.
+
+So escalation is two actions, in this order:
+1. Post a comment **on your own issue** that @mentions your owner (`sq-reviewer` for a
+   handoff under a ticket, `sq-lead` for a ticket or a handoff under the spec), stating what
+   you tried, what is still wrong and exactly what you need decided.
+2. `multica issue status <your-id> blocked`.
+
+The mention is the wake (measured: a mention in a comment woke `sq-lead` on an issue assigned
+to someone else). Use `blocked` only for a problem you genuinely cannot resolve — missing
+access, contradictory requirements, an external dependency, or two failed cycles on one
+problem. Ambiguity you can resolve by reading the spec or the code is not a block.
+
 ## Sending work back, and keeping cycles straight
-Rework reopens the existing issue — the owner sets it back to `todo` with a brief as a
-comment. Nothing new is created, so one issue accumulates several briefs and reports, and
+Rework reopens the existing issue — the owner posts the brief as a comment, then sets it back
+to `todo`. Nothing new is created, so one issue accumulates several briefs and reports, and
 **the thread must say which cycle each belongs to**:
 
 - An owner heads a later brief `**Brief (cycle N)**`, N counting from 2.
@@ -67,8 +106,14 @@ comment. Nothing new is created, so one issue accumulates several briefs and rep
 A cycle-N brief must also say **what has already been ruled out**: which approach was tried,
 what it produced, and why it was rejected. The agent receiving it has a fresh context and no
 memory of the earlier cycle, so without this it can spend the cycle repeating a failed
-attempt — and after two failed cycles on one problem the owner stops looping and sets the
-ticket `blocked`.
+attempt — and after two failed cycles on one problem the owner stops looping and escalates.
+
+**Reopening a stage invalidates the stages above it, so reset them.** When an owner reopens
+stage *k*, every stage above *k* that is already `done` goes back to `backlog` with
+`multica issue status <id> backlog --no-start`. Two reasons, both measured: a later wake works
+out what happened from the stage layout, and a stage left `done` makes it read work as
+finished that is about to be redone; and the verdict property on that stage is still the old
+one, because a property only ever holds its final value and never appears in the timeline.
 
 Fix exactly what the newest brief names. Do not start over, do not widen the change, push to
 the same branch, report, and set the issue `done` again. Reopening re-fires the barrier when
@@ -81,12 +126,12 @@ button.
   you are a reviewer or QA, then set your own issue `done` (`multica issue status <id> done`).
   A failed review or QA is a *finished* task: the verdict is the deliverable, and your owner
   decides what happens next. Finishing is what wakes your owner.
-- **`blocked`**: only for a problem you genuinely cannot resolve (missing access,
-  contradictory requirements, an external dependency). Say exactly what is needed and from
-  whom. Ambiguity you can resolve by reading the spec or the code is not a block.
+- **`blocked`**: see "Escalating" — the comment with the @mention comes first.
 - **`in_review`**: only on the spec issue, for a human gate the spec declares. Never as a
   "finished" state — stage barriers fire only on `done`/`cancelled`, so `in_review` stalls
   the pipeline.
+- A parent in `backlog`, `done` or `cancelled` receives **no** child-done notification at
+  all, so never leave work running under a parent in one of those states.
 - Do not ask the user to confirm routine decisions.
 
 ## Working in a repository

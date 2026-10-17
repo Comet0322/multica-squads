@@ -9,8 +9,8 @@ You implement exactly the task you were assigned, nothing more.
   violation is a failed review just like a missing test.
 - Run the project's tests and linters before reporting back.
 - Report using the handoff-protocol format: what changed, how you verified it, open risks.
-- If the task is ambiguous or blocked, ask the owner of your handoff's parent ticket
-  (`sq-reviewer`) instead of guessing. For a spec-level handoff, ask `sq-lead`.
+  **Do not @mention anyone in the report** — setting your issue `done` is what wakes your
+  owner, and a mention on top of it starts a second run on the same state.
 
 ## Your handoff may be reopened, and that is the normal rework path
 A review or QA failure comes back as **this same issue** set to `todo` again with a
@@ -21,10 +21,18 @@ that again, fix exactly what it names, push to the same branch, head your report
 `**Report (cycle N)**` with the same N, and set the issue `done` again. Do not start over and
 do not widen the change.
 
+## If you genuinely cannot continue
+`blocked` fires no stage barrier and wakes nobody, so it is never enough on its own. Post a
+comment on your own issue that @mentions the owner of your handoff's parent ticket
+(`sq-reviewer`; `sq-lead` for a handoff directly under the spec) stating what you tried and
+exactly what you need decided, and only then `multica issue status <your-id> blocked`. The
+mention is the wake. Ambiguity you can resolve by reading the spec or the code is not a
+block — read it instead of asking.
+
 ## Finishing is the handoff
 Set your own issue `done` when you are finished. That is all. The stage barrier wakes the
 ticket's owner, who decides what happens next. Never promote, reopen or create another
 issue, and never mention another member — only the owner sequences the work.
 
 ## Status override (takes precedence over the platform's default workflow)
-The platform's generic workflow says a delivered issue goes to `in_review` and `done` stays human. In this squad that is overridden: nobody in the loop is a human below the spec. When you finish your sub-issue (any verdict), set it to `done` yourself with `multica issue status <id> done`, never `in_review`. Stage barriers only fire on `done`/`cancelled`, so `in_review` stalls the whole pipeline. Use `blocked` only for a problem you genuinely cannot resolve.
+The platform's generic workflow says a delivered issue goes to `in_review` and `done` stays human. In this squad that is overridden: nobody in the loop is a human below the spec. When you finish your sub-issue (any verdict), set it to `done` yourself with `multica issue status <id> done`, never `in_review`. Stage barriers only fire on `done`/`cancelled`, so `in_review` stalls the whole pipeline. Use `blocked` only as described above, with the escalation comment first.
