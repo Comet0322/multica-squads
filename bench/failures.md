@@ -316,3 +316,34 @@ covered it.
   together with `rework_reopens` (F3), which still matches `done → todo` and is therefore
   structurally 0 for every v7 run — both live in the bench tooling the user asked me to stop
   touching, so both need the user's call.
+
+## 2026-10-18 — agent commits authored as the human (measurement integrity)
+
+Found by `sq-reviewer` itself, under `Risks`, on both v8 probe PRs: the commits were authored
+`sq-implementer@multica.local` and `sq-doc@multica.local`, which no instruction had asked for.
+Checking the history turned up something worse. On `fix/kv-bugs-v7-a1` — the branch of the
+**scored** T3/v7-a1 run — commit `8bf98b7`, which is the `Head SHA` recorded on handoff
+`ACHE-158` and therefore `sq-implementer`'s work, is authored `Comet0322
+<jerrymark611@gmail.com>`. The same `sq-doc` appears as `@noreply.invalid` on one branch and
+`@multica.local` on another.
+
+**Cause (verified).** `multica repo checkout` hands the agent a **git worktree**, and a
+worktree shares the repository's `.git/config`. Both `kv-bugs` and `kv-cli` have
+`user.email=jerrymark611@gmail.com` configured locally, so an agent committing there inherits
+it; where the config supplied no name, the runtime filled in `<agent>@multica.local`. The
+agent never chose an identity and had no way to avoid one.
+
+**Why it matters.** `human_interventions` is computed from issue timelines, where this leaves
+no trace at all, so the scorer still reports 0 and the run is still genuinely hands-off. But
+anyone auditing the branch instead of the tracker sees a person's name on an agent's commit —
+and the claim the whole benchmark exists to support is precisely that the squad did the work
+unaided. Evidence that contradicts itself is worth less than evidence that is merely thin.
+
+**Fix.** `handoff-protocol` now pins the identity on the command itself:
+`git -c user.name=squadbot -c user.email=squadbot@localhost`, with a `Co-Authored-By` trailer
+naming the agent, so the author matches the pusher and the per-stage attribution survives.
+`-c` and never `git config`, because a `git config` write inside a worktree lands in the
+config the whole repository shares — the very thing that caused this.
+
+**Not retrofitted.** T3/v7-a1's branch is left exactly as it is: rewriting a scored run's
+history to make it look better is not available. The row stands with this entry attached.

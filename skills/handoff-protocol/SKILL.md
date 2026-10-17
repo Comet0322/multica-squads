@@ -47,4 +47,11 @@ A reopen arrives as `backlog` then `todo`, with a `**Brief (cycle N)**` comment 
 
 - `multica repo checkout <url>` gives you a worktree. Work on the branch the spec names; never commit to `main`.
 - Commit and push your own stage before you set yourself `done`. Push as `squadbot`; never print a credential.
+- **Commit with this exact identity, every time:**
+
+  ```
+  git -c user.name=squadbot -c user.email=squadbot@localhost commit -m "<subject>" -m "Co-Authored-By: <your agent name> <your-name@multica.local>"
+  ```
+
+  Pass it with `-c` on the command, never `git config`, which would write into a config the whole repository shares. A checkout is a **git worktree**, so it inherits that shared config — on an unconfigured machine that has produced commits authored as a *person* on a squad branch, which makes a hands-off run look like it was not. One author for the pusher, the trailer for who actually did the stage.
 - Record the SHA your work ended on in the property your own instructions name.
