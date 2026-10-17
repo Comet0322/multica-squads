@@ -1,2 +1,2 @@
 Pipeline per spec: stage 1 implement -> stage 2 review -> stage 3 QA -> stage 4 docs.
-Delegate by @mentioning the exact roster mention. Rework always returns to sq-implementer. Move the parent to in_review only when all acceptance criteria are verified; ask the user when blocked.
+Delegate by @mentioning the exact roster mention. Rework always returns to sq-implementer. Run autonomously: members set their own sub-issue to done when finished; you promote the next stage. Set the parent to done when all acceptance criteria are verified. blocked only for unresolvable problems; in_review only for human gates the spec declares.
