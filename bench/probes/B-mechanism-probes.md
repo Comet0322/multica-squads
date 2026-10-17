@@ -4,6 +4,18 @@ Tier B scenarios are not scored repeatedly: each needs one demonstration that th
 mechanism exists and works. These runs are real squad runs (they cost agent time), but
 they are not scored runs and do not count against the budget in `rubric.json`.
 
+## Result of B1's scenario-10 check (2026-10-17, config 131e892) — pass
+With the spec frozen and F1's implementation in flight, one chat message asked for JSON
+output instead of text. The leader did not touch the frozen description. It put the run
+on hold, said the change altered what had been approved, and required confirmation of
+an exact shape before re-planning. It ran the proposed shape through Go's
+`encoding/json` first and found a new edge case from the change itself (JSON cannot
+represent infinity, so an overflowing mean needs `null`), and it spelled out what would
+change: a `**Spec correction**` comment becoming part of the contract, a re-check of the
+spec, an F1 rework, and amended criteria on the later tickets. The change was then
+declined to keep the probe cheap; the leader lifted the hold, recorded in a comment that
+JSON had been proposed and withdrawn, and continued the approved plan.
+
 ## B1 — greenfield, with the mid-run change request riding along (scenarios 1 + 10)
 One small new CLI in a fresh repo, run hands-off from chat to open PR.
 
@@ -52,7 +64,21 @@ Pass conditions:
 
 ## B3 — fast path (the four tiny-change tests)
 A one-file, one-behaviour change with no new dependency in an area the tests already
-cover.
+cover. Runs on `kv-cli`, and only after B1 has finished: two specs in flight at once is
+scenario 16, a documented non-goal.
+
+**The tiny request** (verbatim):
+
+> When `kv get` is called with a key that isn't in the store, the error message should
+> say which key was missing. Nothing else about it changes.
+
+**The negative case, in the same session** (must NOT be offered the fast path):
+
+> Also add a `kv import` command that reads JSON from stdin, and a `--format` flag on
+> `kv list`.
+
+Two behaviours in two files, neither covered by the existing tests, so it fails tiny
+tests 1, 2 and 4 and has to go through the normal flow.
 
 Pass conditions:
 1. The leader says it looks tiny and asks the single yes/no question before starting.
