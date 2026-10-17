@@ -51,3 +51,45 @@ rather than a leader trying to deliver a fictional spec.
   zero rules and their stage barriers fired anyway, so "the leader's wakeup rule was
   disabled mid-run" is not a v6 failure mode; the equivalent fault is the barrier not
   firing, which is F17-1.
+
+---
+
+# Results, 2026-10-17 (config 667c66b)
+
+**F17-3 — pass.** The 12:05Z scan found ACHE-110 `todo` with no run, posted one
+`**Medic**` comment naming the detection (11 minutes stale, no in-flight run, no
+`wakeup_paused`, 0 prior Medic comments), restarted the child — the correct target
+under step 5b — and changed no status. sq-doc then ran, set its handoff `done`, the
+stage barrier woke the leader, and the leader re-derived the state correctly. Scored
+with the fixed scorer: `human_interventions = 2` (the two status changes used to build
+the family, which really were a person's) and `auto_recoveries = 1`.
+
+**F17-2 — pass, with a defect found.** Detected at 12:10Z, 16 minutes stale, correct
+comment, no status changed. But it cost **two leader runs 30 seconds apart**: medic's
+comment on a squad-assigned issue wakes the leader by itself, and the `issue rerun`
+that followed woke it again. Two leaders seeing the same state can promote a stage or
+open a rework twice, so this is a correctness risk, not only a wasted Opus run. Fixed
+in `agents/medic.md` (667c66b): a child is rerun directly, but for a spec-level
+restart medic checks `issue runs --active` after commenting and reruns only if nothing
+is running. Re-probed as F17-2b.
+
+**F17-1 — void: the injected fault did not exist.** `issue update --no-start`
+suppresses the run on the issue being updated but **not the parent's stage barrier**.
+Setting ACHE-106 `done` fired `child_done` on ACHE-105 22 seconds later; the leader
+ran and handled it, so the family never became stale enough for medic. This is a
+better outcome than the probe: the v4 failure (leader never woken after a stage
+finished) came from an **agent-created** wakeup rule that the platform rate-paused,
+and v6 does not use those — its platform stage barriers fired correctly here.
+
+**Timing and the one-restart rule — pass.** Three families were activated at 11:54Z.
+The 11:55Z and 12:00Z scans were silent (inside the 10-minute bound) and the 12:05Z
+scan acted on exactly one family.
+
+**Two measurement facts settled** (both now in `failures.md`): an agent running the
+`multica` CLI is recorded as `actor_type: agent`, so a recovery is never mistaken for
+a person; and a run started by `multica issue wakeup trigger` carries
+`attribution.source = trigger_owner`, which the old scorer did not look at.
+
+**Not tested, and why.** The leader's own self-heal of a handoff stuck in `in_review`
+(set it `done` and continue) was NOT exercised by F17-2: the probe contract told the
+leader to cancel the spec and stop instead. F17-2b covers it.
