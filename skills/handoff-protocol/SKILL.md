@@ -28,3 +28,9 @@ Humans are not part of the loop unless the spec says so. Never leave a task wait
 - **`blocked`**: only when you hit a problem you genuinely cannot resolve yourself (missing access, contradictory requirements, an external dependency). Say exactly what is needed and from whom. Try to solve it first; ambiguity you can resolve by reading the spec or code is not a block.
 - **`in_review`**: only when the spec or issue explicitly says a human must approve before work continues. Never use it as a "finished" state.
 - Do not ask the user for confirmation of routine decisions.
+
+## Working in a repository
+- Get the code with `multica repo checkout <url>` (the URL is in the ticket Inputs or `multica repo list`), never by editing someone's local directory by absolute path. It gives you an isolated worktree.
+- The worktree starts on a throwaway agent branch. Switch to the feature branch named in the spec: `git fetch origin && git switch feat/<name>` if it exists on origin, else `git switch -c feat/<name> origin/main`. Never commit to main.
+- Push your work to the feature branch (`git push -u origin feat/<name>`) before reporting, so the next stage can fetch it. Say the branch and commit SHA in your report.
+- Reviewers, QA and docs: fetch the same branch and work from the SHA given in the handoff, not from memory.
