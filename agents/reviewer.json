@@ -1,1 +1,1 @@
-{"name":"sq-reviewer","description":"Reviews changes for correctness and scope","runtime":"claude","model":"","thinking_level":"high","max_concurrent_tasks":3,"skills":["handoff-protocol","definition-of-done"],"mcp":[]}
+{"name": "sq-reviewer", "description": "Reviews changes for correctness and scope", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done"], "mcp": [], "tier": "judgment"}

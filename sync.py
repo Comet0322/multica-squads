@@ -16,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 ARGS = None
 WS = None
+TIERS = json.loads((ROOT / "tiers.json").read_text())
 
 
 def run(*cmd, read_only=False):
@@ -103,6 +104,8 @@ def sync_agents(skill_ids, mcp_ids):
         cfg = json.loads(f.read_text())
         name = cfg["name"]
         instr = f.with_suffix(".md").read_text().strip() if f.with_suffix(".md").exists() else ""
+        if "tier" in cfg:
+            cfg = {**cfg, **{k: v for k, v in TIERS[cfg["tier"]].items() if k in ("model", "thinking_level")}}
         rt = runtimes.get(cfg["runtime"])
         if not rt:
             print(f"agent SKIP: {name} (no online '{cfg['runtime']}' runtime in this workspace)")

@@ -1,1 +1,1 @@
-{"name":"sq-qa","description":"Verifies behavior end to end against acceptance criteria","runtime":"claude","model":"","thinking_level":"medium","max_concurrent_tasks":3,"skills":["handoff-protocol","definition-of-done"],"mcp":[]}
+{"name": "sq-qa", "description": "Verifies behavior end to end against acceptance criteria", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["handoff-protocol", "definition-of-done"], "mcp": [], "tier": "execution"}
