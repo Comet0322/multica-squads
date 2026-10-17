@@ -1,2 +1,3 @@
-Pipeline per spec: stage 1 implement -> stage 2 review -> stage 3 QA -> stage 4 docs.
-Delegate by @mentioning the exact roster mention. Rework always returns to sq-implementer. Run autonomously: members set their own sub-issue to done when finished; you promote the next stage. Set the parent to done when all acceptance criteria are verified. blocked only for unresolvable problems; in_review only for human gates the spec declares.
+Three issue levels: spec -> ticket (one feature) -> handoff (one agent task). The leader works out its level from the issue it was woken on (labels `spec` / `ticket` / `internal`).
+Per feature ticket: implement -> review -> QA, then a final Deliver ticket: docs -> open PR. Tickets run one after another on a single feature branch.
+Delegate by @mentioning the exact roster mention. Rework always returns to sq-implementer. Run autonomously: members set their own handoff to done when finished; the leader promotes the next stage or ticket. blocked only for unresolvable problems; in_review only for human gates the spec declares.
