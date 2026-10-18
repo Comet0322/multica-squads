@@ -5,11 +5,13 @@ description: The rules every squad agent follows when handing work over — what
 
 # Handoff protocol
 
-## Only three things start a run
+## Only three *writes to an issue* start a run
 
 1. An issue is **created** in a status other than `backlog`.
 2. Its **assignee changes** while it is not `backlog`.
 3. Its status moves **out of `backlog`** into something that is not `done`/`cancelled`.
+
+**Comments are the exception, and your own instructions depend on it**: a **person's** comment on an agent-assigned issue starts a run on its assignee, and **any** comment on the squad-assigned spec wakes the leader. An agent's comment on an agent-assigned issue starts nothing. So a person can reach you directly on your own handoff — which is why every agent's first step asks who wrote the newest comment on it.
 
 Consequences, all measured:
 
@@ -22,7 +24,7 @@ Consequences, all measured:
 
 - Finishing your own issue (`done`) fires the stage barrier and wakes the issue above you. That is the entire handoff.
 - **Never** `@mention` anyone. Never set anything `blocked` — it is not terminal, fires no barrier, and nothing is watching.
-- Never change the status of, or comment on, an issue that is neither yours **nor a sub-issue of one you own**. Promoting, briefing and restarting your own children is how an owner works; reaching sideways or upwards is not. **One exception, for one purpose**: a `**Relay**` comment on the spec issue, quoting a person who commented on an issue of yours. Nothing else reaches the leader, and the leader is the only agent allowed to answer a person.
+- Never change the status of, or comment on, an issue that is neither yours **nor a sub-issue of one you own**. Two exceptions, each written into the instruction that takes it: the `**Relay**` comment on the spec, and the leader's description-only `--no-start` edit on a ticket's stage issues, which starts no run and is the only way a `Covers:` line it wrote can be repaired. Promoting, briefing and restarting your own children is how an owner works; reaching sideways or upwards is not. **One exception, for one purpose**: a `**Relay**` comment on the spec issue, quoting a person who commented on an issue of yours. Nothing else reaches the leader, and the leader is the only agent allowed to answer a person.
 - Cannot finish the work? You still finish the **issue**: say exactly what is wrong in your report and set it `done`. Your owner decides. **This is for an issue that has an owner above it.** The spec issue has none, so it is never set `done` by this rule — a `done` parent silences every barrier beneath it, and the family would be left looking complete with its tickets still open. The leader's own instructions say what to do instead.
 
 ## Reporting
@@ -57,5 +59,5 @@ A reopen arrives as `backlog` then `todo`, with a `**Brief (cycle N)**` comment 
   ```
 
   So `sq-qa` commits as `sq-qa <sq-qa@multica.local>`. Pass it with `-c`, never `git config`: a checkout is a **git worktree** and shares the repository's config, so a `git config` write lands on every other stage too. That shared config is also why this matters — on an unconfigured machine it has produced commits authored as a *person* on a squad branch, which makes a hands-off run look like it was not, and the verifier now rejects a stage for it. Your own name in the author field is what makes each stage's work attributable without a trailer.
-- **The author check belongs between your commit and your push, not at the end of your work.** `git log --format='%h %ae' origin/<branch>..HEAD`, or `origin/main..HEAD` when the branch is new. Run it any later and the range is empty, the check finds nothing, and the one thing it exists to catch walks straight through — which is exactly how the instruction it replaced achieved 0 out of 28. Every one must be your agent name. If any is not, fix it now while it is still the tip and nobody has built on it: `git commit --amend --author="<your agent name> <<your agent name>@multica.local>"` (or `git rebase -i` for more than one), then push. If you have *already* pushed, `git push --force-with-lease` and then re-record your SHA property, because the amend orphaned the commit the old value named and no later checkout can resolve it. **A force-push is the only one you may ever do**, and it is safe only here: the stages of a ticket run strictly one after another, so your tip is unreviewed and unread. Once the next stage has pushed, the commit is no longer yours to rewrite and the verifier will reject the ticket instead.
+- **The author check belongs between your commit and your push, not at the end of your work.** `git log --format='%h %ae' origin/<branch>..HEAD`, or `origin/main..HEAD` when the branch is new. Run it any later and the range is empty, the check finds nothing, and the one thing it exists to catch walks straight through — and an author check whose range is empty is the same as no author check at all. Every one must be your agent name. If any is not, fix it now while it is still the tip and nobody has built on it: `git commit --amend --author="<your agent name> <<your agent name>@multica.local>"` (or `git rebase -i` for more than one), then push. If you have *already* pushed, `git push --force-with-lease` and then re-record your SHA property, because the amend orphaned the commit the old value named and no later checkout can resolve it. **A force-push is the only one you may ever do**, and it is safe only here: the stages of a ticket run strictly one after another, so your tip is unreviewed and unread. Once the next stage has pushed, the commit is no longer yours to rewrite and the verifier will reject the ticket instead.
 - Record the SHA your work ended on in the property your own instructions name.

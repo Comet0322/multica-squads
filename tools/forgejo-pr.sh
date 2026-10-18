@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Open a pull request on the local Forgejo, or replace an open one's body. Usage:
 #   forgejo-pr.sh <repo-name> <head-branch> <base-branch> <title> <body-file>
-#   forgejo-pr.sh --update <repo-name> <head-branch> <body-file>
+#   forgejo-pr.sh --update <repo-name> <head-branch> <body-file>   (prints the URL, or
+#                                                                 'none' if no PR is open)
 # A later ticket's commits land on an open PR by themselves, but its body does not:
 # --update rewrites the body of the open PR whose head is <head-branch>, which is how
 # a criterion added after the PR was opened reaches the one artefact a human reads.
@@ -16,7 +17,10 @@ if [ "${1:-}" = "--update" ]; then
   num=$(curl -fsS "${api}/${FORGEJO_ADMIN_USER}/${repo}/pulls?state=open" \
     -H "Authorization: token ${FORGEJO_TOKEN}" \
     | jq -r --arg h "$head" 'map(select(.head.ref == $h)) | .[0].number // empty')
-  [ -n "$num" ] || { echo "no open PR with head '$head' in ${repo}" >&2; exit 1; }
+  # No open PR is a normal answer, not a failure: the caller is told to try --update
+  # first on every run, so a non-zero exit here would put a failing command on the
+  # ordinary path -- at the terminal step, where the leader has no further wake coming.
+  [ -n "$num" ] || { echo "none"; exit 0; }
   curl -fsS -X PATCH "${api}/${FORGEJO_ADMIN_USER}/${repo}/pulls/${num}" \
     -H "Authorization: token ${FORGEJO_TOKEN}" -H 'Content-Type: application/json' \
     -d "$(jq -n --rawfile body "$body_file" '{body:$body}')" | jq -r .html_url

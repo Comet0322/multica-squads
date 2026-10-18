@@ -24,7 +24,6 @@ Check out the repo first (`multica repo checkout <url>`) and work on `origin/mai
 | 5 | What `.gitignore` covers | `cat .gitignore` | A repo that does not ignore its build output will get the build output committed |
 | 6 | Dependencies | `cat go.mod`, `ls vendor 2>/dev/null` | Whether the squad may add a dependency, and whether tests need the network |
 | 7 | **The squad can push** | `git push --dry-run origin HEAD:refs/heads/intake-probe-<date>` | Otherwise this is discovered after all the work is done |
-| 8 | **The branch this run will use is free** | `git ls-remote --heads origin <branch>` | A branch left by an earlier attempt is adopted silently by the first stage (`handoff-protocol` checks out an existing remote branch on purpose, so later stages find the earlier ones' work). Every commit on it then falls inside the first ticket's range, and the verifier briefs stage 1 to undo commits it never made and may not touch. Empty output is the pass; anything else means choose another branch name |
 
 ## What each outcome means
 

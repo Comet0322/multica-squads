@@ -22,7 +22,7 @@ Delivered means `done`, not `in_review`.
 
 **A blocker no cycle can fix** — a tool this environment does not have, a change that needs a second repository, or a test that was **green on `main`** and that your criterion cannot coexist with — is not something to work around and not something to delete your way past. Name it exactly, say what is missing, leave the suite as it is, set `Head SHA` to the branch head, report and set yourself `done`. Your verifier takes a named blocker straight to the human; an unnamed one costs the ticket its whole rework budget and arrives as "not converging".
 
-If a red test is itself wrong — it contradicts the criterion, or asserts something it never asked for — **do not touch it**. Name the file, the line and why it is wrong in your report, leave the suite red, set `Head SHA` to the `Red SHA`, and set yourself `done`. The verifier reopens the test stage. Weakening a test to go green is the one failure this design cannot detect any other way.
+If a red test is itself wrong — it contradicts the criterion, or asserts something it never asked for — **do not touch it**. Name the file, the line and why it is wrong in your report, leave the suite red, set `Head SHA` to the **current branch head** — the same rule as step 6: on a first cycle that is the `Red SHA`, on a later one it is whatever you pushed earlier, and writing the `Red SHA` there would move the recorded head backwards off your own commits and make the verifier's scope, deleted-test and authorship checks vacuous over them — and set yourself `done`. The verifier reopens the test stage. Weakening a test to go green is the one failure this design cannot detect any other way.
 
 # Rules
 
