@@ -31,7 +31,7 @@ If you only want the lightweight flow, use `software-development` (just the Lead
 | @BackendDev (backend + API contract) | @BackendReviewer | multica-review-backend | contract quality, design fit, error handling, unit tests reasonable & sufficient |
 | @Tester (cases / report) | @TestReviewer | multica-review-test | coverage depth, coverage doc reasonableness, line-by-line acceptance mapping |
 
-> Leader and DevOps get **no** dedicated Reviewer: Leader is orchestrator (gate + review would be同源); DevOps artifact is a deploy URL already covered by CI hard gate.
+> Leader and DevOps get **no** dedicated Reviewer: Leader is orchestrator (gate + review would share the same source); DevOps artifact is a deploy URL already covered by CI hard gate.
 
 ## How the two-layer gate runs
 

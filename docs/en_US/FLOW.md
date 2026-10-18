@@ -168,6 +168,37 @@ flowchart TB
 
 **BLOCKED ≠ FAIL:** missing upstream, permissions, or environment → BLOCKED, which does **not** consume a quality-rework attempt.
 
+### 4.0 Handoff mechanism (Owner ↔ Leader)
+
+§4.1 to §4.3 describe the order of "deliver → verify → review", but not how a delivery reaches the Leader. This section fills that gap.
+
+**Delivery (Owner → Leader)**
+
+1. When the Owner finishes, it leaves **one** delivery comment on the issue it was dispatched on, starting with `**Delivery**`. It contains: the branch and the commit SHA (after the push), the changed files, a line-by-line match against the ACs, the verification commands actually run with their **complete output**, and known limitations.
+2. Address the Leader in plain text; do **not** write a mention link. The platform wakes the Leader automatically after a member comments on a squad-owned issue. An Owner has no Leader id, and an invented link points at a nonexistent agent so the delivery is never picked up (observed in TEST-11). The Leader still dispatches members with mention links `[@member](mention://agent/<id>)`, and a dispatch comment must not contain a link to the Leader itself, which would wake the Leader and make it redo the work (observed in TEST-8).
+
+**Status (not decided by the Owner)**
+
+- The Owner does not set the issue to `done` or `in_review` itself.
+- The Leader sets the status after its gate decision. The Leader judges by the delivery comment, not by the issue's current status; if the platform moves the issue to `in_review` on its own, that does not affect the judgement.
+
+**Cannot finish (blocked)**
+
+- Leave a comment starting with `**Blocked**`, saying what is missing, why it is needed, and who can supply it (plain text, no mention link).
+- Do not set the issue to `blocked`, and do not cancel the task. BLOCKED does not consume a rework attempt (see above).
+
+**Sent back (Leader → Owner)**
+
+- The Leader leaves a `**Rework**` comment listing what to fix and @mentions the Owner.
+- The Owner fixes only the listed items, then delivers again with a `**Delivery**` comment.
+
+**Do not**
+
+- An Owner does not @mention other Owners or Reviewers; all dispatch goes through the Leader.
+- An Owner does not declare "checks passed"; the gate decision belongs to the Leader alone.
+
+> **Where it lives (decided):** the protocol lives in the shared skill `multica-handoff-protocol`, bound to all members (except the Leader). Each member agent keeps a single line pointing to that skill and does not repeat the protocol. When using another starter such as `software-development`, bind this skill to the members as well, otherwise the skill the instructions point to does not exist.
+
 ### 4.1 Leader verification sub-loop
 
 ```mermaid
@@ -243,6 +274,15 @@ sequenceDiagram
   R-->>L: PASS
   L->>L: Converge / advance
 ```
+
+### 4.4 Open the PR (Leader, after the gates)
+
+After both gate layers PASS, **the Leader opens the PR**; a human merges.
+
+- **Why the Leader**: only the Leader holds the gate verdicts, so it can assemble the most complete PR (gate evidence, AC table, known limitations); implementing roles hold no PR-opening permission, keeping permission separate from gatekeeping.
+- **Permission and platform**: the Leader opens PRs through `multica-platform-git-host` (Forgejo / GitLab / Azure DevOps per its config) with a token that can only open PRs, never merge. `main` is protected and the merge whitelist contains only human accounts, so even a token with merge rights cannot merge directly.
+- **Open items**: matters still awaiting a human decision (e.g. whether to publish a contract, whether to change degradation behavior) do not block opening the PR, but must be written under "Known limitations".
+- **Wrap-up**: after opening, write the PR link and the Head SHA the gates verified in the Status comment, and say what the human needs to do.
 
 ---
 

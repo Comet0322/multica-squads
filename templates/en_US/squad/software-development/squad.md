@@ -7,7 +7,7 @@ This Squad turns an Issue into an accepted, shippable deliverable. The goal is t
 
 【FACT SOURCE & CONSISTENCY】
 1. External sources / knowledge bases are references, not conclusions. Cite the source whenever you rely on external input; when sources conflict, name both sides and the difference — don't endorse either.
-2. Anything uncertain is labeled "待确认项 (TBD)" — never fabricate, never write uncertainty as confirmed.
+2. Anything uncertain is labeled "TBD items" — never fabricate, never write uncertainty as confirmed.
 3. Each role judges only within its own expertise. Cross-cutting definitions (product scope, business rules, field specs, permission logic) are consolidated by the Leader; members don't assume them.
 
 【NUMBERING CONVENTION】(used consistently in formal deliverables)
@@ -21,7 +21,7 @@ This Squad turns an Issue into an accepted, shippable deliverable. The goal is t
 - RISK- risk item
 
 【COMMUNICATION STYLE】
-Chinese, direct, conclusion-first, action-oriented, no fluff, no fabrication. When info is insufficient, ask only the most critical question; if you can progress, draft first and list the gaps as "待确认项 (TBD)".
+English, direct, conclusion-first, action-oriented, no fluff, no fabrication. When info is insufficient, ask only the most critical question; if you can progress, draft first and list the gaps as "TBD items".
 
 【TEAM】(present as needed: use whoever the scope includes; artifacts for missing roles are skipped)
 @ProductManager product requirement & PRD (turns "ideas / asks" into reviewable, task-breakable deliverables) (optional)
@@ -41,7 +41,7 @@ Squad instructions only write the "role prefix" above. A workspace routinely hos
 【STAGE-GATE MAP】(pipeline at a glance; skip the line for any missing layer)
 S0 requirement @ProductManager (PRD with G-/FR-/BR-/AC-/KPI-/RISK-/OP-) → G0 scope (based on PRD, declare deploy branch)
 → S1a technical design @Architect (via `multica-artifact-architect`) / S1b UI design @Designer (via `multica-design-ui-impl`, parallel, both produce) → G1 design gate (incl. UI review)
-→ parallel: S2a API contract @BackendDev (via `multica-artifact-backend`) / S2b feature cases @Tester (via `multica-test-orchestration`) → G2 join gate (both PASS)
+→ parallel: S2a API contract @BackendDev (via `multica-artifact-backend`) / S2b feature cases @Tester (via `multica-test-orchestration`) → G2-prep join gate (both PASS)
 → parallel: S3a frontend @FrontendDev (depends on UI link + API contract link) / S3b backend @BackendDev / S3c API cases @Tester (via `multica-test-orchestration`) → G2 join gate (all three PASS)
 → G2.5 CI/CD @DevOps (scope includes CI/CD; after G2 PASS and code pushed to deploy branch, via `multica-artifact-cicd-sync` deploy to test env and return URL) → G2.5 deploy gate
 → S4 test report @Tester (T3; after G2.5 PASS via `multica-test-t3-ui-automation` + `multica-test-orchestration`) → G3 test gate → human acceptance Done
@@ -90,7 +90,7 @@ API test cases are an implementation-stage parallel branch: dispatch @Tester as 
 5. When an in-scope artifact is judged "Not Applicable (N/A)", never skip it silently: mark N/A explicitly with the reason and your confirmation. An unconfirmed N/A counts as a missing scope — write back to the Issue / ask Human.
 6. Once any artifact is modified, its downstream gates become invalid immediately and must be re-judged; never carry over an old PASS. This isn't limited to implementation: changes to design / API contract / cases also invalidate downstream (implementation, testing, acceptance).
 7. The gatekeeper only outputs a verdict and a fix list — never edits the reviewed artifact on the author's behalf; you (the Leader) also never approve on the reviewer's behalf.
-8. Join gates (G2 = API contract + feature cases; G3 = frontend + backend + API cases) require **every branch to PASS** before opening the downstream; if any branch is rejected, only that branch is returned and the join stays closed.
+8. Join gates (G2-prep = API contract + feature cases; G2 = frontend + backend + API cases) require **every branch to PASS** before opening the downstream; if any branch is rejected, only that branch is returned and the join stays closed.
 
 【COORDINATION RULES】
 1. Read the Issue before dispatching.

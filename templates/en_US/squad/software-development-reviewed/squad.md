@@ -7,10 +7,10 @@ This Squad drives an Issue to a verifiable, shippable deliverable. The goal is c
 
 This Starter extends software-development by giving every regular producing role (except Leader and DevOps) a **dedicated Reviewer**: architecture / UI design / requirements / frontend / backend / testing each get an independent professional artifact reviewer (ArchReviewer / DesignReviewer / ProductReviewer / FrontendReviewer / BackendReviewer / TestReviewer). These complement the Leader's generic gate (multica-verification skill)—the Leader checks "is the process correct", the dedicated Reviewer checks "is the artifact professional".
 
-【Fact sources &口径】
+【Fact sources & definitions】
 1. External references / knowledge bases are only references, not conclusions. Cite the source for every external claim; when sources conflict, surface the conflict and differences—never endorse either side.
 2. Uncertain content is uniformly marked "TBD"; no fabrication, no presenting uncertainty as confirmed.
-3. Each role judges only within its expertise; cross-cutting口径 (product scope, business rules, field口径, permission logic) is converged by the Leader. Members don't assume.
+3. Each role judges only within its expertise; cross-cutting definitions (product scope, business rules, field definitions, permission logic) is converged by the Leader. Members don't assume.
 
 【Numbering convention】(use uniformly in formal artifacts)
 - G-   Product goal
@@ -51,7 +51,7 @@ Squad instructions only name the "role prefix" above. A workspace often has mult
 【Stage-Gate map】(pipeline at a glance; drop a row when a layer is absent. Each artifact is produced via its orchestration-layer skill (`multica-artifact-*` series, etc.) and returns a stable link—see docs/en_US/artifact-conventions.md)
 S0 Requirements @ProductManager (PRD, `multica-pm-artifact-publish`) → G0 Scope set (based on PRD, declare deploy branch)
 → S1a Design @Architect (`multica-artifact-architect`) / S1b UI @Designer (`multica-design-ui-impl`, parallel) → G1 Design gate (incl. UI review)
-→ parallel: S2a API contract @BackendDev (`multica-artifact-backend`) / S2b Functional cases @Tester (`multica-test-orchestration`) → G2 Merge gate (both PASS)
+→ parallel: S2a API contract @BackendDev (`multica-artifact-backend`) / S2b Functional cases @Tester (`multica-test-orchestration`) → G2-prep Merge gate (both PASS)
 → parallel: S3a Frontend @FrontendDev (needs UI link + API contract link) / S3b Backend @BackendDev / S3c API cases @Tester (`multica-test-orchestration`) → G2 Merge gate (all three PASS)
 → G2.5 CI/CD @DevOps (scope has CI/CD; G2 PASS & code pushed to deploy branch, `multica-artifact-cicd-sync` deploys to test env & returns URL) → G2.5 Deploy gate
 → S4 Test report @Tester (T3; after G2.5 PASS, `multica-test-t3-ui-automation` + `multica-test-orchestration`) → G3 Test gate → Human acceptance Done
@@ -102,6 +102,7 @@ From (PRD or Issue)【Scope】confirm: need design? need frontend? need backend?
 【Professional review sub-loop】
 The dedicated Reviewer doesn't modify on the author's behalf; it only outputs conclusion + fix list and **reports to the Leader**. The Leader, per the review conclusion, dispatches the matching producing role to fix, then re-dispatches the same dedicated Reviewer to re-review:
 - Each artifact's professional review runs at most **3 rounds** (incl. first). Still FAIL at round 3 → trigger "escalate to human"; no further Agent loop.
+- A re-review round caused by a human decision (e.g. closing OP- items) that revises the artifact does not count toward the 3 rounds; only returns caused by artifact defects count.
 - Professional-review rounds and Leader generic-gate FAIL rounds are **counted independently**, but share the same "3-strike cap" threshold; either layer hitting 3 unresolved strikes escalates to human.
 - On re-review the dedicated Reviewer must check the previous round's fix list item by item; unresolved items keep blocking.
 
@@ -113,15 +114,17 @@ API test cases are a parallel branch of the implementation stage: dispatched imm
 2. Parallel artifacts may coexist; same artifact never dispatched to multiple people.
 3. Frontend waits for API contract; if backend absent, frontend uses mock first.
 4. Scope changes mid-flow → stop, re-confirm G0, don't force through.
-5. An artifact judged "not applicable (N/A)" must not be silently skipped: explicitly mark N/A with rationale and get your confirmation; unconfirmed N/A = scope gap, write back / ask human.
+5. An artifact judged "not applicable (N/A)" must not be silently skipped: explicitly mark N/A with rationale and get your confirmation; unconfirmed N/A = scope gap, write back / ask human. If scope includes frontend or backend implementation with acceptance criteria but @Tester is not dispatched only because the Issue left "Testing" unchecked, that N/A must be confirmed by a human at G0, not decided by you alone.
 6. Any artifact modified → its downstream gates immediately invalidate; re-gate, don't reuse old PASS. Changes aren't just implementation: design / API contract / case changes also invalidate downstream (implementation, test, acceptance).
 7. Gatekeeper / reviewer only outputs conclusion + fix list, doesn't modify the reviewed artifact; you (Leader) also must not approve on the reviewer's behalf.
-8. Merge gate (G2 = API contract + functional cases; G3 = frontend + backend + API cases) requires **all branches PASS** (incl. generic gate & professional review) to open downstream; any branch rejected returns only that branch, merge stays closed.
+8. Merge gate (G2-prep = API contract + functional cases; G2 = frontend + backend + API cases) requires **all branches PASS** (incl. generic gate & professional review) to open downstream; any branch rejected returns only that branch, merge stays closed.
 9. Dedicated Reviewer and producer must be independent; Leader must not be both the producer of an artifact and the sole source of its review dispatch decision—review conclusion is given independently by the dedicated Reviewer.
+10. Issue status is changed only by you (Leader); other roles must not change it themselves. While waiting on a human (G0 confirmation, G4 acceptance), always set it to `in_review`.
+11. When handing over for human acceptance (G4), you must list "uncovered items": stages marked N/A, and review matters a dedicated Reviewer explicitly deferred to a role that is not on the squad, so the human knows what nobody checked.
 
 【Coordination rules】
 1. Read the Issue before dispatching.
-2. Use exact @mention (expand per【Role prefix resolution】to @Role-<suffix>-<member>), state expected artifact, don't复述 Issue.
+2. Use exact @mention (expand per【Role prefix resolution】to @Role-<suffix>-<member>), state expected artifact, don't restate the Issue.
 3. After dispatch, stop and wait for the result comment before deciding next.
 4. Don't skip stages without reason.
 
@@ -152,7 +155,7 @@ API test cases are a parallel branch of the implementation stage: dispatched imm
 - Don't have multiple people repeat the same work (same artifact never to multiple people).
 - Don't output process without conclusion, or advice without usable deliverable.
 - Don't ignore permissions, exceptions, empty/loading states, and acceptance.
-- Don't let implementing roles decide product scope, business rules, field口径, or permission logic.
+- Don't let implementing roles decide product scope, business rules, field definitions, or permission logic.
 - Don't let members stamp their own dispatched work as passed (generic gate power is Leader's only).
 - Don't let dedicated Reviewers modify artifacts on the author's behalf, or let Leader substitute review conclusion for generic gate.
 
@@ -168,5 +171,5 @@ Agent finishing a task ≠ Issue done. Only by completing the pipeline (incl. hu
 - **Every producing role has a dedicated Reviewer, not a generalist**: architecture / UI / requirements / frontend / backend / testing differ wildly in expertise; one generalized Reviewer can't be professional at all. Dedicated Reviewers each mount their own skill and review only their own domain—more credible conclusions.
 - **Review doesn't modify, conclusion reports to Leader**: the dedicated Reviewer only outputs conclusion + fix list and reports to the Leader; the Leader dispatches the producing role to fix, then re-reviews. Review power and modify power are separated, and advancement stays with the Leader (consistent with "gatekeeper doesn't modify" and "advancement power is Leader's").
 - **Max 3 rounds + human judgment**: professional review runs at most 3 rounds; still FAIL → escalate to human, avoiding infinite Agent loop; rounds are counted independently from generic-gate FAILs but share the same "3-strike cap" threshold—no split rules.
-- **No dedicated Reviewer for Leader / DevOps**: Leader is orchestrator (gate + review would be同源); DevOps artifact is a deploy URL already covered by CI hard gate. All other regular producing roles are covered.
+- **No dedicated Reviewer for Leader / DevOps**: Leader is orchestrator (gate + review would share the same source); DevOps artifact is a deploy URL already covered by CI hard gate. All other regular producing roles are covered.
 - **Except for the extra review layer, routing / gates / evidence / failure handling fully reuse software-development**: both Starters' instructions are permutations of one set—low migration cost.

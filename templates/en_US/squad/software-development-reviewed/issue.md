@@ -24,6 +24,7 @@
   - [ ] Design (needs Architect)
   - [ ] Frontend (needs FrontendDev)
   - [ ] Backend (needs BackendDev + API contract)
+  - [ ] Testing (needs Tester for functional/API cases and test report)
 - Changes: <!-- what should change? -->
 
 ## Non-goals

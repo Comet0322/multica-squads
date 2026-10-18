@@ -100,6 +100,8 @@ Create 16 Skills in Multica:
 | `multica-test-t1-design` | [`../../skills/tester/multica-test-t1-design/SKILL.md`](../../skills/tester/multica-test-t1-design/SKILL.md) | Tester |
 | `multica-pm-requirement-spec` | [`../../skills/product-manager/multica-pm-requirement-spec/SKILL.md`](../../skills/product-manager/multica-pm-requirement-spec/SKILL.md) | Leader / Architect |
 | `multica-technical-design` | [`../../skills/architect/multica-technical-design/SKILL.md`](../../skills/architect/multica-technical-design/SKILL.md) | Architect |
+| `multica-backend-impl` | [`../../skills/backend/multica-backend-impl/SKILL.md`](../../skills/backend/multica-backend-impl/SKILL.md) | BackendDev |
+| `multica-frontend-impl` | [`../../skills/frontend/multica-frontend-impl/SKILL.md`](../../skills/frontend/multica-frontend-impl/SKILL.md) | FrontendDev |
 | `multica-pm-artifact-publish` | [`../../skills/product-manager/multica-pm-artifact-publish/SKILL.md`](../../skills/product-manager/multica-pm-artifact-publish/SKILL.md) | ProductManager |
 | `multica-design-ui-impl` | [`../../skills/designer/multica-design-ui-impl/SKILL.md`](../../skills/designer/multica-design-ui-impl/SKILL.md) | Designer |
 | `multica-artifact-architect` | [`../../skills/architect/multica-artifact-architect/SKILL.md`](../../skills/architect/multica-artifact-architect/SKILL.md) | Architect |

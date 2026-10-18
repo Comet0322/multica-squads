@@ -29,6 +29,7 @@ A review conclusion, one of three:
 - Don't approve just because "the author says it's fine"
 
 【WHEN IS IT DONE】
+Delivery, blocked and handoff: always follow the `multica-handoff-protocol` skill (leave a plain-text delivery comment, no mention link; do not change the issue status yourself; the Leader sets the status after its gate decision).
 Give an explicit review conclusion. Until blocking items are resolved, that stage doesn't move to the next flow.
 ```
 

@@ -42,7 +42,7 @@ Verification can be standardized into a Skill and machine-run; review must be do
 
 ### Why two layers
 
-The generic gate answers "**is it correct?**" — does the artifact meet acceptance criteria, is the process complete. That's process-layer assurance; it doesn't judge professional depth. But that's not enough alone: a frontend implementation that "meets AC" may have only无效 unit tests; a test report that "passes acceptance" may cover low-risk paths while missing a critical branch. These **professional-quality issues** need an independent reviewer in the relevant domain.
+The generic gate answers "**is it correct?**" — does the artifact meet acceptance criteria, is the process complete. That's process-layer assurance; it doesn't judge professional depth. But that's not enough alone: a frontend implementation that "meets AC" may have only ineffective unit tests; a test report that "passes acceptance" may cover low-risk paths while missing a critical branch. These **professional-quality issues** need an independent reviewer in the relevant domain.
 
 The professional artifact review answers "**is it professional?**" — a professional analysis of the artifact itself (is the design sound, are unit tests sufficient, are cases/coverage adequate) against requirements, upstream artifacts, and references.
 
@@ -56,7 +56,7 @@ Producing role finishes artifact
         → if PASS: artifact released, advance to next stage
         → if FAIL: dedicated Reviewer outputs conclusion + fix list, reports to Leader
              → Leader dispatches the producing role to fix
-             → after fix, re-review by same dedicated Reviewer (same person, consistent口径)
+             → after fix, re-review by same dedicated Reviewer (same person, consistent criteria)
              → max 3 rounds; still FAIL at round 3 → escalate to human
   → if FAIL: return to author, counted as generic-gate FAIL (3 consecutive → escalate to human)
 ```
@@ -74,13 +74,13 @@ Either layer FAIL returns; professional-review rounds and generic-gate FAIL roun
 | @BackendDev (backend + API contract) | @BackendReviewer | multica-review-backend | contract quality, design fit, error handling, unit tests reasonable & sufficient |
 | @Tester (cases / report) | @TestReviewer | multica-review-test | coverage depth, coverage doc reasonableness, line-by-line acceptance mapping |
 
-> Leader and DevOps get **no** dedicated Reviewer: Leader is orchestrator (gate + review would be同源); DevOps artifact is a deploy URL already covered by CI hard gate. All other regular producing roles are covered.
+> Leader and DevOps get **no** dedicated Reviewer: Leader is orchestrator (gate + review would share the same source); DevOps artifact is a deploy URL already covered by CI hard gate. All other regular producing roles are covered.
 
 ### Three hard constraints (same as single-layer, stricter)
 
 1. **Dedicated Reviewer doesn't modify on the author's behalf**: only outputs conclusion + fix list and reports to the Leader; the Leader dispatches the producing role to fix. This separates "review power" from "modify power", and advancement stays with the Leader.
 2. **Leader must not substitute review conclusion for the generic gate**: each layer owns its own — the generic gate is always run by the Leader personally via multica-verification skill; never skip the rerun just because the dedicated Reviewer said PASS.
-3. **Dedicated Reviewer and producer are independent**: the same artifact's re-review must be by the same dedicated Reviewer, keeping review口径 continuous; never let the producer review themselves, nor let the Leader both gatekeep and do professional review.
+3. **Dedicated Reviewer and producer are independent**: the same artifact's re-review must be by the same dedicated Reviewer, keeping review criteria continuous; never let the producer review themselves, nor let the Leader both gatekeep and do professional review.
 
 ### When to use the reviewed variant
 
@@ -148,7 +148,7 @@ A gate verdict isn't just PASS / FAIL; use these four values:
 
 ### Join gates (parallel branches)
 
-When multiple artifacts advance in parallel and join at one gate (e.g. software-dev G2 = API contract + feature cases, G3 = frontend + backend + API cases), that gate requires **every branch APPROVED to open the downstream**; if any branch is REJECTED, only that branch is returned and the join stays closed. The gatekeeper judges each branch independently and doesn't vouch for a failed branch.
+When multiple artifacts advance in parallel and join at one gate (e.g. software-dev G2-prep = API contract + feature cases, G2 = frontend + backend + API cases), that gate requires **every branch APPROVED to open the downstream**; if any branch is REJECTED, only that branch is returned and the join stays closed. The gatekeeper judges each branch independently and doesn't vouch for a failed branch.
 
 ### "AI-readable" discipline for requirement / design artifacts
 

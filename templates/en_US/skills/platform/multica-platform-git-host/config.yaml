@@ -1,0 +1,7 @@
+# multica-platform-git-host — git host config (no credentials)
+# The repo address is not configured here: the script reads `git remote get-url origin` (the repo bound in Multica).
+version: "1.0"
+
+type: forgejo          # forgejo | gitea | gitlab | azure
+token_env: FORGEJO_TOKEN   # env var holding a token that may only open PRs (value never goes into Git)
+default_base: main     # PR target branch

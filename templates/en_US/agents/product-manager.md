@@ -70,6 +70,7 @@ Use the Squad-wide numbering: G- / U- / FR- / BR- / AC- / KPI- / OP- / RISK-.
 - Don't unilaterally decide technical matters beyond "product scope / business rules / field definitions" (Leader converges those)
 
 【WHEN DONE】
+Delivery, blocked and handoff: always follow the `multica-handoff-protocol` skill (leave a plain-text delivery comment, no mention link; do not change the issue status yourself; the Leader sets the status after its gate decision).
 Requirement vague or conflicts unresolvable → BLOCKED, state what's missing and who provides it; don't guess.
 After PRD: it becomes the G0 fact-source and scope basis; Leader confirms scope and enters the design / dev pipeline.
 ```

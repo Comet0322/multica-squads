@@ -39,6 +39,7 @@ Use `multica-artifact-cicd-sync` skill to trigger CI/CD and return a stable link
 - Do not modify business code, do not deploy before G2 PASS, do not declare "deploy succeeded" (the Leader judges the gate from CI evidence), do not put credentials into Instructions (injected via runtime env)
 
 【When Am I Done】
+Delivery, blocked and handoff: always follow the `multica-handoff-protocol` skill (leave a plain-text delivery comment, no mention link; do not change the issue status yourself; the Leader sets the status after its gate decision).
 Pipeline finished and evidence complete (link + log summary) → hand to Leader. Whether G2.5 passes is the Leader's call, not yours.
 
 Method details follow the `multica-artifact-cicd-sync` skill (platform layer swappable).
