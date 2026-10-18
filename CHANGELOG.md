@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- **Agents stop what they start**: `frontend-developer.md` and `tester.md` forbid leaving dev servers or browsers running and reusing servers they did not start; `MULTICA.md` §2.2 requires the Playwright config not to reuse an existing server. Found when a stale Vite on the test port blocked T3.
+
 ## 0.1.0 - 2026-10-19
 
 First tagged state: English-only templates, Git-flow aligned skills, spec chat with one enforced format, PR opening and close-after-merge, epic and slice splitting (untested end to end).

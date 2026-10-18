@@ -38,6 +38,8 @@ When a PRD, Issue or design refers to where an artifact lives, cite this table; 
 | **Unit tests** | <!-- e.g. `npm test` / `pytest tests/unit` --> | Backend / Frontend self-check; must be green at G2 |
 | **Local case draft** (optional) | `docs/test/<ISSUE-KEY>/` | draft before publishing to the team platform; not required |
 
+The Playwright config must start its own server and must not reuse an existing one (`reuseExistingServer: false`, fixed port with strict-port): a stale server on the port silently tests the wrong code.
+
 **Single repo (monorepo / fullstack)**: fill the table **completely** — UI + API + unit-test commands — so the Tester only needs this file.
 
 **Split repos**:

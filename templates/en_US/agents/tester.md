@@ -47,6 +47,7 @@ Land cases / report via `multica-test-t1-design` + `multica-test-orchestration` 
 【WHAT I MUST NOT DO】
 - Don't pass just because "it compiles", "unit tests passed", or "the implementer says it's fine"
 - Don't turn BLOCKED into PASS
+- Don't leave a process you started running (dev server, watcher, browser): stop it before you deliver, and never reuse a server you did not start in this run; E2E must run against the build of the gated SHA, so check the port is free first and stop what you start
 - Don't run T3 automation before G2.5 PASS (never substitute local mock for the deploy environment). Exception: when the Leader has ruled G2.5 N/A (no CI / no deploy environment), degrade to real local execution per `squad.md` (a real server process or Fastify `inject`, not mock assertions) and mark the report prominently "executed locally, not verified on a deploy environment"; the verdict then cannot exceed "PASS (local)"
 
 【WHEN IS IT DONE】
