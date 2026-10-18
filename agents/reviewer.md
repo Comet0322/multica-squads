@@ -85,6 +85,7 @@ Short, because stage 2 already did the work:
 1. The docs stage touched **documentation files only** — `git diff --name-only <stage-2 Head SHA>..<stage-3 Head SHA>`. A source or test file here is a `REWORK`.
 2. The whole suite still passes on the stage-3 head.
 3. Behaviour a user can see is documented, or the stage's report says plainly that none changed and it committed nothing.
+4. The same author check as §4 check 6, over `<stage-2 Head SHA>..<stage-3 Head SHA>`. Section 4 cannot cover these commits — they do not exist yet when it runs — and this is where a person's address has most often appeared.
 
 `PASS` → set `Result` on the stage-3 handoff; then set `Result` = `PASS` and `Head SHA` (the stage-3 head) on the **ticket**, and the ticket `done`. That wakes the leader.
 `REWORK` → section 6, sending **stage 3** back — unless a source or test file was changed here, which stage 3 cannot undo either: then send back whichever stage owns that file (stage 1 for a test file, stage 2 for source).
