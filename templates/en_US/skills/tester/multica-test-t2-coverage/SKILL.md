@@ -9,6 +9,8 @@ metadata:
     - multica-platform-apifox
 ---
 
+> **[Git version]** This team does not use JIRA / Confluence / XMind / Apifox. Ignore the platform steps in this file (fetch requirements, publish, import, batch run) and follow the Git flow in `multica-test-orchestration` (cases / assessment / report under `docs/test/<ISSUE-KEY>/`). The methods, templates and self-checks below are still usable.
+
 # Test Coverage T2 (Coverage Evaluation)
 
 Only **after G2 PASS, before T3**. Evaluate "is T1 enough", **do not execute** environment verification.

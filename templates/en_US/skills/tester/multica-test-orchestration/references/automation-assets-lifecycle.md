@@ -1,58 +1,58 @@
-# 自动化资产生命周期（Apifox + Playwright + Git）
+# Automation Assets Lifecycle (Apifox + Playwright + Git)
 
-与 `docs/test-automation-in-repo.md` 配套；@Tester 在 T1/T2 开始积累，T3 执行。
+Pairs with `docs/test-automation-in-repo.md`; @Tester starts accumulating in T1/T2 and executes in T3.
 
 ---
 
-## 总览
+## Overview
 
 ```text
-T1  Confluence 用例全文 + Apifox 场景（契约并行）
-    ↓ 👤 review + 口令
-    XMind → 测试管理平台（可选）
-T2  Confluence 增量 + Apifox 补场景 + MULTICA §2 e2e 骨架入库
-T3  deploy 环境跑 Apifox CLI + pytest（e2e_dir 来自 MULTICA）→ 修则 commit deploy branch
+T1  Full-text cases in Confluence + Apifox scenarios (contract in parallel)
+    ↓ human review + go-ahead
+    XMind → test-management platform (optional)
+T2  Confluence increment + Apifox supplemental scenarios + e2e skeletons checked in per MULTICA §2
+T3  Run Apifox CLI + pytest on the deploy environment (e2e_dir from MULTICA) → fixes are committed to the deploy branch
 ```
 
 ---
 
-## Apifox（接口）
+## Apifox (API)
 
-| 时机 | 动作 |
+| When | Action |
 | --- | --- |
-| T1 并行 | API 契约发布后：读 `openapi.json` / Confluence 契约 → `multica-platform-apifox` 补场景（**AI 分支**；见 openapi-branch-workflow.md） |
-| T2 | 按补充清单追加 endpoint 场景；更新 `tests/api/<ISSUE-KEY>/manifest.json` |
-| T3 | `multica-test-t3-api-automation` → `run_apifox.py`；scenarioIds 来自 manifest 或 Issue 评论 |
+| T1 in parallel | After the API contract is published: read `openapi.json` / the Confluence contract → supplement scenarios via `multica-platform-apifox` (**AI branch**; see openapi-branch-workflow.md) |
+| T2 | Append endpoint scenarios per the supplement list; update `tests/api/<ISSUE-KEY>/manifest.json` |
+| T3 | `multica-test-t3-api-automation` → `run_apifox.py`; scenarioIds come from the manifest or Issue comments |
 
-**禁止**：接口用例 import JIRA；主步骤只在 Apifox。
+**Forbidden**: importing API cases into JIRA; the main steps live only in Apifox.
 
 ---
 
-## Playwright（UI）
+## Playwright (UI)
 
-| 时机 | 动作 |
+| When | Action |
 | --- | --- |
-| T1 | 在 Confluence 写清 CASE-ID、步骤、预期（**不写脚本**） |
-| T2 | 对 T2 清单中 **必须** 自动化的 CASE：在 `{e2e_dir}/test_{case_id}.py` 建骨架（locator 可 TODO → T3 BLOCKED 若仍缺） |
-| T3 | `pytest {e2e_dir}/` 对 deploy_url；FAIL → t3-failure-triage → 修脚本 commit |
+| T1 | Write CASE-ID, steps and expected results clearly in Confluence (**no scripts**) |
+| T2 | For CASEs on the T2 list that **must** be automated: create a skeleton at `{e2e_dir}/test_{case_id}.py` (locators may be TODO → T3 BLOCKED if still missing) |
+| T3 | `pytest {e2e_dir}/` against deploy_url; FAIL → t3-failure-triage → fix script and commit |
 
-框架：沿用 `multica-test-t3-ui-automation/references/framework-template.md`，**目标目录 = MULTICA.md §2 UI E2E 路径**，禁止每次新建临时目录。
+Framework: reuse `multica-test-t3-ui-automation/references/framework-template.md`; **target directory = the UI E2E path in MULTICA.md §2**; do not create a temporary directory each time.
 
 ---
 
-## Git 合入
+## Git merge
 
-- **路径**：各 repo 根目录 **MULTICA.md** §2（分仓读各自 MULTICA）
-- **分支**：与 Issue deploy branch 一致；G2 前 commit
-- **提交**：e2e 脚本、manifest；不提交 `.env`
+- **Path**: root **MULTICA.md** §2 of each repo (when split, read each repo's own MULTICA)
+- **Branch**: same as the Issue deploy branch; commit before G2
+- **Commits**: e2e scripts, manifest; never commit `.env`
 
 ---
 
-## Confluence vs XMind（当前策略）
+## Confluence vs XMind (current policy)
 
-| 阶段 | XMind |
+| Stage | XMind |
 | --- | --- |
-| T1/T2 阶段 A | **不生成** |
-| 👤 口令后阶段 C | `generate_xmind.py` → `import_to_tracker.py` |
+| T1/T2 phase A | **Not generated** |
+| Phase C after the human go-ahead | `generate_xmind.py` → `import_to_tracker.py` |
 
-Confluence 为 **审核与协作主副本**；JSON 可为生成/导入的工作文件，不必作为交付物对外宣称。
+Confluence is the **primary copy for review and collaboration**; the JSON may be a working file for generation/import and need not be presented externally as a deliverable.

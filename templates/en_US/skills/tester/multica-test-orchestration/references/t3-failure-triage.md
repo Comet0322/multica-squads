@@ -1,59 +1,59 @@
-# T3 自动化失败 · 分诊（Triage）
+# T3 Automation Failure · Triage
 
-**责任 Agent**：**@Tester**（验收标准验证者）。  
-实现者（FrontendDev / BackendDev）**不**自行改测试用例来「刷绿」，除非 Tester 分诊结论为「用例错误」且已书面派活。
+**Responsible Agent**: **@Tester** (acceptance-criteria verifier).  
+Implementers (FrontendDev / BackendDev) must **not** edit test cases themselves to "turn it green", unless Tester's triage concludes "test-case error" and the work has been assigned in writing.
 
 ---
 
-## 流程（FAIL 或 ERROR 时）
+## Flow (on FAIL or ERROR)
 
 ```mermaid
 flowchart TD
-  A[T3 跑批 FAIL/ERROR] --> B[Tester 分诊]
-  B --> C{类别?}
-  C -->|用例/脚本/数据| D[Tester 修用例或自动化]
-  C -->|产品缺陷| E[派 FrontendDev 或 BackendDev + 证据]
-  C -->|环境/部署| F[BLOCKED → Leader/DevOps]
-  C -->|无法判定| G[BLOCKED + 最小复现包]
-  D --> H[Tester 重跑 T3]
-  E --> I[实现者修复 → merge deploy branch]
-  I --> J[Leader G2 再验证后 Tester 重跑 T3]
+  A[T3 batch run FAIL/ERROR] --> B[Tester triage]
+  B --> C{Category?}
+  C -->|case/script/data| D[Tester fixes case or automation]
+  C -->|product defect| E[Assign FrontendDev or BackendDev + evidence]
+  C -->|environment/deployment| F[BLOCKED → Leader/DevOps]
+  C -->|cannot determine| G[BLOCKED + minimal repro pack]
+  D --> H[Tester reruns T3]
+  E --> I[Implementer fixes → merge deploy branch]
+  I --> J[Leader re-verifies G2, then Tester reruns T3]
 ```
 
 ---
 
-## 分诊类别
+## Triage categories
 
-| 类别 | 典型信号 | 负责 | 下一步 |
+| Category | Typical signals | Owner | Next step |
 | --- | --- | --- | --- |
-| **T-用例** | 步骤与 PRD/AC 不符；locator 过期但 UI 正确；Apifox 断言过脆；测试数据脏 | **Tester** | 修订 T1/自动化 → 重跑；重大修订走 `multica-review-test` |
-| **T-产品** | 复现步骤符合 AC，实际与期望不符；接口 5xx/错误码与契约不符 | **FrontendDev / BackendDev**（Tester 派活） | 开缺陷描述 + AC + 日志；实现者修代码 **不得删测试降标** |
-| **T-环境** | deploy_url 不可达；G2.5 未 PASS；Apifox 环境变量错 | **Leader / DevOps** | BLOCKED；补评论后再跑 |
-| **T-阻塞** | 无法稳定复现；缺权限/账号 | **Leader + 人类** | BLOCKED；列最小复现所需 |
+| **T-Case** | Steps do not match PRD/AC; locator is stale but the UI is correct; Apifox assertion too brittle; dirty test data | **Tester** | Revise T1/automation → rerun; major revisions go through `multica-review-test` |
+| **T-Product** | Repro steps match the AC but actual differs from expected; API 5xx/error code differs from the contract | **FrontendDev / BackendDev** (assigned by Tester) | File a defect description + AC + logs; the implementer fixes the code and **must not delete tests or lower the bar** |
+| **T-Env** | deploy_url unreachable; G2.5 not PASS; wrong Apifox environment variables | **Leader / DevOps** | BLOCKED; rerun after the comment is supplemented |
+| **T-Blocked** | Cannot reproduce reliably; missing permissions/accounts | **Leader + human** | BLOCKED; list what a minimal repro needs |
 
 ---
 
-## Tester 分诊输出（必填）
+## Tester triage output (required)
 
 ```markdown
-## T3 分诊 — {JIRA_KEY}
+## T3 Triage - {JIRA_KEY}
 
-| 项 | 值 |
+| Item | Value |
 | --- | --- |
-| 失败用例/CASE-ID | |
-| 分诊结论 | T-用例 / T-产品 / T-环境 / T-阻塞 |
-| 依据 | 日志摘录 + AC- 对照 |
-| 下一步负责人 | @Tester / @FrontendDev / @BackendDev / @Leader |
-| 是否重跑 T3 | 待修复后 / 立即重跑 |
+| Failed case / CASE-ID | |
+| Triage verdict | T-Case / T-Product / T-Env / T-Blocked |
+| Basis | Log excerpt + AC- comparison |
+| Next owner | @Tester / @FrontendDev / @BackendDev / @Leader |
+| Rerun T3? | After the fix / rerun now |
 ```
 
-- **T-产品**：须 @ 具体角色并附 **AC-、期望、实际、截图/日志**  
-- **禁止**：Backend 未分诊就改 pytest/Apifox 断言；Tester 未分诊就判产品 FAIL 并关闭 Issue
+- **T-Product**: must @ a specific role and attach **AC-, expected, actual, screenshot/logs**  
+- **Forbidden**: Backend editing pytest/Apifox assertions without triage; Tester ruling a product FAIL and closing the Issue without triage
 
 ---
 
-## 与 G3 的关系
+## Relation to G3
 
-- 分诊完成前，整单结论保持 **FAIL** 或 **BLOCKED**（非 PASS）  
-- 仅 Tester 在重跑通过后可将对应 AC 改为 PASS  
-- Leader G3 以 Tester 合并报告为准
+- Until triage is complete, the overall verdict stays **FAIL** or **BLOCKED** (not PASS)  
+- Only Tester may switch the corresponding AC to PASS after a passing rerun  
+- Leader G3 relies on Tester's merged report

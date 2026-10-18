@@ -8,6 +8,8 @@ metadata:
     - multica-test-orchestration
 ---
 
+> **[Git version]** This team does not use JIRA / Confluence / XMind / Apifox. Ignore the platform steps in this file (fetch requirements, publish, import, batch run) and follow the Git flow in `multica-test-orchestration` (cases / assessment / report under `docs/test/<ISSUE-KEY>/`). The methods, templates and self-checks below are still usable.
+
 # API Automation (T3 · API)
 
 T3 only after **G2.5 PASS**; an AC can only be verified by API → run this skill alone; if it also has a UI channel → run both, orchestration merges one report.

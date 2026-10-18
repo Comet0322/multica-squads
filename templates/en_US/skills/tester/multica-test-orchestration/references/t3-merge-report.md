@@ -1,56 +1,56 @@
-# T3 合并报告模板
+# T3 Merged Report Template
 
-> 由 `multica-test-orchestration` 在 UI + 接口两侧证据齐（或单侧可跑）后输出。对应 **G3**。
+> Produced by `multica-test-orchestration` once evidence from both the UI and API sides is complete (or one side is runnable). Maps to **G3**.
 
 ```markdown
-# T3 验收测试报告 — {JIRA_KEY}
+# T3 Acceptance Test Report - {JIRA_KEY}
 
-## 整单结论
+## Overall verdict
 **PASS | FAIL | BLOCKED**
 
-> 任一侧 BLOCKED 且该侧 AC 无法他侧替代 → 整单不得 PASS。
+> If either side is BLOCKED and its ACs cannot be covered by the other side -> the overall verdict must not be PASS.
 
-## 环境
-- G2.5: {PASS | N/A | 未过}
+## Environment
+- G2.5: {PASS | N/A | not passed}
 - deploy_url: {url}
-- page_url: {url 或同 deploy}
+- page_url: {url or same as deploy}
 
-## 通道摘要
-| 通道 | 结论 | 证据 |
+## Channel summary
+| Channel | Verdict | Evidence |
 | --- | --- | --- |
-| UI（pytest+Playwright） | PASS/FAIL/BLOCKED/N/A | case_map.md / Allure |
-| 接口（Apifox CLI） | PASS/FAIL/BLOCKED/N/A | run_apifox JSON / 日志 |
+| UI (pytest+Playwright) | PASS/FAIL/BLOCKED/N/A | case_map.md / Allure |
+| API (Apifox CLI) | PASS/FAIL/BLOCKED/N/A | run_apifox JSON / logs |
 
-## AC 逐条裁决
-| AC- | 结果 | 证据来源 |
+## Per-AC verdicts
+| AC- | Result | Evidence source |
 | --- | --- | --- |
-| AC-1 | PASS/FAIL/BLOCKED | UI-xxx / Apifox-xxx / 人工附录* |
+| AC-1 | PASS/FAIL/BLOCKED | UI-xxx / Apifox-xxx / manual appendix* |
 
-*人工附录：仅 Leader 书面授权；标题须「非自动化、不替代 G2.5」；**不得**因此把整单自动化判 PASS。
+*Manual appendix: only with the Leader's written authorization; the title must read "Not automated, does not replace G2.5"; it **must not** be used to rule the overall automation verdict PASS.
 
-## FAIL 明细（如有）
-- AC-x：复现 / 期望 / 实际 / 严重度 / 证据路径
+## FAIL details (if any)
+- AC-x: reproduction / expected / actual / severity / evidence path
 
-## BLOCKED / 范围外（如有）
+## BLOCKED / out of scope (if any)
 - …
 
-## 附件
+## Attachments
 - UI: …
 - Apifox: …
 ```
 
-## 分流Reminder
+## Routing reminder
 
-| 情况 | 行为 |
+| Situation | Behavior |
 | --- | --- |
-| 仅 UI 材料齐 | 只跑 UI；Apifox 三 ID 标 N/A 不算缺失 |
-| 仅接口材料齐 | 只跑 Apifox |
-| 都齐 | 都跑后合并 |
-| 一侧缺材料 | 该侧中断；另一侧可跑；整单不得 PASS |
-| G2.5 N/A 且无 deploy_url | 两侧自动化 BLOCKED |
-| G2.5 N/A 但有 deploy_url + Leader 书面允跑 | 可跑；报告注明 G2.5 降级 |
+| Only UI materials complete | Run UI only; the three Apifox IDs are marked N/A and do not count as missing |
+| Only API materials complete | Run Apifox only |
+| Both complete | Run both, then merge |
+| One side missing materials | That side is aborted; the other side may run; the overall verdict must not be PASS |
+| G2.5 N/A and no deploy_url | Automation on both sides is BLOCKED |
+| G2.5 N/A but deploy_url present + Leader written approval to run | May run; the report notes the G2.5 downgrade |
 
-## 人工附录（Leader 授权时）
+## Manual appendix (when authorized by the Leader)
 
-- 可列手工步骤结果，标题 **「非自动化、不替代 G2.5」**
-- 整单自动化结论仍为 **BLOCKED**，除非所有 AC 已在部署环境被充分验证（Leader 书面确认）
+- May list manual step results, titled **"Not automated, does not replace G2.5"**
+- The overall automation verdict stays **BLOCKED** unless all ACs have been fully verified in the deployed environment (confirmed in writing by the Leader)

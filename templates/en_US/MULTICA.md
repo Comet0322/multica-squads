@@ -11,7 +11,19 @@
 | --- | --- |
 | **layout** | `monorepo` (frontend + backend in one repo) \| `frontend` \| `backend` \| `fullstack` \| `other` |
 | **Service name** (CI `--service`) | <!-- e.g. acme-web; N/A for a library or something with no deployment --> |
-| **Related repos** (when split) | <!-- frontend: acme-frontend → backend: acme-api --> |
+| **Related repos** (when split) | <!-- frontend: acme-frontend → backend: acme-api; N/A for a single repo (monorepo / fullstack) --> |
+
+### 1.1 Artifact paths (every role and skill follows this table)
+
+| Artifact | Path | Produced by |
+| --- | --- | --- |
+| PRD | `docs/prd/<ISSUE-KEY>.md` | @ProductManager |
+| Technical design | `docs/design/<ISSUE-KEY>/design.md` | @Architect |
+| API contract | `docs/backend/<ISSUE-KEY>/api-contract.md` (OpenAPI next to it as `openapi.json`) | @BackendDev |
+| Frontend implementation spec | `docs/frontend/<ISSUE-KEY>/impl-spec.md` | @FrontendDev |
+| Functional / API cases | `docs/test/<ISSUE-KEY>/t1-cases.md` | @Tester |
+
+When a PRD, Issue or design refers to where an artifact lives, cite this table; do not invent another path. If the repo lands artifacts on a team platform (Confluence / JIRA, etc.), replace this table with the platform's link rules.
 
 ---
 

@@ -13,6 +13,8 @@ metadata:
     - test-case-generator-squad
 ---
 
+> **[Git version]** This team does not use JIRA / Confluence / XMind / Apifox. Ignore the platform steps in this file (fetch requirements, publish, import, batch run) and follow the Git flow in `multica-test-orchestration` (cases / assessment / report under `docs/test/<ISSUE-KEY>/`). The methods, templates and self-checks below are still usable.
+
 # Test Design (T1 Test Design · Content + Landing)
 
 ## Position

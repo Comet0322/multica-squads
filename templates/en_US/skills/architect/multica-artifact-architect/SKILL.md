@@ -1,35 +1,22 @@
 ---
 name: multica-artifact-architect
-description: Land technical design artifacts to the code repo or knowledge platform (default Git repo / Confluence). Used by @Architect to upload technical design for downstream implementation and test consumption. Swappable platform.
+description: Architect artifact submission (Git version). Self-check the design draft, write it to docs/design/<ISSUE-KEY>/design.md in the product repo, push the deploy branch and return the link. Used by @Architect.
+version: 3.0.0-repo
 ---
 
-# Artifact · Technical Design Sync
+# Artifact · Architect (design lands in the Git repo)
 
-## Purpose
+This team does not use Confluence / JIRA. **The only place a design lands is `docs/design/<ISSUE-KEY>/design.md` in the product repo.** Do not call `multica-platform-confluence` / `multica-platform-jira`, and do not report BLOCKED because their credentials are missing.
 
-Land technical design docs to the team's unified technical-doc location and let downstream retrieve them via a stable reference.
+Preconditions: `<ISSUE-KEY>` is the current Issue identifier; get a working copy with `multica repo checkout <url>`; read the repo-root `MULTICA.md` first (BLOCKED if missing); the deploy branch is `release/<ISSUE-KEY>-<slug>` (declared by the Leader at G0; use it if it exists, otherwise create it from `main`). **Never push `main` directly.** Artifact paths come from the "Artifact paths" table in the repo-root `MULTICA.md`; use this skill's default path only when that table is missing.
 
-> This skill decouples "platform integration" from "role prompt": the role prompt only says "produce technical design", not which platform. Changing companies means editing only this skill, not the @Architect prompt.
+## Flow
 
-## Default platform: Git repo / Confluence (choose one per team convention)
+```text
+1. multica-technical-design: write docs/design/<ISSUE-KEY>/design.md
+2. Self-check against the Chinese skill's section table (header, understanding, non-goals, proposed change, affected components, implementation steps, verification plan, traceability, risks, revision log); on FAIL fix the draft first
+3. git add / commit (docs(design): <ISSUE-KEY> vN) -> push the deploy branch
+4. Comment on the Issue to the Leader: design link, deploy branch, commit SHA, version
+```
 
-- Output: technical design (current arch, proposed change, affected components, steps, verification plan, risks).
-- Upload A (Git repo): place under the repo's agreed doc dir (e.g. `docs/design/<issue-id>.md`), reviewed together with the code PR — traceable.
-- Upload B (Confluence): create / update a technical design page, return the link.
-- Retrieve: downstream @FrontendDev / @BackendDev / @Tester read via the **file path or page link**.
-
-## Content spec (platform-independent part)
-
-Per `multica-technical-design` skill: current architecture, minimal viable change, affected components, implementation steps, verification plan, risks. Keep stable headings and ids.
-
-## Usage (role side writes only this line)
-
-> @Architect: "Produce technical design, land it via `multica-artifact-architect` skill to the team's agreed location (Git / KB), and return the reference."
-
-## Swap platform (no role-prompt change)
-
-Replace this skill's "default platform" section with your tool (internal Wiki / Notion / Feishu), keeping the "upload + return stable reference" interface unchanged.
-
-## Why it works
-
-Design-doc locations vary by team (some in repo, some in Wiki). Sinking it into the skill keeps the role's "what to produce" description stable while the location swaps with the skill.
+Link: `<repo web url>/src/branch/release/<ISSUE-KEY>-<slug>/docs/design/<ISSUE-KEY>/design.md`. On re-review update the same file, bump the version, answer each ArchReviewer REV-n in "review response"; never create a second design file.
