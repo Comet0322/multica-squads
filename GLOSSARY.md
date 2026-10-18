@@ -33,8 +33,9 @@ different claims, not because one is weaker.
   **already** holds and must not break. A claim about preservation. Each
   carries `Covered by:` — the existing check that proves it, or `nothing yet`.
 - **Retired criterion** — a criterion a human withdrew in a `**Spec
-  correction**`, named on a ticket's `Retires:` line. The only thing that
-  authorises deleting a test.
+  correction**`, which is the durable record and the only thing that
+  authorises deleting a test. A ticket's `Retires:` line marks which ticket
+  acts on it; the correction is what makes it retired.
 
 Which **kind** a criterion is decides who owes work for it. It does **not**
 decide which form of evidence its test owes — see **Evidence**. An acceptance
@@ -109,8 +110,11 @@ acceptance criterion; it has simply stopped being absent.
   first, the previous ticket's verified head otherwise. Written on the ticket,
   because order cannot be inferred.
 - **Integration check** — the last ticket's own stage-2 verification, widened
-  to every criterion in the spec. There is no separate integration stage: the
-  head a human merges is a head that was verified as part of a ticket.
+  to every criterion some ticket owed evidence for. An invariant an existing
+  check already covers is discharged by running that check on the head, not
+  by looking for a ticket that covered it. There is no separate integration
+  stage: the head a human merges is a head that was verified as part of a
+  ticket.
 
 ## Reliability
 

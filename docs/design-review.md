@@ -45,7 +45,10 @@ promotes twice.
 Forbidden, because they produce a **second** wake for one event:
 - a `mention://` link to your owner in a report (row 4 already wakes it, ~1 s later, and the
   two are not deduplicated — they are on two different issues),
-- any agent comment on the squad-assigned **spec** issue by someone other than the leader,
+- any agent comment on the squad-assigned **spec** issue by someone other than the leader —
+  **except a `**Relay**` quoting a person who commented on an issue of that agent's own.**
+  That one is deliberate and worth its single wake: it is the only path from a member to
+  the leader, and row 7b is otherwise a human talking into a void,
 - a `rerun` on an issue whose comment can wake its owner by itself.
 
 Forbidden, because they produce **no** wake while looking like one:

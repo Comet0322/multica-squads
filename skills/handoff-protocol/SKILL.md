@@ -33,7 +33,7 @@ Consequences, all measured:
 
 ## Your issue tells you everything
 
-Your description carries `Spec: <id>`, `Ticket: <id>`, `Covers: AC#...`.
+Your description carries `Spec: <id>`, and, for a stage under a ticket, `Ticket: <id>`, `Covers: AC#...`, the branch and a base commit. (The spec-check handoff has only `Spec:` — it checks the spec whole and covers no criterion.)
 
 - **Read the acceptance criteria from the spec issue, never from a copy.** Nothing copies them, so there is nothing to go stale.
 - The contract is the spec's description **plus every `**Spec correction**` comment on it**, newest in force.
@@ -45,7 +45,7 @@ A reopen arrives as `backlog` then `todo`, with a `**Brief (cycle N)**` comment 
 
 ## Working in a repository
 
-- `multica repo checkout <url>` gives you a worktree — the clone URL is the spec's `Repo` line, which is the only place it is written. Work on the branch the spec names; never commit to `main`.
+- `multica repo checkout <url>` gives you a worktree — the clone URL is on your own issue, copied there from the spec's `Repo` line, which is where it originates. Work on the branch the spec names; never commit to `main`.
 - **Get onto that branch like this, every time:** `git fetch origin`, then `git checkout -B <branch> origin/<branch>` if it exists on the remote, or `git checkout -b <branch> origin/main` if it does not (you are the first stage of the first ticket). A fresh checkout does not have the branch locally, and a plain `git checkout -b` forks from `main` and silently drops every earlier stage's work. **Never force-push a commit anyone else may have read** — the one exception is your own tip commit, below.
 - Commit, **check the author, fix it if it is wrong, and only then push** — in that order, and all of it before you set yourself `done`. Push as `squadbot`; never print a credential. Record the SHA property **after** the push, from the commit you actually pushed.
 - **Commit as yourself, every time, with `-c` on the command:**
