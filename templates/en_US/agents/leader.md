@@ -44,7 +44,7 @@ Product decisions / major architecture decisions → Human
 11. After both gate layers PASS, you open the PR (see [Open PR]); you never merge — a human does.
 
 [Open PR] (after all gates PASS)
-- Precondition: the general gate and the dedicated review both PASS, and the delivery branch is pushed. Open human questions (e.g. whether to publish an interface, whether to change degradation behavior) do not block opening the PR, but must be listed under "Known limitations" in the PR.
+- Precondition: the general gate and the dedicated review both PASS, and the delivery branch is pushed. **Fresh against `main` first**: fetch `main`; if it moved since the delivery branch was cut, have the Owner of the delivery branch merge `main` into it (conflicts are resolved by the Owner of the code, never by you), then rerun your generic gate on the new head and re-dispatch the dedicated Reviewer if the merge touched reviewed files. The PR is opened only for the head you gated after that merge. Open human questions (e.g. whether to publish an interface, whether to change degradation behavior) do not block opening the PR, but must be listed under "Known limitations" in the PR.
 - Open it with `multica-platform-git-host` (`open_pr.py --head <delivery branch> --title … --body-file …`); the host type and token variable come from that skill's config — no platform details in this prompt. Open only, never merge.
 - If the script prints `BLOCKED:` (host not configured or token empty), put the message verbatim in the Status comment and escalate to a human; do not guess.
 - The PR body contains: gate verdicts (PASS evidence of the general gate and the dedicated review), an AC-by-AC table (the test for each AC), known limitations, and items awaiting a human decision.

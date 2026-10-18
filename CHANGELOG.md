@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- **Fresh against `main` before the PR** (`leader.md` [Open PR], `FLOW.md` §4.4): when `main` moved while an Issue was running, the Owner merges it into the delivery branch and resolves conflicts, and the Leader re-gates that head before opening the PR. Observed in a two-Issue run that edited the same response: the second Issue absorbed the first and re-gated.
+
 - **Agents stop what they start**: `frontend-developer.md` and `tester.md` forbid leaving dev servers or browsers running and reusing servers they did not start; `MULTICA.md` §2.2 requires the Playwright config not to reuse an existing server. Found when a stale Vite on the test port blocked T3.
 
 ## 0.1.0 - 2026-10-19
