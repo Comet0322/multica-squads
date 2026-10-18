@@ -24,10 +24,12 @@ Check out the repo first (`multica repo checkout <url>`) and work on `origin/mai
 | 5 | What `.gitignore` covers | `cat .gitignore` | A repo that does not ignore its build output will get the build output committed |
 | 6 | Dependencies | `cat go.mod`, `ls vendor 2>/dev/null` | Whether the squad may add a dependency, and whether tests need the network |
 | 7 | **The squad can push** | `git push --dry-run origin HEAD:refs/heads/intake-probe-<date>` | Otherwise this is discovered after all the work is done |
+| 8 | **The branch this run will use is free** | `git ls-remote --heads origin <branch>` | A branch left by an earlier attempt is adopted silently by the first stage (`handoff-protocol` checks out an existing remote branch on purpose, so later stages find the earlier ones' work). Every commit on it then falls inside the first ticket's range, and the verifier briefs stage 1 to undo commits it never made and may not touch. Empty output is the pass; anything else means choose another branch name |
 
 ## What each outcome means
 
-- **1 or 2 fails** → the repository is **outside the capability boundary**, for the same
+- **The repository is empty** (a README and nothing else) → 1 and 2 fail and that is **fine**: there is no baseline to protect because there is nothing there yet, and the first ticket establishes the build and the test command. Record it as a greenfield intake, say so in the spec's `Repo intake`, and go on. This exception is for an empty repository only — code with no tests is still outside the boundary.
+- **1 or 2 fails on a repository that has code** → the repository is **outside the capability boundary**, for the same
   reason a repo with no tests is: review and QA would have no baseline, and the squad could
   not tell its own regressions from the ones already there. Say so in chat and stop. The
   nearest thing is **not** a spec to green the baseline — that is work in the same

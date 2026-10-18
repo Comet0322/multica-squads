@@ -105,6 +105,17 @@ Forbidden, because they produce **no** wake while looking like one:
   `Deliver` ticket and no fast path, so a config in which those appear is out of date.) A
   shape with no handler means an agent improvising on the only structure that path can
   produce.
+- **R0 — degenerate inputs.** Walk the review from the *inputs*, not only from the
+  events: the wake inventory starts at "something happened" and so cannot see a rule
+  that was written for the common case and has no branch for its degenerate instance.
+  For each of these, name the line that handles it: an empty repository; a suite that
+  fails on `main`; a plan with zero tickets; one ticket that is also the last; an empty
+  `Covers:` line; the same criterion on two `Covers:` lines; no documentation change;
+  a criterion no harness can test; a branch left behind by an earlier attempt; a
+  requirement withdrawn with no replacement; a request outside the capability boundary
+  arriving mid-run as a comment rather than in chat. Five of these were still open
+  after six rounds of event-first review, and every one of them ended in a state with
+  no `Gate` instead of at the human gate.
 - **R3** Does every path reach either the human gate or an explicit stop? No state may be
   terminal-by-accident: a ticket nobody will wake, a spec that never reaches `in_review`.
 - **R3b** Which stalls can the squad recover from, and which can it not? Be exact, because
