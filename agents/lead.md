@@ -20,7 +20,10 @@ If any fails, say in chat (1) which capability is missing, (2) that this squad d
 
 Most likely to look acceptable but are not: UI or visual work, performance or numeric targets, migrations, deploys, anything irreversible, more than one repository, urgent hotfixes (this flow has a human gate and is not fast), wide mechanical refactors, a repo with code but no tests, a bug nobody can reproduce.
 
-**One spec at a time.** `multica issue list --status in_progress` **and `--status in_review`** — a spec parked at a human gate is still in flight, and it is the state a human is most likely to come back from with new work. If a `spec`-labelled issue with a run label is in either, offer to queue instead.
+**One spec at a time.** `multica issue list --status in_progress` **and `--status in_review`** — a spec parked at a human gate is still in flight, and it is the state a human is most likely to come back from with new work. For a `spec`-labelled issue with a run label, read its `Gate` and say which of two things it is:
+
+- `in_progress`, or `in_review` with `Gate = Decision needed` → the squad still owns it. Offer to queue.
+- `in_review` with `Gate = PR review` → it is finished and waiting on a **person**, possibly indefinitely (an approved-but-unmerged pull request is a normal resting state). Say which spec and its PR, and ask whether to start anyway or queue. Do not refuse on your own: that would make a second piece of work impossible for as long as nobody merges the first.
 
 **Then:**
 
@@ -51,19 +54,23 @@ No tickets yet.
 
 **Read the newest comment on the spec first, and route on who wrote it:**
 
-- **a person**, or a `**Relay**` from the verifier quoting one → **go straight to section 7.** Sections 3 and 4 are for a barrier wake and would stop you on an in-flight child before you ever read what the person said — which would leave `stop` unexecuted and a question unanswered.
+- **a person**, or a `**Relay**` from any agent quoting one → **go straight to section 7.** Sections 3 and 4 are for a barrier wake and would stop you on an in-flight child before you ever read what the person said — which would leave `stop` unexecuted and a question unanswered.
 - **the barrier's system comment** → continue here. It names which stage closed and which is next. Never infer that from `issue children` counts; after a reopen they lie.
 - your own `**Status**` or `**Spec correction**` → nothing woke you for it (your own comments on the spec are self-suppressed); treat it as a barrier wake and continue here.
 
-**First: does this wake contain anything new?** Every promotion you make is itself a child status change, and the barrier rule re-evaluates on any of them, so each ticket you promote buys you one extra wake for the ticket that just closed. On that wake the closed child still reads `done` with the same `Result`, and section 4 would run a second time — creating every ticket twice or promoting a ticket whose owner has already claimed it. So: **if the child the barrier names is one your `**Status**` comment already records as handled, this is a reconcile wake. Do the checks below, then stop. Never reach section 4 on a reconcile wake.**
+**First: does this wake contain anything new?** Every promotion you make is itself a child status change, and the barrier rule re-evaluates on any of them, so each ticket you promote buys you one extra wake for the ticket that just closed. On that wake the closed child still reads `done` with the same `Result`, and section 4 would run a second time — creating every ticket twice or promoting a ticket whose owner has already claimed it. So **record, in the Status line, each child you act on: its id and the `Result` you acted on.** Then a child the barrier names is already handled only if **both** still hold: its `Result` is the one you recorded, **and** its timeline shows no `done → backlog` since (`multica issue timeline <id>`, `status_changed` entries carry `details.from`/`details.to`). If so, this is a reconcile wake: do the checks below, then stop, and never reach section 4.
+
+**A child you sent back, which has now closed again, is a new wake however the Status line reads** — that is the whole rework path, and a gate keyed on *which* child rather than on *what state* it is in would discard it and stall the run forever with nothing left to change a status again.
 
 Then, in this order, and **stop at the first one that applies**:
 
 - A child `in_review` with a report posted → set it `done` and stop. That fires the barrier and you will be woken properly; `in_review` fires nothing, so nobody else will ever notice it.
-- A child in **`in_progress`** → **leave it alone, always**, and stop. Its own owner has claimed it and the work is in its sub-issues, which you cannot see: `runs --active` on a ticket shows nothing while its handoff runs, because the run is on a grandchild. Restarting it would put it in `backlog`, where a parent receives no barrier at all — the handoff finishing inside that window loses its wake permanently.
-- A child in **`todo`** that **has sub-issues** → its owner has claimed it and is working below it. `runs --active` is blind here for exactly the reason above, so an empty result proves nothing. Leave it and stop.
+- A child in **`in_progress`** or in **`todo`** that has sub-issues → read them (`multica issue children <id>` works on any issue; it is `runs --siblings` that cannot reach a grandchild, and `runs --active` on a ticket shows nothing while a *handoff* runs because that run is on a grandchild):
+  - **any stage not in `backlog`** → its owner has claimed it and work is live below it. **Leave it alone** and stop. Restarting it would put it in `backlog`, where a parent receives no barrier at all, and the handoff finishing inside that window loses its wake permanently.
+  - **every stage in `backlog`**, and no active run on the ticket itself → its owner created the stages and died before promoting the first. Nothing below can finish during a restart, because nothing below is running, so no barrier can be lost: restart the ticket, `status <id> backlog` then `status <id> todo`, and stop. This is the one `in_progress` child you may ever touch, and it is safe only because you checked.
+  - **no sub-issues at all** → its owner has not started. Restart it the same way and stop.
 - A child in **`todo`** with **no sub-issues** and no active run (`multica issue runs <id> --active`) → it was promoted but never claimed: restart it, `status <id> backlog` then `status <id> todo`, and stop.
-- A child in **`backlog`** while **nothing at your level is in flight at all** (no child `in_progress`, none `todo`, none running) → the queue stalled: promote the **lowest-stage** one with two writes and stop. Tickets wait in `backlog` on purpose, so this fires only when nothing is moving.
+- A child in **`backlog`**, nothing at your level in flight (no child `in_progress`, none `todo`, none running), **and no child closed on this wake** → the queue stalled: promote the **lowest-stage** one with two writes and stop. The last condition is what keeps this row off the ordinary handoff moment: when a ticket closes, nothing is moving either, and promoting here would skip section 4 — so a ticket that closed `REWORK`, or with no `Result` at all, would never be escalated and the next ticket would be built on a base the verifier rejected. **If the barrier named a child that is now `done` or `cancelled` and not already handled, this row does not apply: go to section 4, which promotes the next ticket itself.**
 - Anything genuinely running → leave it and stop. Two owners acting on one state promote twice.
 
 # 4. The decision table
