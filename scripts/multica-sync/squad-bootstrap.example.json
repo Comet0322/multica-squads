@@ -1,8 +1,8 @@
 {
-  "_comment": "复制为 squad-bootstrap.json 后按需修改。stem = templates/zh_CN/agents/<stem>.md；skills = templates/zh_CN/skills 下 SKILL.md frontmatter 的 name；role 用于小队成员角色（与 squad_mapping.ROLE_TO_STEM 保持一致）；instructions_file 相对 templates/<lang> 解析。",
+  "_comment": "Copy to squad-bootstrap.json and edit as needed. stem = templates/en_US/agents/<stem>.md; skills = the name in the SKILL.md frontmatter under templates/en_US/skills; role is the squad member role (keep consistent with squad_mapping.ROLE_TO_STEM); instructions_file is resolved relative to templates/<lang>.",
   "squad": {
-    "name": "软件开发小队",
-    "description": "需求到上线的交付物驱动小队（含评审门禁）",
+    "name": "Software Development Squad",
+    "description": "Deliverable-driven squad from requirement to release (with review gates)",
     "instructions_file": "squad/software-development/squad.md",
     "leader": "leader"
   },
@@ -15,7 +15,7 @@
       "stem": "leader",
       "name": "Leader",
       "role": "Leader",
-      "skills": ["multica-verification", "multica-manage-skills", "multica-platform-knowledge-base"]
+      "skills": ["multica-verification", "multica-manage-skills", "multica-platform-knowledge-base", "multica-platform-git-host"]
     },
     {
       "stem": "product-manager",

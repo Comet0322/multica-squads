@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Sync templates/zh_CN/agents/*.md instructions to Multica agents (see repo_paths).
+Sync templates/en_US/agents/*.md instructions to Multica agents (see repo_paths).
 
 Reads each agent template markdown, extracts the ```text ... ``` block (Agent
 Instructions body), and PUT /api/agents/{id} with:

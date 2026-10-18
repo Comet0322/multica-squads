@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 """Resolve the templates tree for every sync script.
 
-This repo keeps templates per language (`templates/zh_CN`, `templates/en_US`),
+This repo keeps templates per language (currently only `templates/en_US`),
 while some forks use a flat `templates/agents` + `templates/skills` layout.
 One resolver keeps both working:
 
   1. `MULTICA_TEMPLATES_DIR` — explicit override (absolute, or relative to repo root)
-  2. `templates/<lang>`      — lang = `MULTICA_TEMPLATE_LANG`, default `zh_CN`
+  2. `templates/<lang>`      — lang = `MULTICA_TEMPLATE_LANG`, default `en_US`
   3. `templates/`            — flat-layout fallback
 
 Only *path* resolution lives here. No host, token, workspace or ID is ever
@@ -20,8 +20,8 @@ import os
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_LANG = "zh_CN"
-_LANG_FALLBACKS = ("zh_CN", "en_US")
+DEFAULT_LANG = "en_US"
+_LANG_FALLBACKS = ("en_US",)
 
 
 def _looks_like_templates(path: Path) -> bool:

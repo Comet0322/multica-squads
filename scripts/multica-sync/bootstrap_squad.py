@@ -5,11 +5,11 @@ Bootstrap a complete Multica squad from this repo's templates.
 
 Pipeline — each step feeds the next:
 
-  1. skills    templates/zh_CN/skills/**/SKILL.md  -> POST /api/skills | PUT /api/skills/{id}
-  2. agents    templates/zh_CN/agents/<stem>.md    -> POST /api/agents | PUT /api/agents/{id}
-  3. squad     templates/zh_CN/squad/**/squad.md   -> POST /api/squads (+ PUT instructions)
+  1. skills    templates/en_US/skills/**/SKILL.md  -> POST /api/skills | PUT /api/skills/{id}
+  2. agents    templates/en_US/agents/<stem>.md    -> POST /api/agents | PUT /api/agents/{id}
+  3. squad     templates/en_US/squad/**/squad.md   -> POST /api/squads (+ PUT instructions)
 
-Template paths are resolved by repo_paths.py (default zh_CN; override with
+Template paths are resolved by repo_paths.py (default en_US; override with
 MULTICA_TEMPLATES_DIR or MULTICA_TEMPLATE_LANG).
   4. members   POST /api/squads/{id}/members   (member_type=agent, role=<role>)
   5. bindings  POST /api/agents/{id}/skills/add  (ensure, additive)
@@ -292,7 +292,7 @@ def ensure_squad(
 ) -> str:
     """Create/update the squad and set its instructions. Returns squad id."""
     squad_cfg = config.get("squad") or {}
-    name = squad_cfg.get("name") or "软件开发小队"
+    name = squad_cfg.get("name") or "Software Development Squad"
     description = squad_cfg.get("description", "")
 
     instructions = ""

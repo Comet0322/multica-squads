@@ -157,7 +157,8 @@ class MulticaClient:
         return data or []
 
     def create_skill(self, workspace: str, payload: dict):
-        return self._request("POST", "/api/skills", workspace=workspace, body=payload)
+        data, _ = self._request("POST", "/api/skills", workspace=workspace, body=payload)
+        return data
 
     def update_skill(self, workspace: str, skill_id: str, payload: dict):
         return self._request("PUT", f"/api/skills/{skill_id}", workspace=workspace, body=payload)

@@ -1,5 +1,5 @@
 {
-  "_comment": "复制为 agent-mapping.json 后填入你的 agent UUID 或名称。示例值均为占位，不要提交真实 ID。",
+  "_comment": "Copy to agent-mapping.json and fill in your agent UUIDs or names. The values here are placeholders; never commit real IDs.",
   "architect": "Architect",
   "backend-developer": "BackendDev",
   "backend-reviewer": "BackendReviewer",

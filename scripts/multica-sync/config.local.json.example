@@ -1,5 +1,5 @@
 {
-  "_comment": "复制为 config.local.json（已在 .gitignore 中）。只放本机/本环境的值，切勿提交真实地址或凭据。",
+  "_comment": "Copy to config.local.json (already in .gitignore). Keep only values for this machine/environment; never commit real addresses or credentials.",
   "base_url": "https://multica.example.com",
   "workspace": "100"
 }

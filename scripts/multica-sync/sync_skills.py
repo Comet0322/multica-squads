@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Sync templates/<lang>/skills/**/SKILL.md trees to a Multica workspace (default lang: zh_CN).
+Sync templates/<lang>/skills/**/SKILL.md trees to a Multica workspace (default lang: en_US).
 
-For each skill directory under templates/zh_CN/skills/ (skips _lib/):
+For each skill directory under templates/en_US/skills/ (skips _lib/):
   - POST /api/skills when name not present
   - PUT  /api/skills/{id} when name exists (overwrite content + files)
 

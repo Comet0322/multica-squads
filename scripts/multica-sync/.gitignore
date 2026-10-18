@@ -1,4 +1,4 @@
-# 本地环境值（含内网地址 / workspace）—— 不提交
+# Local environment values (internal addresses / workspace) -- never commit
 config.local.json
 squad-bootstrap.json
 agent-mapping.json
