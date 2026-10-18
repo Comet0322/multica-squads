@@ -106,8 +106,11 @@ acceptance criterion; it has simply stopped being absent.
   budget is per ticket and resets when a human changes the inputs; the brief's
   own label does not.
 - **Reconcile wake** — an owner wake that carries nothing new, because the
-  barrier rule re-fires on any child status change. Recognised by state (the
-  stage already carries a `Result`), never by timestamps.
+  barrier rule re-fires on any child status change. Recognised by state, never
+  by timestamps — and never by a `Result` alone: a select property cannot be
+  unset, so a stage keeps the last verdict written on it straight through a
+  reopen. The state is a verdict **plus** the evidence it was reached at, which
+  is why the owner's own report records the SHAs it judged.
 - **Ticket base** — the commit a ticket's work starts from: `main` for the
   first, the previous ticket's verified head otherwise. Written on the ticket,
   because order cannot be inferred.

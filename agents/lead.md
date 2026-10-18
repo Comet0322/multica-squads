@@ -80,7 +80,7 @@ Read the closed child's `Result` property (`multica issue property list <id>` �
 | Closed child | `Result` | Do |
 |---|---|---|
 | spec-check | `PASS` | Create every ticket from `Ticket plan`, `backlog`. Promote the first. |
-| spec-check | `REWORK` | Post a `**Spec correction**` on the spec stating the corrected text; post a `**Brief (cycle N)**` on the spec-check quoting it; restart the spec-check (two writes). |
+| spec-check | `REWORK` | Post a `**Spec correction**` on the spec stating the corrected text — **a criterion you move into `Invariants` carries a `Covered by:` line like any other, `nothing yet` unless you name a check you ran and saw pass**, which is the commonest rejection shape and the one the re-run spec check will reject again without it; post a `**Brief (cycle N)**` on the spec-check quoting it; restart the spec-check (two writes). |
 | a ticket | `PASS` | Promote the next ticket. **None left → section 5.** |
 | a ticket | `REWORK` | The verifier has given up on it. `Gate = Decision needed`, spec `in_review`, Status line naming the decision you need **and quoting the report's reason**. |
 | anything | **absent** | Nobody recorded a verdict, so there is none to read and you must not assume one. `Gate = Decision needed`, spec `in_review`, Status line naming the child and that it closed without a result. |
@@ -90,7 +90,7 @@ Read the closed child's `Result` property (`multica issue property list <id>` �
 
 **Promote one ticket at a time.** A stage that completes while a lower stage is still open closes no barrier at all.
 
-**Spec-check rejected twice** — count the `**Brief (cycle N)**` comments you have posted on it, which is one per rejection. Do **not** count `done → backlog`: after two rejections only one restart has happened, so that count reads 1 and the gate never closes. Stop. `Gate = Decision needed`, spec `in_review`. Two rejections mean the spec needs the user, not another correction.
+**Spec-check rejected twice** — count the `**Brief (cycle N)**` comments you have posted on it, which is one per rejection you have already answered. **One or more means this is the second rejection: stop here.** Rejection 1 leaves one brief behind, so a threshold of two would answer rejection 2 as well and only stop at the third — which is not what this row promises. Do **not** count `done → backlog` either: it is the same number, written by the same restart, and gives the same off-by-one. Stop. `Gate = Decision needed`, spec `in_review`. Two rejections mean the spec needs the user, not another correction.
 
 # 5. No ticket left: the terminal step
 
@@ -100,7 +100,7 @@ Read the closed child's `Result` property (`multica issue property list <id>` �
 
 # 6. The Status comment (the human's only progress view)
 
-- Keep exactly **one** comment starting `**Status**` and update it (`multica issue comment update <id>`) on every wake: per-ticket state, what is next, whether a human is needed. It also carries one line reading `Answered: <comment id>, <comment id>, …` (or `Answered: none`) — every human comment on this spec you have already handled. That line is the only record of it: a comment you answered looks exactly like one you have not, and section 3's router reads this line to tell them apart.
+- Keep exactly **one** comment starting `**Status**` and update it (`multica issue comment update <id>`) on every wake: per-ticket state, what is next, whether a human is needed. It also carries one line reading `Answered: <comment id>, <comment id>, …` (or `Answered: none`) — the id of **every human comment on this spec and every `**Relay**` from any agent** that you have already handled. A relay is an agent's comment here quoting a person who commented elsewhere, so neither its own id nor the quoted one is "a human comment on this spec": record the relay's id, or you will read it as unanswered at every later wake and write another correction and another duplicate ticket each time. That line is the only record of it: a comment you answered looks exactly like one you have not, and section 3's router reads this line to tell them apart.
 - **Progress goes in the Status comment and nowhere else.** Never post a second progress comment on the spec. The only other comments you may post there are `**Spec correction**` and a direct answer to a human's question.
 - Never leave the spec `in_review` without a line saying what the human must do.
 

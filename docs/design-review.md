@@ -28,6 +28,7 @@ them moves nothing — and says nothing, because the CLI reports the status chan
 | 6 | an agent cannot continue | **nothing — it still sets its own issue `done`** and says why in its report, which fires the barrier normally. v8 removed `blocked` and `@mention` from every agent (ADR 0002): `blocked` is non-terminal so it fires no barrier, and a mention is a second wake nobody needs. A config in which this row names a mention is a config with an unreachable escalation path. | that issue's owner, by the ordinary barrier |
 | 7 | a human comments on the spec issue | comment on a squad-assigned issue | `sq-lead` |
 | 7b | a human comments on a **ticket or handoff** (agent-assigned) | a *human's* comment does wake an agent-assigned issue's assignee — measured, probe v8-P2 — unlike an agent's, which wakes nobody | that issue's assignee, which is **not** the leader. It must act on nothing and post a `**Relay**` on the spec issue — the one comment an agent may make outside its own issue, and the only path from a member to the only agent allowed to answer a person. Without that rule the human's words die there, and the assignee acts on prose that never entered the spec |
+| 7c | an agent posts a `**Relay**` on the spec issue | an agent's comment on the **squad**-assigned spec wakes the leader (unlike its comment on an agent-assigned issue, which wakes nobody) | `sq-lead`. This is the only wake the relay path has, and the leader must be able to tell a relay it has already handled from a new one — each relay is a fresh comment with a fresh id, so a relayer with no dedupe of its own turns one human remark into one duplicate ticket per wake |
 | 8 | the human merges the PR | Forgejo webhook + `Closes <SPEC-ID>` | nothing; the spec goes `done` |
 | 9 | an owner restarts a child: rework, a decision the human supplied, a stalled stage, a reopened ticket | `status <id> backlog` (starts nothing), then `status <id> todo` — **two** writes | that child's assignee |
 | 10 | an owner promotes the next stage while a lower stage is already complete | the **same** `child_done` rule re-evaluating (it is `mode: continuous` on `issue.status_changed`, condition `children_done / each_stage`) | that owner, a second time, for the stage that already closed |
@@ -82,8 +83,11 @@ Forbidden, because they produce **no** wake while looking like one:
 - **O1** Does every issue have exactly one owner (spec → `sq-lead`, ticket → `sq-reviewer`,
   handoff → its assignee)?
 - **O2** Does any instruction tell an agent to change an issue it does not own? Allowed:
-  your own issue; an owner on its own direct children. Never a sibling, a peer's issue, or
-  a parent's status or description.
+  your own issue; an owner on its own direct children; and one exception — a
+  **description-only** `--no-start` edit on a grandchild, which is how the leader
+  corrects a `Covers:` line it wrote onto a ticket's stage issues. It starts no run and
+  nothing else in the config repairs a stage description. Never a sibling, a peer's
+  issue, or a parent's status or description.
 - **O3** Is sequencing at each level done by exactly one agent? Two agents promoting the
   same stage means the work is done twice.
 - **O4** Does the escalation path stay inside ownership (a comment on your own issue, not a
