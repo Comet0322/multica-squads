@@ -112,6 +112,16 @@ Forbidden, because they produce **no** wake while looking like one:
   0001's accepted position, not an oversight — but a design that claims blanket
   self-recovery is overclaiming, and the detector (`watch.py`'s `STALLED`) is what makes it
   visible. Measured: 0 occurrences in 211 runs.
+- **R3c** The same class, one level up: a run that ends `completed` having made some of its
+  level's writes but not the next one. Each of these leaves a state whose recovery **is**
+  written — and no wake that reaches it, because the barrier already fired and nothing
+  changes a child's status again: a stage set `Result` but not promoted; a ticket given
+  `Result` but not set `done`; tickets created but the first never promoted; a PR opened
+  but `Gate` never set (which also leaves the spec `in_progress`, so section 1's
+  one-spec-at-a-time check blocks the next spec). Enumerate them and keep the list honest:
+  an owner's self-recovery is only as good as the wakes that can carry it, and prose that
+  reads as if recovery were live is the thing this row exists to catch. Same accepted
+  position as R3b — the human recovers, the detector makes it visible.
 - **R4** Is the last step before the human gate always a whole-spec check on the head the
   human will merge?
 
