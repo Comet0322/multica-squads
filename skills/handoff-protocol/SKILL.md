@@ -23,7 +23,7 @@ Consequences, all measured:
 - Finishing your own issue (`done`) fires the stage barrier and wakes the issue above you. That is the entire handoff.
 - **Never** `@mention` anyone. Never set anything `blocked` — it is not terminal, fires no barrier, and nothing is watching.
 - Never change the status of, or comment on, an issue that is neither yours **nor a sub-issue of one you own**. Promoting, briefing and restarting your own children is how an owner works; reaching sideways or upwards is not. **One exception, for one purpose**: a `**Relay**` comment on the spec issue, quoting a person who commented on an issue of yours. Nothing else reaches the leader, and the leader is the only agent allowed to answer a person.
-- Cannot finish the work? You still finish the **issue**: say exactly what is wrong in your report and set it `done`. Your owner decides.
+- Cannot finish the work? You still finish the **issue**: say exactly what is wrong in your report and set it `done`. Your owner decides. **This is for an issue that has an owner above it.** The spec issue has none, so it is never set `done` by this rule — a `done` parent silences every barrier beneath it, and the family would be left looking complete with its tickets still open. The leader's own instructions say what to do instead.
 
 ## Reporting
 

@@ -35,7 +35,7 @@ In this order, and stop at the first one that applies:
 
 **Every verdict you reach is a `**Report (cycle N)**` comment on the ticket**, the issue you own — not a note to yourself. That comment is the only thing the leader can read (it cannot see your handoffs at all), it is the anchor for "the stage I already reported on", and the table in it is where the PR body's per-criterion rows come from. A verdict you did not post is a verdict nobody can act on.
 
-**Every such report names which stage it judged, its `Result`, and the `Red SHA` and `Head SHA` it was given on.** Those three facts are why the report is load-bearing rather than narrative: the SHAs are how you tell a stage you judged from the same stage after a rework (the property keeps its old value), and your previous report is the **only** place the previous cycle's `Red SHA` still exists — the stage overwrites the property, and property changes never appear in the timeline.
+**Every such report names which stage it judged, its `Result`, and every SHA that stage carries** — `Red SHA` for a test stage, `Head SHA` for an implement or docs stage, and both when you are judging against a range. Those three facts are why the report is load-bearing rather than narrative: the SHAs are how you tell a stage you judged from the same stage after a rework (the property keeps its old value), and your previous report is the **only** place the previous cycle's `Red SHA` still exists — the stage overwrites the property, and property changes never appear in the timeline.
 
 **Every promote is two writes** — `status <id> backlog`, then `status <id> todo` — even when you believe the issue is already in `backlog`. A stage whose run finished after you reset it is sitting in `done`, and a single write from `done` starts nothing while printing that it did.
 
@@ -136,7 +136,7 @@ Short, because stage 2 already did the work:
 
 # 6. Sending a stage back
 
-First count this ticket's rework. **Count `**Brief (cycle N)**` comments, not status transitions.** `multica issue comment list` on each stage: one brief is one rework round. Counting `done → backlog` over-counts badly — step 2 below resets every stage above the reopened one, so a single round produces two or three of those transitions and the budget would be spent on the first round.
+First count this ticket's rework rounds. **Count the `**Brief (cycle N)**` comments on the ticket's LAST stage — the docs stage — and nothing else.** Every round briefs it: either it is the stage being sent back, or step 2 resets and briefs it because it sits above the one that was. So its brief count is exactly the number of rounds. Do not count briefs across all three stages (one round posts two or three, so the budget would be gone after the first), and do not count `done → backlog` transitions (step 2 produces several of those per round for the same reason).
 
 **The budget and the label are two different numbers.** The **budget** is this ticket's count, across all three stages, and it resets after human input (below). The **label** `N` in `**Brief (cycle N)**` is always `1 + the number of `**Brief` comments already on that one issue`, and it **never** resets — it is how the stage tells your newest instruction from your last one. Reusing a label a stage has already seen makes "newest in force" unorderable for it.
 

@@ -14,8 +14,10 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
   spec's own first child, which checks the spec before any ticket exists. The
   other three sit under a ticket, which has exactly one of each, in this
   order:
-  - **Test handoff** — turns a ticket's acceptance criteria into executable
-    tests that fail. Written without sight of any implementation.
+  - **Test handoff** — turns a ticket's criteria into executable tests that
+    have been seen to fail. It never reads the implementation to decide what
+    to assert; where the behaviour is already present it may break the code
+    on purpose to prove the test can fail, and discards that change.
   - **Implement handoff** — makes those tests pass. May add tests; may not
     change or delete the ones the test handoff wrote.
   - **Docs handoff** — documents what a user can now see. Documentation files

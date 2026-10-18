@@ -13,7 +13,7 @@ A ticket is done only when all of these are true and evidenced:
   Behaviour is present for every `I#`, for an `AC#` an earlier ticket of this spec happened to deliver, and for an `AC#` on any reopened test stage once the implement stage has pushed. **Demanding a red run for behaviour that is present is a defect, not rigour**: it cannot exist, and asking for it is how a test that cannot fail, or no test at all, enters the suite.
 - A criterion **a `**Spec correction**` retired** needs no test, and its existing tests may be deleted. The correction is the authority and it is durable; the `Retires:` line on a ticket is only the marker saying which ticket acts on it, so a ticket without that line still owes nothing for a retired number.
 - Those tests pass now, and the whole suite passes.
-- No test line that existed at `Red SHA` was changed or deleted, except for a criterion a `**Spec correction**` retired. Adding tests is allowed.
+- No test line that existed at `Red SHA` was changed or deleted. Adding tests is allowed. The retirement exception belongs to the **test stage** and happens before `Red SHA`; no later stage may delete a test line for any reason, retirement included.
 - The diff touches only files the spec's `Impact analysis` allows.
 - Behaviour a user can see is documented by the ticket's docs stage, and that stage touched documentation files only.
 - Build, vet and formatter show no **new** violations against the baseline the spec's `Repo intake` recorded. A repo that was already dirty is held to "nothing new", never to "clean" — tidying files the spec does not touch fails the scope check instead.
