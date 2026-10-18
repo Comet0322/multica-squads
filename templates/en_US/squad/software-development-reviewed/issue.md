@@ -1,13 +1,13 @@
 # Issue Template
 
-> Copy to a new Issue, fill it, and hand it to the Squad.
+> Copy into a new Issue, fill it in, then hand it to the Squad. This block is a verbatim copy of the canonical `references/spec-template.md` in the `multica-pm-requirement-spec` skill (the ProductManager's chat mode and `check_spec.py` use that file); do not edit it here — change the skill's template and re-copy.
 
 ```markdown
 # Feature
 
 ## Issue Source (required, pick one)
-<!-- Decides how deep this Issue is filled. For "external link", fill only the link + summary + involved ends; other sections jump to Notes referencing the KEY. Full requirements live in Jira/Tapd etc.; Squad pulls by KEY -->
-- [ ] External system link (lightweight): only "link / one-line summary / involved ends", other sections omitted
+<!-- Decides how deep this Issue is filled. For "external link", fill only the link + summary + involved ends. -->
+- [ ] External system link (lightweight): only "link / one-line summary / involved ends"
       - Link: https://jira.example.com/browse/<ISSUE-KEY>
       - Summary: <!-- one line on what to do -->
 - [ ] Fully self-contained (default): this Issue is the requirement; fill all sections below
@@ -19,21 +19,24 @@
 <!-- What problem does this solve? -->
 
 ## Scope
-<!-- Leader routes by this; missing ends aren't dispatched, their artifacts skipped -->
+<!-- The Leader routes by this; ends that are not ticked are not dispatched and their artifacts are skipped -->
 - Involved ends (check):
   - [ ] Design (needs Architect)
   - [ ] Frontend (needs FrontendDev)
   - [ ] Backend (needs BackendDev + API contract)
-  - [ ] Testing (needs Tester for functional/API cases and test report)
+  - [ ] Testing (needs Tester for functional/API cases and the test report)
 - Changes: <!-- what should change? -->
 
 ## Non-goals
 <!-- Explicitly what NOT to do -->
 
 ## Acceptance Criteria (must be testable)
-- [ ]
-- [ ]
-- [ ]
+- [ ] AC-1 <!-- one observable, testable statement -->
+- [ ] AC-2
+
+## Open Questions
+<!-- Optional. Every item must be closed before the Issue is created. -->
+- OP-1 <!-- question --> [resolved: the human's answer or a fact with its source] / [accepted by human: the risk the human accepted]
 
 ## References
 <!-- docs, issues, screenshots, code locations -->

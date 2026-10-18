@@ -1,45 +1,48 @@
 # Issue Template
 
-> Copy into a new Issue, fill it in, then hand it to the Squad.
+> Copy into a new Issue, fill it in, then hand it to the Squad. This block is a verbatim copy of the canonical `references/spec-template.md` in the `multica-pm-requirement-spec` skill (the ProductManager's chat mode and `check_spec.py` use that file); do not edit it here — change the skill's template and re-copy.
 
 ```markdown
 # Feature
 
-## Issue source (required, pick one)
-<!-- Decides how much to fill in. With "External link", only fill the link + summary + affected ends below; skip the other sections and reference the KEY in Notes. Full requirements live in Jira/Tapd etc., the Squad pulls them by KEY -->
-- [ ] External link (lightweight): only fill "link / one-line summary / affected ends"; other sections omitted
+## Issue Source (required, pick one)
+<!-- Decides how deep this Issue is filled. For "external link", fill only the link + summary + involved ends. -->
+- [ ] External system link (lightweight): only "link / one-line summary / involved ends"
       - Link: https://jira.example.com/browse/<ISSUE-KEY>
       - Summary: <!-- one line on what to do -->
-- [ ] Fully self-contained (default): this Issue is the requirement; fill in all sections below
+- [ ] Fully self-contained (default): this Issue is the requirement; fill all sections below
 
 ## Background
-<!-- Why are we doing this? -->
+<!-- Why do this? -->
 
 ## Goal
-<!-- What problem should this feature solve? -->
+<!-- What problem does this solve? -->
 
 ## Scope
-<!-- The Leader routes by this: ends not checked get no role; their artifacts are skipped -->
-- Affected ends (check):
-  - [ ] Design (needs Architect to propose a plan)
+<!-- The Leader routes by this; ends that are not ticked are not dispatched and their artifacts are skipped -->
+- Involved ends (check):
+  - [ ] Design (needs Architect)
   - [ ] Frontend (needs FrontendDev)
   - [ ] Backend (needs BackendDev + API contract)
-  - [ ] Testing (needs Tester for functional/API cases and test report)
-- What to change: <!-- What should change? -->
+  - [ ] Testing (needs Tester for functional/API cases and the test report)
+- Changes: <!-- what should change? -->
 
 ## Non-goals
-<!-- What explicitly won't be done? -->
+<!-- Explicitly what NOT to do -->
 
-## Acceptance criteria (must be testable)
-- [ ]
-- [ ]
-- [ ]
+## Acceptance Criteria (must be testable)
+- [ ] AC-1 <!-- one observable, testable statement -->
+- [ ] AC-2
+
+## Open Questions
+<!-- Optional. Every item must be closed before the Issue is created. -->
+- OP-1 <!-- question --> [resolved: the human's answer or a fact with its source] / [accepted by human: the risk the human accepted]
 
 ## References
-<!-- Docs, Issues, screenshots, code locations -->
+<!-- docs, issues, screenshots, code locations -->
 
 ## Notes
-<!-- Anything else the squad needs to know -->
+<!-- other context the Squad needs -->
 ```
 
 ---

@@ -35,6 +35,24 @@ For agent instructions see [`references/agent-instructions.md`](references/agent
 
 Revision after review: go back to phase A to change the content -> call publish again to **update** (not to create a duplicate). See publish skill Workflow B.
 
+## Chat mode (discussing the spec with a human)
+
+The human can pick this skill by typing `/` in the chat. This skill's own files are next to this SKILL.md: the format is `references/spec-template.md` and the check is `scripts/check_spec.py`.
+
+When the human talks to you in a chat instead of assigning an Issue, run an interview and end with an Issue:
+
+| Step | Action | Rule |
+| --- | --- | --- |
+| 0 | Ground yourself | `multica repo checkout <url>` of the project's repo; read `MULTICA.md` (product conventions) and existing docs; never invent mechanics, endpoints, fields or actors — unknowns become OP- questions |
+| 1 | Restate the ask in 1–2 sentences | Confirm you understood before asking anything |
+| 2 | Ask **one** question at a time | Order: who / problem -> scope and non-goals -> business rules and edge cases -> acceptance; give 2–3 options when possible |
+| 3 | Keep a running draft | Numbered AC- that can be tested; unknowns become OP- items, never silent assumptions. Close an OP- only with the human's answer or a cited fact (`[resolved: ...]`), or after the human accepts it (`[accepted by human: ...]`); if the human says "you decide", propose defaults as open OP- items and ask for acceptance |
+| 4 | Show the full draft on request or when ready | Paste the **whole draft into the chat** (the human cannot open files in your working directory; a summary table is not enough). Use **exactly** [`references/spec-template.md`](references/spec-template.md) (same `##` headings); propose the involved ends (Design / Frontend / Backend / Testing) and ask the human to confirm them |
+| 5 | Create the Issue only after an explicit "create it" **and a PASS from `python scripts/check_spec.py <draft.md>`** (write the draft to a file first; fix every FAIL line before creating; never claim a check you did not run) | `multica issue create ... --description-stdin`, "Fully self-contained" ticked, the line `Spec chat: scope, ends, acceptance criteria and open questions were confirmed by the human in the chat.` in Notes (the Leader treats it as G0 done), assigned to the squad found with `multica squad list` and the project from `multica project list` (ask if ambiguous) |
+| 6 | Reply with the Issue key and link, then stop | No dispatching, no status changes, no PRD file or push; the Leader starts at G0 |
+
+Stop interviewing after about 8 questions or when the human says enough; the rest goes into OP-. A PRD document is not required in this path: the self-contained Issue is the requirement (the Leader skips the PRD stage). If the human later wants a formal PRD, run phase A/B on that Issue.
+
 ## Step 0.5 — Knowledge base (two ways of use)
 
 Call `multica-platform-knowledge-base` -> `kb_ask.py` (SSH/curl forbidden).

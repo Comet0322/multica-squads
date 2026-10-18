@@ -10,6 +10,10 @@ Extends `software-development` by giving **every regular producing role except L
 
 If you only want the lightweight flow, use `software-development` (just the Leader-triggered multica-verification generic gate).
 
+## Discussing the spec first (optional)
+
+You do not have to write the Issue yourself: open a chat with the **ProductManager** agent, describe the idea and answer its questions one by one. When you say "create it", it files a fully self-contained Issue assigned to this squad (see the Chat mode section of `multica-pm-requirement-spec`); the Leader then starts at G0 and skips the PRD stage because the Issue already is the requirement.
+
 ## Difference from software-development
 
 | Dimension | software-development | software-development-reviewed |
