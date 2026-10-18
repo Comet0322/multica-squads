@@ -1,0 +1,1 @@
+{"name": "bp-tester", "description": "Verifies the fix against each acceptance criterion; PASS, FAIL or BLOCKED", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["bp-environment"], "mcp": [], "tier": "judgment"}

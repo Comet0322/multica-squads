@@ -1,0 +1,1 @@
+{"name": "bp-dev", "description": "Reproduces, root-causes and fixes the bug with a regression test", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["bp-environment"], "mcp": [], "tier": "execution"}

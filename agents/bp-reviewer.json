@@ -1,0 +1,1 @@
+{"name": "bp-reviewer", "description": "Business review of the change; never runs verification or edits code", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["bp-environment"], "mcp": [], "tier": "judgment"}

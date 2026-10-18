@@ -1,0 +1,1 @@
+{"name": "bp-lead", "description": "Orchestrates a bug fix: routes, gates with its own rerun, escalates, opens the PR", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["verification", "bp-environment"], "mcp": [], "tier": "judgment"}
