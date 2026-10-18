@@ -33,7 +33,7 @@ Consequences, all measured:
 
 ## Your issue tells you everything
 
-Your description carries `Spec: <id>`, and, for a stage under a ticket, `Ticket: <id>`, `Covers: AC#...`, the branch and a base commit. (The spec-check handoff has only `Spec:` — it checks the spec whole and covers no criterion.)
+Your description carries `Spec: <id>`, and, for a stage under a ticket, `Ticket: <id>`, `Covers: AC#...`, the branch and `Base SHA: <commit>` — the commit this ticket's work starts from, already resolved for you. (The spec-check handoff has only `Spec:` — it checks the spec whole and covers no criterion.)
 
 - **Read the acceptance criteria from the spec issue, never from a copy.** Nothing copies them, so there is nothing to go stale.
 - The contract is the spec's description **plus every `**Spec correction**` comment on it**, newest in force.
