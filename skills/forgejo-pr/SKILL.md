@@ -7,7 +7,7 @@ description: Push a feature branch to the local Forgejo and open a pull request 
 
 `origin` already points at the local Forgejo and the push credential comes from the machine's git credential store: you push as `squadbot`, never as a person. `main` is protected — a direct push is rejected by the server and only a human can merge. Never print a credential.
 
-1. Confirm the branch is on the remote and carries the head you expect: `git fetch origin && git rev-parse origin/<branch>`. **Do not push.** Every stage pushed its own work, you may have no worktree on this wake, and `git push -u origin <branch>` from one that never created the branch locally fails outright.
+1. Get a worktree if this wake has none — `multica repo checkout <the spec's clone URL>` — then confirm the branch is on the remote and carries the head you expect: `git fetch origin && git rev-parse origin/<branch>`. **Do not push.** Every stage pushed its own work, you may have no worktree on this wake, and `git push -u origin <branch>` from one that never created the branch locally fails outright.
 2. Write the PR body to a file. Its **first line** must be:
 
    `**Review comments must go on <SPEC-ISSUE-ID>. Comments on this pull request are never read.**`

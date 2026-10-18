@@ -11,7 +11,7 @@ description: The rules every squad agent follows when handing work over — what
 2. Its **assignee changes** while it is not `backlog`.
 3. Its status moves **out of `backlog`** into something that is not `done`/`cancelled`.
 
-**Comments are the exception, and your own instructions depend on it**: a **person's** comment on an agent-assigned issue starts a run on its assignee, and **any** comment on the squad-assigned spec wakes the leader. An agent's comment on an agent-assigned issue starts nothing. So a person can reach you directly on your own handoff — which is why every agent's first step asks who wrote the newest comment on it.
+**Comments are the exception, and your own instructions depend on it**: a **person's** comment on an agent-assigned issue starts a run on its assignee, and **any** comment on the squad-assigned spec wakes the leader — except the leader's own, which are self-suppressed. An agent's comment on an agent-assigned issue starts nothing. So a person can reach you directly on your own handoff — which is why every agent's first step asks who wrote the newest comment on it.
 
 Consequences, all measured:
 
@@ -24,7 +24,7 @@ Consequences, all measured:
 
 - Finishing your own issue (`done`) fires the stage barrier and wakes the issue above you. That is the entire handoff.
 - **Never** `@mention` anyone. Never set anything `blocked` — it is not terminal, fires no barrier, and nothing is watching.
-- Never change the status of, or comment on, an issue that is neither yours **nor a sub-issue of one you own**. Two exceptions, each written into the instruction that takes it: the `**Relay**` comment on the spec, and the leader's description-only `--no-start` edit on a ticket's stage issues, which starts no run and is the only way a `Covers:` line it wrote can be repaired. Promoting, briefing and restarting your own children is how an owner works; reaching sideways or upwards is not. **One exception, for one purpose**: a `**Relay**` comment on the spec issue, quoting a person who commented on an issue of yours. Nothing else reaches the leader, and the leader is the only agent allowed to answer a person.
+- Never change the status of, or comment on, an issue that is neither yours **nor a sub-issue of one you own**. Two exceptions, each written into the instruction that takes it: the `**Relay**` comment on the spec — the only path from a member to the leader, who is the only agent allowed to answer a person — and the leader's description-only `--no-start` edit on a ticket's stage issues, which starts no run and is the only way a `Covers:` line it wrote can be repaired. Promoting, briefing and restarting your own children is how an owner works; reaching sideways or upwards is not. **One exception, for one purpose**: a `**Relay**` comment on the spec issue, quoting a person who commented on an issue of yours. Nothing else reaches the leader, and the leader is the only agent allowed to answer a person.
 - Cannot finish the work? You still finish the **issue**: say exactly what is wrong in your report and set it `done`. Your owner decides. **This is for an issue that has an owner above it.** The spec issue has none, so it is never set `done` by this rule — a `done` parent silences every barrier beneath it, and the family would be left looking complete with its tickets still open. The leader's own instructions say what to do instead.
 
 ## Reporting
