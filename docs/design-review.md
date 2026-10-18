@@ -86,7 +86,8 @@ Forbidden, because they produce **no** wake while looking like one:
 - **O2** Does any instruction tell an agent to change an issue it does not own? Allowed:
   your own issue; an owner on its own direct children; and one exception — a
   **description-only** `--no-start` edit on a grandchild, which is how the leader
-  corrects a `Covers:` line it wrote onto a ticket's stage issues. It starts no run and
+  corrects a `Covers:` line on a ticket's stage issues — the verifier wrote those
+  descriptions, which is exactly why the leader cannot fix the line any other way. It starts no run and
   nothing else in the config repairs a stage description. Never a sibling, a peer's
   issue, or a parent's status or description.
 - **O3** Is sequencing at each level done by exactly one agent? Two agents promoting the
