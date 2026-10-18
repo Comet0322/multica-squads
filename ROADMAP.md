@@ -11,6 +11,16 @@ Software Development Starter
 └── 1 Workflow
 ```
 
+## Not yet exercised on real tasks
+
+Proven end to end on a Forgejo test repo (backend, frontend, fullstack, epic with stage-ordered slices, two Issues editing the same response, a spec contradiction escalated to a human, a UI-design Issue through the Designer, a bug fix by the bug-fix squad). Still to prove:
+
+- A professional review that fails three rounds in a row and escalates to a human.
+- DevOps and G2.5 (needs a real CI/CD platform behind `multica-platform-jenkins`).
+- The Figma, Jenkins, Apifox, Confluence, JIRA and knowledge-base platform shells against real systems.
+- Automatic notification when a human merges a PR (today a human comment wakes the Leader).
+- Two slices of the same epic stage that touch the same files.
+
 ## Internal-edition back-migration
 
 > This repo shares a common origin with an internal fork (CORP). Batched plan for back-porting validated capabilities from the internal fork to the public edition.

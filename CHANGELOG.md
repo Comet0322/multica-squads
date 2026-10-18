@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.2.0 - 2026-10-19
+
+Verified end to end on a test repo with the reviewed starter and the bug-fix starter: backend, frontend, fullstack, epic with slices, concurrent Issues, UI design, bug fix. Highlights: PR opening and close-after-merge, epic and slices, fresh-against-main re-gating, UI design requestable from the Issue, agents stop the servers they start.
+
 ### Changed
 
 - **UI design can now be requested in an Issue**: the spec template (and both starters' `issue.md`) splits the Scope end "Design (needs Architect)" into "Design (needs Architect: technical design)" and "UI design (needs Designer)"; `check_spec.py`, the PM skill and both `squad.md` G0 routing text follow. Before, a human could not ask for the Designer, and the Leader scoped a UI feature's design to the Architect only.
