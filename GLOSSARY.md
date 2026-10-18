@@ -10,11 +10,29 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
 - **Ticket issue** — one independently verifiable behaviour from a spec (a
   vertical slice, not a layer). Child of a spec issue.
 - **Handoff issue** — one task for one agent. Internal; humans are not
-  expected to read these. There are exactly two kinds:
+  expected to read these. There are exactly three kinds, and every ticket has
+  one of each, in this order:
   - **Test handoff** — turns a ticket's acceptance criteria into executable
     tests that fail. Written without sight of any implementation.
   - **Implement handoff** — makes those tests pass. May add tests; may not
     change or delete the ones the test handoff wrote.
+  - **Docs handoff** — documents what a user can now see. Documentation files
+    only. Last, because it commits to the same branch: the head a human merges
+    must be a head that was verified.
+
+## Criteria
+
+A spec states what must be true. The two kinds are kept apart because they have
+different evidence, and confusing them asks for a failing test that cannot exist.
+
+- **Acceptance criterion** — one numbered, testable statement about behaviour
+  that does **not** yet hold. Its evidence is red: a test that fails before the
+  change exists, for the right reason, and passes after.
+- **Invariant** — one numbered, testable statement about behaviour that
+  **already** holds and must not break. It can have no red evidence, because
+  there is nothing to make fail. Its evidence is that it passes on every
+  verified head. An invariant is not a weaker acceptance criterion; it is a
+  different claim, about preservation rather than change.
 
 ## Scenarios and scope
 
@@ -42,7 +60,9 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
 - **Red evidence** — the commit at which a ticket's tests fail, together with
   the failing output. What makes a verdict a finding rather than an opinion: a
   test that was never seen to fail proves nothing about the change that makes
-  it pass.
+  it pass. Only an **acceptance criterion** has red evidence. An **invariant**
+  has none by definition, so demanding it is how a squad ends up inventing a
+  failing test, which is worse than no test at all.
 - **Failure-mode ledger** — the classification of every observed failure by
   cause. A version claims an improvement by showing its targeted failure mode
   no longer occurs, not by a higher pass count.
