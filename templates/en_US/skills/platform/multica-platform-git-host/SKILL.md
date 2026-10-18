@@ -1,6 +1,6 @@
 ---
 name: multica-platform-git-host
-description: Open a pull request / merge request on the code host - Forgejo/Gitea, GitLab or Azure DevOps. Platform skill; opens only, never merges; the repo address comes from the repo bound in Multica, not from this skill.
+description: Open a pull request / merge request on the code host and read its state (open / merged / closed) - Forgejo/Gitea, GitLab or Azure DevOps. Platform skill; opens and reads only, never merges; the repo address comes from the repo bound in Multica, not from this skill.
 metadata:
   credentials:
     priority:
@@ -32,6 +32,15 @@ python scripts/open_pr.py --head release/<ISSUE-KEY>-<slug> --title "<ISSUE-KEY>
 - `--base` defaults to `default_base` in `config.yaml` (`main`).
 - A message starting with `BLOCKED:` (type not configured, empty token) goes into the Status comment as-is and is escalated to a human; do not guess.
 
+## Check whether a PR was merged
+
+```bash
+# prints one JSON line: {"number": N, "state": "open|merged|closed", "merged": true, "head_sha": "...", "merge_sha": "...", "url": "..."}
+python scripts/pr_status.py --number <N>
+```
+
+Read-only. Used by the Leader to confirm a human really merged before closing the Issue.
+
 ## Files
 
 ```text
@@ -39,7 +48,8 @@ multica-platform-git-host/
 ├── SKILL.md
 ├── config.yaml        # type / token_env / default_base (no credentials)
 ├── .env.example
-└── scripts/open_pr.py # stdlib only
+├── scripts/open_pr.py   # stdlib only
+└── scripts/pr_status.py # read-only PR state
 ```
 
 ## Configuration (filled once by the team)

@@ -283,6 +283,7 @@ After both gate layers PASS, **the Leader opens the PR**; a human merges.
 - **Permission and platform**: the Leader opens PRs through `multica-platform-git-host` (Forgejo / GitLab / Azure DevOps per its config) with a token that can only open PRs, never merge. `main` is protected and the merge whitelist contains only human accounts, so even a token with merge rights cannot merge directly.
 - **Open items**: matters still awaiting a human decision (e.g. whether to publish a contract, whether to change degradation behavior) do not block opening the PR, but must be written under "Known limitations".
 - **Wrap-up**: after opening, write the PR link and the Head SHA the gates verified in the Status comment, and say what the human needs to do.
+- **Closing**: a merge in the code host does not reach Multica by itself, so the Issue stays `in_review` until someone tells the Leader. When the human comments that the PR is merged, the Leader checks the PR state with `pr_status.py`, confirms the merged head equals the gated Head SHA, and sets `done`. The human's merge counts as the G4 signature; an unmerged PR or a different SHA keeps the Issue open.
 
 ---
 

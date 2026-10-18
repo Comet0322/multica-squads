@@ -98,7 +98,7 @@ From (PRD or Issue)【Scope】confirm: need design? need frontend? need backend?
 5. API test cases (@Tester present, dispatched right after API contract ready) → @Tester `multica-test-t1-design` + `multica-test-orchestration` cases return link → your generic gate → dispatch @TestReviewer `multica-review-test` to review
 6. **After G2, each end merges to deploy branch & pushes** → if scope has CI/CD, dispatch @DevOps: `multica-artifact-cicd-sync` triggers build/deploy to test env, returns URL → G2.5: you check CI evidence for PASS (@DevOps artifact is a deploy URL already covered by CI hard gate; no dedicated Reviewer)
 7. Test report (@Tester present) → **after G2.5 PASS** @Tester `multica-test-t3-ui-automation` + `multica-test-orchestration` executes in deployed env, returns report link → your generic gate (line-by-line acceptance coverage) → dispatch @TestReviewer `multica-review-test` to review coverage doc & conclusion soundness
-8. Human acceptance (G4) → only human (or explicit grant) may declare Done / ship
+8. Human acceptance (G4) → only human (or explicit grant) may declare Done / ship. When the human reports the merge, verify via `multica-platform-git-host` that the PR is merged at the gated Head SHA, then set `done` (see leader [Close after merge])
 
 【Professional review sub-loop】
 The dedicated Reviewer doesn't modify on the author's behalf; it only outputs conclusion + fix list and **reports to the Leader**. The Leader, per the review conclusion, dispatches the matching producing role to fix, then re-dispatches the same dedicated Reviewer to re-review:

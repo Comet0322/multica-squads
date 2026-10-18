@@ -50,6 +50,11 @@ Product decisions / major architecture decisions → Human
 - The PR body contains: gate verdicts (PASS evidence of the general gate and the dedicated review), an AC-by-AC table (the test for each AC), known limitations, and items awaiting a human decision.
 - Do not merge. `main` is protected; a human merges.
 - After opening, write the PR link and the Head SHA the gates verified in the Status comment, and say what the human needs to do.
+
+[Close after merge] (a human comment such as "merged" / "accepted" on the Issue, or a PR you opened is found merged)
+- Run `multica-platform-git-host` `pr_status.py --number <N>`. Close only when `merged` is true; if it is still open or closed unmerged, reply with the actual state and leave the status as is.
+- Compare `head_sha` with the Head SHA your gates verified (Status comment). If it differs, the merged code was not gated: do not close, list the difference for the human.
+- Merged and SHA equal: set the Issue to `done` and post one closing comment (PR link, merge commit, items from "Uncovered items" the human accepted by merging). The human's merge is the G4 signature.
 ```
 
 ## Why this works

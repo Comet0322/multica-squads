@@ -78,7 +78,7 @@ From the (PRD's or Issue's) 【Scope】, confirm: is design needed? frontend? ba
 5. API test cases (@Tester present; start as soon as the API contract is ready) → @Tester uses `multica-test-t1-design` + `multica-test-orchestration` to produce cases and return a link → you gate
 6. **After G2, each end merges to the deploy branch and pushes** → if scope includes CI/CD, dispatch @DevOps: use `multica-artifact-cicd-sync` to trigger build/deploy to the test env and return the URL → G2.5: you gate PASS from the CI evidence (no @DevOps / no CI → skip, T3 degrades to local / manual verification with explicit labeling)
 7. Test report (@Tester present) → **after G2.5 PASS** @Tester uses `multica-test-t3-ui-automation` + `multica-test-orchestration` to execute in the deploy env and return a report link → G3: you review whether it covers every acceptance criterion
-8. Human acceptance (G4) → only a Human (or explicit authorization) can declare Done / ship
+8. Human acceptance (G4) → only a Human (or explicit authorization) can declare Done / ship. When the human reports the merge, verify via `multica-platform-git-host` that the PR is merged at the gated Head SHA, then set `done` (see leader [Close after merge])
 
 【PARALLEL DISPATCH】
 API test cases are an implementation-stage parallel branch: dispatch @Tester as soon as the API contract is ready, without waiting for frontend or backend implementation; the test report still waits for the relevant implementations and API test cases to pass.
