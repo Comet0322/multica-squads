@@ -273,7 +273,7 @@ def generate(input_json, output_xmind=None, project_key=None):
     Args:
         input_json: Path of the test-case JSON file
         output_xmind: Output .xmind path; when None, auto-named by jira_key as
-            test_cases_{JIRA_KEY}.xmind。Only the current target file is overwritten; old files of other requirements are not deleted.
+            test_cases_{JIRA_KEY}.xmind. Only the current target file is overwritten; old files of other requirements are not deleted.
         project_key: Project key (used as the root topic title). Defaults to None, in which case the prefix is extracted from jira_key in the data
 
     Returns:

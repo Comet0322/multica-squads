@@ -127,12 +127,12 @@ class MulticaClient:
         return self._request("GET", "/api/agents", workspace=workspace)
 
     def agent_run_counts(self, workspace):
-        """30-day run count per agent in the workspace: [{agent_id, run_count}]。"""
+        """30-day run count per agent in the workspace: [{agent_id, run_count}]."""
         return self._request("GET", "/api/agent-run-counts", workspace=workspace)
 
     def agent_activity_30d(self, workspace):
         """30-day daily activity details per agent in the workspace:
-        [{agent_id, bucket_at, task_count, failed_count}](bucket_at is 00:00 UTC of that day)。"""
+        [{agent_id, bucket_at, task_count, failed_count}](bucket_at is 00:00 UTC of that day)."""
         return self._request("GET", "/api/agent-activity-30d", workspace=workspace)
 
     # ------------------------------------------------------------------
@@ -292,7 +292,7 @@ def build_parser():
         description="multica platform API query tool (workspace / agent stats)."
                     "Usage: multica_api <subcommand> --workspace <slug|id>",
     )
-    p.add_argument("--url", help="API address (default: env MULTICA_API_URL / ~/.multica/config.json / <MULTICA_API_URL>）")
+    p.add_argument("--url", help="API address (default: env MULTICA_API_URL / ~/.multica/config.json / <MULTICA_API_URL>)")
     p.add_argument("--token", help="API token (starts with mul_); takes priority over env and CLI config")
     p.add_argument("--workspace", help="workspace slug or UUID (used by agents / run-counts / activity / report)")
     p.add_argument("--json", action="store_true", help="JSON output")

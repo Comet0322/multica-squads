@@ -20,7 +20,7 @@ Structured professional review framework for **backend implementation artifacts 
 
 ## Output format
 ```
-【Backend Review】<change link>
+【Backend Review: contract | implementation】<change link>   (name the phase Leader dispatched: API contract at G2-prep, implementation at G2)
 Conclusion: PASS / FAIL
 Blocking items (required on FAIL, each: rationale / involved point / fix direction):
 - ...

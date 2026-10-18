@@ -14,8 +14,8 @@ Architect  FrontendDev  BackendDev
     │             │             │
     └──────┬──────┴──────┬──────┘
            ↓             ↓
-        Tester（cases shift left）  ↓
-        Reviewer（business review）
+        Tester (cases shift left)  ↓
+        Reviewer (business review)
 ```
 
 ## Workflow

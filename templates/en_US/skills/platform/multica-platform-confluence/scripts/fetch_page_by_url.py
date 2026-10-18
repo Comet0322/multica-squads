@@ -9,7 +9,7 @@ Usage:
 Environment variables:
   JIRA_EMAIL         - Atlassian Cloud account email (used together with JIRA_API_TOKEN)
   JIRA_API_TOKEN     - Atlassian Cloud API Token
-  CONFLUENCE_COOKIE  - Cookie for self-hosted Confluence (e.g. "JSESSIONID=xxx"）
+  CONFLUENCE_COOKIE  - Cookie for self-hosted Confluence (e.g. "JSESSIONID=xxx")
   Note: self-hosted Confluence and Jira cookies usually differ and must be set separately
 
 Output:

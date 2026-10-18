@@ -9,7 +9,7 @@
 | dev | `<jenkins-job-dev-service>` / `<jenkins-job-crm-dev-service>` | `<jenkins-job-dev-example>` |
 | sit | `<jenkins-job-sit-service>` | `<jenkins-job-sit-example>` |
 
-Base URL：`http://<JENKINS_URL>`
+Base URL: `http://<JENKINS_URL>`
 
 ## Common commands
 
@@ -46,8 +46,8 @@ python ../multica-artifact-cicd-sync/scripts/trigger_cicd.py \
 
 ## Build displayName patterns (reference)
 
-- dev：`{build}_{module}_{branch}_dev_{version}`
-- sit：`{build}_{module}_{branch}_sit_{version}` or `deployVersion_sit_{version}`
+- dev: `{build}_{module}_{branch}_dev_{version}`
+- sit: `{build}_{module}_{branch}_sit_{version}` or `deployVersion_sit_{version}`
 
 ## Parameters
 

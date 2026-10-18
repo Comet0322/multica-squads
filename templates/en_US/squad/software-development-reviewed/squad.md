@@ -46,7 +46,7 @@ Direct, conclusion-first, actionable, no fluff, no fabrication. Ask only the mos
 Squad instructions only name the "role prefix" above. A workspace often has multiple same-role instances (e.g. FrontendDev-web-ajie, FrontendDev-web-lina); dispatch must target "this Squad's" one:
 - At Squad start, declare instance suffix and member id, bound to all roles in this Squad; set once, not written in this file.
 - Every "@Role" resolves to "@Role-<suffix>-<member>" before exact @mention (e.g. suffix=payment, member=u1024 → @FrontendDev → FrontendDev-payment-u1024, @FrontendReviewer → FrontendReviewer-payment-u1024).
-- Roles out of scope are not resolved or dispatched. Full rules in 《Naming: Role + Project + Member》.
+- Roles out of scope are not resolved or dispatched. Full rules in "Naming: Role + Project + Member".
 
 【Stage-Gate map】(pipeline at a glance; drop a row when a layer is absent. Each artifact is produced via its orchestration-layer skill (`multica-artifact-*` series, etc.) and returns a stable link—see docs/en_US/artifact-conventions.md)
 S0 Requirements @ProductManager (PRD, `multica-pm-artifact-publish`) → G0 Scope set (based on PRD, declare deploy branch)
