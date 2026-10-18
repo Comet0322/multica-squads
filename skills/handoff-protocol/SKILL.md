@@ -22,7 +22,7 @@ Consequences, all measured:
 
 - Finishing your own issue (`done`) fires the stage barrier and wakes the issue above you. That is the entire handoff.
 - **Never** `@mention` anyone. Never set anything `blocked` — it is not terminal, fires no barrier, and nothing is watching.
-- Never change the status of, or comment on, an issue that is neither yours **nor a sub-issue of one you own**. Promoting, briefing and restarting your own children is how an owner works; reaching sideways or upwards is not.
+- Never change the status of, or comment on, an issue that is neither yours **nor a sub-issue of one you own**. Promoting, briefing and restarting your own children is how an owner works; reaching sideways or upwards is not. **One exception, for one purpose**: a `**Relay**` comment on the spec issue, quoting a person who commented on an issue of yours. Nothing else reaches the leader, and the leader is the only agent allowed to answer a person.
 - Cannot finish the work? You still finish the **issue**: say exactly what is wrong in your report and set it `done`. Your owner decides.
 
 ## Reporting
@@ -45,7 +45,7 @@ A reopen arrives as `backlog` then `todo`, with a `**Brief (cycle N)**` comment 
 
 ## Working in a repository
 
-- `multica repo checkout <url>` gives you a worktree. Work on the branch the spec names; never commit to `main`.
+- `multica repo checkout <url>` gives you a worktree — the clone URL is the spec's `Repo` line, which is the only place it is written. Work on the branch the spec names; never commit to `main`.
 - **Get onto that branch like this, every time:** `git fetch origin`, then `git checkout -B <branch> origin/<branch>` if it exists on the remote, or `git checkout -b <branch> origin/main` if it does not (you are the first stage of the first ticket). A fresh checkout does not have the branch locally, and a plain `git checkout -b` forks from `main` and silently drops every earlier stage's work. **Never force-push a commit anyone else may have read** — the one exception is your own tip commit, below.
 - Commit and push your own stage before you set yourself `done`. Push as `squadbot`; never print a credential.
 - **Commit as yourself, every time, with `-c` on the command:**

@@ -27,9 +27,9 @@ them moves nothing — and says nothing, because the CLI reports the status chan
 | 5 | a ticket finishes (`done`) | stage barrier on the spec | `sq-lead` (squad assignee → leader only) |
 | 6 | an agent cannot continue | **nothing — it still sets its own issue `done`** and says why in its report, which fires the barrier normally. v8 removed `blocked` and `@mention` from every agent (ADR 0002): `blocked` is non-terminal so it fires no barrier, and a mention is a second wake nobody needs. A config in which this row names a mention is a config with an unreachable escalation path. | that issue's owner, by the ordinary barrier |
 | 7 | a human comments on the spec issue | comment on a squad-assigned issue | `sq-lead` |
-| 7b | a human comments on a **ticket or handoff** (agent-assigned) | a *human's* comment does wake an agent-assigned issue's assignee — measured, probe v8-P2 — unlike an agent's, which wakes nobody | that issue's assignee, which is **not** the leader. The assignee may not answer on the spec, so without a relay rule the human's words die there |
+| 7b | a human comments on a **ticket or handoff** (agent-assigned) | a *human's* comment does wake an agent-assigned issue's assignee — measured, probe v8-P2 — unlike an agent's, which wakes nobody | that issue's assignee, which is **not** the leader. It must act on nothing and post a `**Relay**` on the spec issue — the one comment an agent may make outside its own issue, and the only path from a member to the only agent allowed to answer a person. Without that rule the human's words die there, and the assignee acts on prose that never entered the spec |
 | 8 | the human merges the PR | Forgejo webhook + `Closes <SPEC-ID>` | nothing; the spec goes `done` |
-| 9 | an owner restarts a child: rework, an answer to a `blocked` child, a stalled stage, a reopened ticket | `status <id> backlog` (starts nothing), then `status <id> todo` — **two** writes | that child's assignee |
+| 9 | an owner restarts a child: rework, a decision the human supplied, a stalled stage, a reopened ticket | `status <id> backlog` (starts nothing), then `status <id> todo` — **two** writes | that child's assignee |
 | 10 | an owner promotes the next stage while a lower stage is already complete | the **same** `child_done` rule re-evaluating (it is `mode: continuous` on `issue.status_changed`, condition `children_done / each_stage`) | that owner, a second time, for the stage that already closed |
 
 Row 10 is not a design choice and cannot be removed: the barrier rule has no memory of
@@ -91,11 +91,27 @@ Forbidden, because they produce **no** wake while looking like one:
 - **R1** Is every branch in an owner's phase list reachable — is there a row in the wake
   inventory that produces it?
 - **R2** Does every structure the design can create have a handler in the agent that
-  receives it? Enumerate the shapes: spec + spec-check, feature ticket, `Deliver` ticket,
-  fast-path ticket, fix ticket, reopened ticket. A shape with no handler means an agent
-  improvising on the only structure that path can produce.
+  receives it? Enumerate the shapes: spec + spec-check, ticket, reopened ticket, a ticket
+  added after the "last" one by PR feedback, a ticket carrying a `Retires:` line, a stage
+  reopened after a later stage has already pushed. (v7 removed ticket shapes: there is no
+  `Deliver` ticket and no fast path, so a config in which those appear is out of date.) A
+  shape with no handler means an agent improvising on the only structure that path can
+  produce.
 - **R3** Does every path reach either the human gate or an explicit stop? No state may be
   terminal-by-accident: a ticket nobody will wake, a spec that never reaches `in_review`.
+- **R3b** Which stalls can the squad recover from, and which can it not? Be exact, because
+  the owner's self-recovery is weaker than it reads. An owner only re-checks its level
+  **on a wake**, so recovery needs a wake to arrive. After promoting stage 2 or 3 one does:
+  the promotion is a child status change while a lower stage is already terminal, so row 10
+  re-fires the barrier within seconds and the owner gets a free second look. After
+  promoting a ticket's **stage 1**, or the spec-check, **no stage is terminal yet, so no
+  barrier can fire and the owner has no further wake at all.** A first stage that completes
+  its run while leaving its own issue non-terminal (`in_review`, or reset to `todo` by the
+  platform's sweeper, which is a single write and starts nothing) is therefore an
+  unrecoverable stall by design, with the human as the only recovery path. That is ADR
+  0001's accepted position, not an oversight — but a design that claims blanket
+  self-recovery is overclaiming, and the detector (`watch.py`'s `STALLED`) is what makes it
+  visible. Measured: 0 occurrences in 211 runs.
 - **R4** Is the last step before the human gate always a whole-spec check on the head the
   human will merge?
 

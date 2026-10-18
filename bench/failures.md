@@ -356,6 +356,16 @@ no amount of reading the config would have.
 
 ### F1. v8 has no rule for an acceptance criterion that already holds on `main` (design gap)
 
+**RESOLVED 2026-10-18 by ADR 0003 (config v9).** Keyed on the criterion's letter the
+question has no answer, because the kind a criterion is and the state of the tree a test
+runs against come apart routinely — a reopened test stage runs after the implement stage
+pushed, and an earlier ticket can incidentally deliver a later ticket's `AC#`. v9 keys it
+on the tree instead: **absent → red evidence, present → mutation evidence**, co-equal, and
+the verifier is forbidden to demand red for behaviour that is present. The spec-defect
+route survives only for an `AC#` that holds **on `main`**, which is the numbering mistake
+it was always for. Untested: no scored run has produced mutation evidence.
+
+
 The highest-value finding, and it is not a bug — it is a question the instructions never ask.
 TDD demands a test that fails before the code exists. An AC describing behaviour `main`
 already has cannot produce one. Two attempts hit it and **resolved it two different ways,

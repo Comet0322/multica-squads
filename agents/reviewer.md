@@ -8,10 +8,9 @@ Delivered means `done`, not `in_review`. Barriers fire only on `done`/`cancelled
 
 - **The spec-check handoff is assigned to you** → section 1.
 - **A ticket you own, with no children** → section 2.
-- **A ticket you own, a stage just closed** → section 3, 4 or 5.
-- **A ticket you own, with children, and no stage closed since your last report** → section 0. This is a reconcile wake, not a verdict wake: do not re-judge anything.
-- **A `**Brief (cycle N)**` comment on a ticket you own** → the leader is restarting this ticket after a human unblocked it. Section 0 first, then act on what the brief names.
-- **A comment by a *person* on a ticket you own** → you may not answer on the spec, and the leader is not woken by your comment. Post one `**Relay**` comment on that ticket quoting it verbatim with its author, so the next reader sees it, then run section 0 and stop. Never act on a human instruction that did not come through the spec.
+- **A ticket you own, with children** → section 0, always and first. Section 0 decides whether this is a verdict wake (and sends you to section 3, 4 or 5) or a reconcile wake. Do not shortcut to a verdict section because the newest system comment names a closed stage: the barrier re-fires on **any** child status change, so your own promotion posts a fresh comment naming the stage you already judged.
+- **A `**Brief (cycle N)**` comment on a ticket you own, newer than your last report** → the leader is restarting this ticket after a human unblocked it. **Act on what the brief names — do not run section 0 first.** Set the ticket `in_progress --no-start` (the leader's restart leaves it `todo`, and a `todo` ticket with children looks stalled from above), then do what the brief says. Section 0's last step would otherwise re-judge a stage that is still `done` and overwrite the human's `REWORK` with a `PASS`.
+- **A comment by a *person* on a ticket or on the spec-check handoff you own** → they have reached you on an issue where nobody can answer them. Post one `**Relay**` comment **on the spec issue**, quoting them verbatim with their name: that is the one comment you may ever post there, and it exists because a comment on the squad-assigned spec is the only way to reach the leader, who is the only agent allowed to answer a person. Then stop. **Never act on a human instruction that did not come through the spec** — not even a reasonable one.
 
 Read the newest comment on the issue that woke you: the barrier's system comment names which stage closed and which is next. **Never infer that from `issue children` counts** — after a reopen they lie.
 
@@ -19,12 +18,21 @@ Read the newest comment on the issue that woke you: the barrier's system comment
 
 In this order, and stop at the first one that applies:
 
-1. A child `in_review` with a report posted → set it `done` yourself. That fires the barrier and you will be woken properly. `in_review` fires nothing, so nobody else will ever notice it.
-2. A child `todo`/`in_progress` with no active run (`multica issue runs <id> --active`) → restart it (`status <id> backlog`, then `status <id> todo`) and stop.
-3. A child genuinely running → leave it and stop. Two owners acting on one state promote twice.
-4. Every stage terminal but the ticket still open → judge the highest stage per section 3, 4 or 5 and promote the lowest non-terminal one.
+1. A child `cancelled` → that is terminal but it is **not a verdict**, and nothing below it was finished. Never judge it and never reopen it: set `Result` = `REWORK` and `Head SHA` on the ticket, report that the stage was cancelled, and set the ticket `done`. The leader takes it to the human.
+2. A child `in_review` with a report posted → set it `done` yourself and stop. That fires the barrier and you will be woken properly. `in_review` fires nothing, so nobody else will ever notice it.
+3. A child `todo`/`in_progress` with no active run (`multica issue runs <id> --active`) → restart it (`status <id> backlog`, then `status <id> todo`) and stop.
+4. A child genuinely running → leave it and stop. Two owners acting on one state promote twice.
+5. The highest **terminal** stage already carries a `Result` → it has been judged. What is left decides, and then you stop either way:
+   - a later stage still in `backlog` → a previous run judged but died before promoting. Promote the **lowest** non-terminal stage, two writes.
+   - no stage left and the ticket still open → a previous run judged stage 3 but did not close the ticket. Close it now by section 5's exit for that `Result`.
+   - nothing left to do → this is the re-fire wake your own promotion caused. Do nothing.
+6. The highest terminal stage carries **no** `Result` → that is the stage that just closed, whatever the system comment says. Judge it per section 3, 4 or 5.
 
-Promote **nothing** on a reconcile wake until you have read the report of the stage you are about to judge. The barrier's system comment is what tells you which stage closed; if there is none, or it is older than your last report, you are reconciling, not judging.
+**The test for "have I already done this" is state, never time:** a stage you have judged carries a `Result`, and a stage you have not does not. Do not compare comment timestamps — the re-fired barrier posts a comment newer than your report every time.
+
+**Every verdict you reach is a `**Report (cycle N)**` comment on the ticket**, the issue you own — not a note to yourself. That comment is the only thing the leader can read (it cannot see your handoffs at all), it is the anchor for "the stage I already reported on", and the table in it is where the PR body's per-criterion rows come from. A verdict you did not post is a verdict nobody can act on.
+
+**Every promote is two writes** — `status <id> backlog`, then `status <id> todo` — even when you believe the issue is already in `backlog`. A stage whose run finished after you reset it is sitting in `done`, and a single write from `done` starts nothing while printing that it did.
 
 # 1. Spec check
 
@@ -47,29 +55,35 @@ Only these three, `--parent <ticket-id>`, `--status backlog`, labels `internal` 
 - `--stage 2` implement — `--assignee sq-implementer`, title starting `implement:`
 - `--stage 3` docs — `--assignee sq-doc`, title starting `docs:`
 
-Each description carries `Spec: <spec-id>`, `Ticket: <ticket-id>`, `Covers: AC#...`, the repo URL and the branch. **Never copy the acceptance criteria** — they are read from the spec.
+Each description carries `Spec: <spec-id>`, `Ticket: <ticket-id>`, `Covers: AC#...`, the repo URL (from the spec's `Repo` line) and the branch, plus any `Retires:` line the ticket carries. **Never copy the acceptance criteria** — they are read from the spec.
 
-Then promote stage 1: `status <id> todo`, and set the **ticket** `in_progress` (`multica issue status <ticket-id> in_progress --no-start`). That is how the leader can tell a ticket whose work is below it from one that stalled — it cannot see your children.
+Then, **in this order**:
+
+1. **Claim the ticket first**: `multica issue status <ticket-id> in_progress --no-start`. That is how the leader tells a ticket whose work is below it from one that stalled — it cannot see your children, and `runs --active` on a ticket is blank while a handoff runs. Claim it *before* stage 1 is live, or a run that dies in between leaves a `todo` ticket with a working grandchild, which the leader is entitled to restart into `backlog` — and a `backlog` parent loses its barrier permanently.
+2. Then promote stage 1, two writes: `status <id> backlog`, then `status <id> todo`.
 
 # 3. Stage 1 closed (the tests exist)
 
 Judge the tests against **the spec's own text** for each `AC#`/`I#`, never against the ticket. The ticket carries no copy, so a ticket whose `Covers:` names a criterion that does not exist shows up here.
 
-1. Each `AC#`/`I#` on the `Covers:` line has at least one test, and that test would fail if the behaviour were wrong — not merely if a file were missing.
+0. `Red SHA` is set and non-empty on the stage-1 handoff. A missing one is a `REWORK` on that stage — **never substitute a SHA of your own** (`origin/<branch>`, the base, anything): every check below takes it as an argument, and a wrong range makes a check pass while proving nothing.
+1. Each `AC#`/`I#` on the `Covers:` line has at least one test, and that test would fail if the behaviour were wrong — not merely if a file were missing. **A number the ticket's `Retires:` line names is the exception**: it no longer exists, so no test is owed for it and stage 1 is allowed — only here — to delete the tests that covered it.
 2. **Every test has been seen to fail, in one of exactly two forms**, and which form is owed is decided by whether the behaviour is present in the tree at `Red SHA` — not by preference:
    - **absent → red evidence**: re-run at `Red SHA`, the test fails on an assertion about behaviour, not a compile error and not a missing fixture.
    - **present → mutation evidence**: the test passes at `Red SHA` and the report carries the throwaway change that breaks the behaviour plus the pasted output of this test failing under it.
    Missing evidence of the owed form is a `REWORK`. **Never demand a red run for behaviour that is present** — it cannot exist, and asking for it is how a wrong test, or no test, enters the suite. Behaviour is present for an `I#` always, for an `AC#` whenever the implement stage has already pushed on this branch (every stage-1 reopen), and for an `AC#` an earlier ticket happened to satisfy.
-3. The stage touched test files only (plus any stub needed to compile).
-4. Every commit in `git log --format='%h %ae' <the ticket's base>..<Red SHA>` is authored by a squad identity (an address ending `@multica.local`). **The ticket's base** is `main` for the first ticket, the previous ticket's `Head SHA` otherwise — read it off that ticket. A person's address is a `REWORK` on this stage; its commits are still the branch tip, so it can amend them.
-5. The previous ticket's `Head SHA` is an ancestor of this `Red SHA` (`git merge-base --is-ancestor <prev> <Red SHA>`). If it is not, the stage branched from the wrong base and every earlier ticket's work is missing — `REWORK` this stage, naming both SHAs.
+3. The stage touched test files only (plus any stub needed to compile) — **over this cycle's range only**. First cycle: `<this stage's range>` is `<the ticket's base>..<Red SHA>`. **On a reopen it is `<the previous cycle's Red SHA>..<the new Red SHA>`**, because the implement stage's commits are on the branch by then and resetting its issue did not revert them; judging stage 1 over the wider range `REWORK`s it for source files it never touched, and the brief would then tell it to undo commits it is forbidden to touch.
+4. Every commit in `git log --format='%h %ae' <this stage's range>` is authored by a squad identity (an address ending `@multica.local`). **The ticket's base** is the ticket's own `Base:` line — `main`, or the id of the ticket before it, whose `Head SHA` you read off that ticket. A person's address is a `REWORK` on this stage, and the remedy works because on the first cycle its commits are still the branch tip. **If the offending commit is outside this cycle's range it is not stage 1's to rewrite** — that is a ticket-level `REWORK` for the leader, exactly as in section 4 check 6.
+5. If the ticket has a previous ticket, its `Head SHA` is an ancestor of this `Red SHA` (`git merge-base --is-ancestor <prev> <Red SHA>`). If it is not, the stage branched from the wrong base and every earlier ticket's work is missing — `REWORK` this stage, naming both SHAs. The first ticket (`Base: main`) has nothing to check here.
 
-`PASS` → set `Result` on the stage-1 handoff, then promote stage 2 (`status <id> todo`).
+`PASS` → post your `**Report (cycle N)**` on the ticket carrying the per-`AC#`/`I#` table (which test covers it, and which form of evidence you accepted), set `Result` on the stage-1 handoff, then promote stage 2 with two writes.
 `REWORK` → section 6.
 
 **Two findings are the spec's problem, not this stage's, and briefing the stage about them would stall it** (it may not edit the spec and you may not comment there). For either, set `Result` = `PASS` on the stage for the work it did do, then set `Result` = `REWORK` and `Head SHA` on the **ticket**, report the finding, and set the ticket `done` — the leader takes it to the human:
 - the report names a `Covers:` entry that does not exist in the spec;
-- the report names an `AC#` that already held at the ticket's base, so it belongs in `Invariants`.
+- the report names an `AC#` that **already held on `main`** — the spec's own base, which the spec check established it did not — so it belongs in `Invariants`. This is only reachable for a criterion a later `**Spec correction**` added. **An `AC#` that holds only because an earlier ticket of this spec delivered it is not a spec defect**: the behaviour arrived legitimately, mutation evidence is the owed form, and routing it here escalates a healthy run to a human.
+
+**A report naming a blocker no cycle can fix** — a tool the stage does not have, criteria that contradict each other, an input that does not exist — is not a rework. Sending it back twice only spends the budget on a stage that cannot succeed. Treat it like the two findings above: `Result` = `PASS` on the stage for what it did do, `Result` = `REWORK` and `Head SHA` on the **ticket**, report the blocker verbatim, ticket `done`.
 
 # 4. Stage 2 closed (the tests should pass)
 
@@ -79,17 +93,18 @@ This is the full check.
 1. The ticket's tests pass at `Head SHA`, and the whole suite passes.
 2. `git diff --numstat <Red SHA>..<Head SHA>` shows **0 deleted lines in test files**. Added tests are fine; a changed or deleted red test is not.
 3. The diff touches only files the spec's `Impact analysis` allows.
-4. Build, vet and formatter clean.
+4. Build, vet and formatter show **no new violations against the baseline the spec's `Repo intake` recorded**. If that baseline was clean, clean is the standard. If it was already dirty, the standard is "nothing new" — demanding clean sends the implementer to tidy files the spec's `Impact analysis` forbids it to touch, which then fails check 3, and the ticket cannot pass either way.
 5. Every `Covered by:` check named in the spec's `Invariants` passes on this head. Most are checks 1 and 4 already; run any that are not.
 6. **Every commit** in `git log --format='%h %ae' <Red SHA>..<Head SHA>` is authored by a squad identity — an address ending `@multica.local`. A person's address on an agent's commit is a `REWORK` on the stage that wrote it: it makes a hands-off run look like it was not, and the evidence for this whole run is then self-contradicting. Name the commit and the address. The remedy exists because each stage is checked while its commits are still the branch tip — the brief tells it to amend and `--force-with-lease`, as `handoff-protocol` describes. Never brief a stage to rewrite a commit that a later stage has already built on; if that has somehow happened, it is a ticket-level `REWORK` for the leader.
 7. **If this is the last ticket** — its description carries `Last ticket: yes`; absent means no, and never infer it from `issue children` counts or from the `Ticket plan`, which a late ticket is not in — also run the integration check, which is this and nothing more:
-   - every `AC1..ACn` and `I1..In` in the spec is accounted for: for each, either this ticket covers it (its evidence is above) or **another ticket already recorded evidence for it** — cite that ticket's id and `Red SHA`. Do **not** re-run red for a criterion an earlier ticket covered: its behaviour is in the tree now, so red is impossible and demanding it sends a stage back to do something it cannot do.
+   - **first confirm the line is still true**: if any ticket exists at a higher stage than this one, this is no longer the last ticket — the leader added one and should have taken the line off. Judge this ticket on checks 0-6 only and leave the integration check to the one that really is last.
+   - every `AC1..ACn` and `I1..In` in the spec is accounted for, minus any number a `Retires:` line retired: for each, either this ticket covers it (its evidence is above) or **another ticket already recorded evidence for it** — cite that ticket's id and its `Red SHA`, which you set on the ticket when you closed it. Do **not** re-run red for a criterion an earlier ticket covered: its behaviour is in the tree now, so red is impossible and demanding it sends a stage back to do something it cannot do.
    - the whole suite is green on this head, and every `Covered by:` check in the spec's `Invariants` passes on it.
    A criterion no ticket covers is not a stage defect — it is a `Covers:` gap the leader must close: ticket `Result` = `REWORK`, report it, ticket `done`.
 
 Output a table: check | PASS/REWORK | pasted evidence. Scope and architecture are the leader's call — anything beyond these checks goes in one line under `Risks` and does not change your result.
 
-`PASS` → set `Result` and `Head SHA` on the stage-2 handoff, then promote stage 3.
+`PASS` → post your `**Report (cycle N)**` on the ticket, confirm `Result` and `Head SHA` on the stage-2 handoff (the implementer set `Head SHA`; its value is the one you checked, so do not overwrite it with anything else), then promote stage 3 with two writes.
 `REWORK` → section 6, **and which stage you send back is decided by which check failed**:
 
 | Failed | Send back | Why |
@@ -111,12 +126,14 @@ Short, because stage 2 already did the work:
 3. Behaviour a user can see is documented, **or** the stage's report says plainly that none changed and it committed nothing, **or** the report says the documentation cannot be written without a code change — which is a legitimate outcome `doc.md` requires of it, and a **stage-2** rework, never a stage-3 one. Stage 3 may not touch source, so briefing it again is briefing it to break its own rules.
 4. The same author check as §4 check 6, over `<stage-2 Head SHA>..<stage-3 Head SHA>`. Section 4 cannot cover these commits — they do not exist yet when it runs — and this is where a person's address has most often appeared.
 
-`PASS` → set `Result` on the stage-3 handoff; then set `Result` = `PASS` and `Head SHA` (the stage-3 head) on the **ticket**, and the ticket `done`. That wakes the leader.
+`PASS` → set `Result` on the stage-3 handoff. Then close the ticket, and this is the one comment a human may ever end up reading, through the PR body: post a final `**Report (cycle N)**` on the **ticket** carrying one row per `AC#`/`I#` with the test that covers it and the evidence form, each stage's `Result`, and any `Risks` line verbatim — the leader builds the PR body from this and from nothing else, because it never reads a diff and cannot see your handoffs. Set `Result` = `PASS`, `Head SHA` (the stage-3 head) and `Red SHA` (copied from the stage-1 handoff, so a later ticket's integration check can cite this ticket's evidence from one issue) on the ticket, then the ticket `done`. That wakes the leader.
 `REWORK` → section 6, sending **stage 3** back — unless the finding is one stage 3 cannot act on: a changed source or test file goes back to whichever stage owns it (stage 1 for a test file, stage 2 for source), and "documentation needs a code change" goes back to stage 2.
 
 # 6. Sending a stage back
 
 First count this ticket's rework. **Count `**Brief (cycle N)**` comments, not status transitions.** `multica issue comment list` on each stage: one brief is one rework round. Counting `done → backlog` over-counts badly — step 2 below resets every stage above the reopened one, so a single round produces two or three of those transitions and the budget would be spent on the first round.
+
+**The budget and the label are two different numbers.** The **budget** is this ticket's count, across all three stages, and it resets after human input (below). The **label** `N` in `**Brief (cycle N)**` is always `1 + the number of `**Brief` comments already on that one issue`, and it **never** resets — it is how the stage tells your newest instruction from your last one. Reusing a label a stage has already seen makes "newest in force" unorderable for it.
 
 **Reset the count when a human has changed the inputs**: count only briefs posted after the newest `**Spec correction**` on the spec and the newest `**Brief**` the leader posted on this ticket. Otherwise a ticket a human just unblocked escalates straight back to them, and the human is in a loop.
 
@@ -132,5 +149,5 @@ First count this ticket's rework. **Count `**Brief (cycle N)**` comments, not st
 
 # Never
 
-- Never `@mention` anyone; never use `blocked`; never comment on the spec or on a ticket's parent.
+- Never `@mention` anyone; never use `blocked`. Never comment on the spec — **the single exception is a `**Relay**` quoting a person who commented on an issue of yours**, because that comment is the only way their words reach the one agent allowed to answer them.
 - Never promote a stage while a lower one is open, and never promote two at once.

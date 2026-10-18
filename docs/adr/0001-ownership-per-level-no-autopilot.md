@@ -3,6 +3,13 @@
 Date: 2026-10-17
 Status: accepted, implemented as config v7. Both load-bearing platform assumptions were
 verified first (probe F18, below).
+**Partly superseded by ADR 0002 (v8):** `blocked` and `@mention` were removed from every
+agent, so this ADR's "escalation is a status change, the owner sets the ticket `blocked`"
+is no longer the mechanism — an agent that cannot continue sets its own issue `done` and
+says why, and escalation is a `Result` = `REWORK` the leader carries to the human. The
+two-stage shape and the `Deliver` ticket it describes are also gone (v8 gives every ticket
+the same three stages). What stands, and is the reason to keep reading it, is ownership per
+level and the refusal of an autopilot.
 
 ## Context
 
