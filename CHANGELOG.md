@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.1.0 - 2026-10-19
+
+First tagged state: English-only templates, Git-flow aligned skills, spec chat with one enforced format, PR opening and close-after-merge, epic and slice splitting (untested end to end).
+
 ### Added
 
 - **Large changes split into an epic and slices**: the ProductManager's size check (spec chat step 3b) proposes vertical, independently shippable slices that the human approves before anything is created. The epic is a parent Issue never built itself; slices are sub-issues ordered with Multica's native `--parent` and `--stage` and created unassigned for later stages. The Leader's new [Epic] section assigns each stage after the previous one is merged and `done`, and leaves the epic `in_review` at the end. `FLOW.md` §4.5, both starters' G0 section and `multica-pm-requirement-spec` describe it.
