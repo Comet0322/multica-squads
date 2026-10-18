@@ -47,7 +47,7 @@ The contract is the spec's description **plus every `**Spec correction**` commen
 2. The `Reproduction` reproduces. Build the baseline and run it yourself.
 3. The `Repo intake` rows match a fresh run — build, the whole test suite, formatter, vet.
 4. Every `AC1..ACn` is **testable before the code exists AND does not hold yet**. Run it: build the baseline and check. An `AC` describing behaviour the repo already has is a `REWORK` — name it and say it belongs in `Invariants`, because the test writer cannot produce a failing test for behaviour that already passes and would be stuck between its own rules and yours.
-5. Every `I1..In` is the mirror of that: it **already holds** (run it), and its `Covered by:` either names a check you ran and saw pass, or says `nothing yet`. A wrong `Covered by:` is a `REWORK` — a check that does not actually cover the invariant is worse than admitting nothing does.
+5. Every `I1..In` is the mirror of that: it **already holds** (run it), and its `Covered by:` either says `nothing yet` or names something that **actually asserts that statement** — a named test function, or a command that *is* the invariant (`gofmt -l .` for "the tree stays formatted"). Run it and see it pass. **A whole-suite command (`go test ./...`) is a `REWORK` unless the invariant literally is "the suite stays green"**: it asserts nothing in particular, and the value's only effect would be to exempt the invariant from getting a ticket while nothing checks it. A `Covered by:` that does not cover is worse than admitting nothing does.
 6. The `Ticket plan`'s `Covers:` lines cover `AC1..ACn` plus every `I#` whose `Covered by:` is `nothing yet`, and the order has no dependency inversion.
 
 Then: report, set `Result` = `PASS` or `REWORK`, set yourself `done`. `REWORK` must name the exact section and what the text should say instead. Commit nothing.
@@ -109,7 +109,7 @@ This is the full check.
 
 Output a table: check | PASS/REWORK | pasted evidence. Scope and architecture are the leader's call — anything beyond these checks goes in one line under `Risks` and does not change your result.
 
-`PASS` → post your `**Report (cycle N)**` on the ticket, confirm `Result` and `Head SHA` on the stage-2 handoff (the implementer set `Head SHA`; its value is the one you checked, so do not overwrite it with anything else), then promote stage 3 with two writes.
+`PASS` → post your `**Report (cycle N)**` on the ticket, set `Result` = `PASS` on the stage-2 handoff and leave its `Head SHA` exactly as the implementer set it (that value is the one you checked; never overwrite it), then promote stage 3 with two writes.
 `REWORK` → section 6, **and which stage you send back is decided by which check failed**:
 
 | Failed | Send back | Why |
@@ -136,7 +136,9 @@ Short, because stage 2 already did the work:
 
 # 6. Sending a stage back
 
-First count this ticket's rework rounds. **Count the `**Brief (cycle N)**` comments on the ticket's LAST stage — the docs stage — and nothing else.** Every round briefs it: either it is the stage being sent back, or step 2 resets and briefs it because it sits above the one that was. So its brief count is exactly the number of rounds. Do not count briefs across all three stages (one round posts two or three, so the budget would be gone after the first), and do not count `done → backlog` transitions (step 2 produces several of those per round for the same reason).
+**Post your `**Report (cycle N)**` on the ticket first**, naming the stage, `REWORK`, what failed, and the `Red SHA`/`Head SHA` you judged. Section 3's reopen range reads the previous cycle's SHAs out of that report and out of nowhere else, so a rework you did not report is a rework the next cycle cannot judge.
+
+Then count this ticket's rework rounds. **Count the `**Brief (cycle N)**` comments on the ticket's LAST stage — the docs stage — and nothing else.** Every round briefs it: either it is the stage being sent back, or step 2 resets and briefs it because it sits above the one that was. So its brief count is exactly the number of rounds. Do not count briefs across all three stages (one round posts two or three, so the budget would be gone after the first), and do not count `done → backlog` transitions (step 2 produces several of those per round for the same reason).
 
 **The budget and the label are two different numbers.** The **budget** is this ticket's count, across all three stages, and it resets after human input (below). The **label** `N` in `**Brief (cycle N)**` is always `1 + the number of `**Brief` comments already on that one issue`, and it **never** resets — it is how the stage tells your newest instruction from your last one. Reusing a label a stage has already seen makes "newest in force" unorderable for it.
 

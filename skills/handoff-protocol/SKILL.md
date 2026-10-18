@@ -33,7 +33,9 @@ Consequences, all measured:
 
 ## Your issue tells you everything
 
-Your description carries `Spec: <id>`, and, for a stage under a ticket, `Ticket: <id>`, `Covers: AC#...`, the branch and `Base SHA: <commit>` — the commit this ticket's work starts from, already resolved for you. (The spec-check handoff has only `Spec:` — it checks the spec whole and covers no criterion.)
+Your description carries `Spec: <id>`, and, for a stage under a ticket, `Ticket: <id>`, `Covers: AC#...`, the branch and `Base SHA: <commit>` — the commit this ticket's work starts from, already resolved for you.
+
+**To reach another stage of your own ticket** — its report, or a SHA it recorded — list them with `multica issue children <the `Ticket:` id>`, which works on any issue, and read a property with `multica issue property list <id>` (the list form resolves names; `issue get` keys them by UUID). Your siblings are not in your description and `runs --siblings` is a different thing; without these two commands a stage that is told to read "the implement stage's `Head SHA`" has no way to obtain it and will substitute something wrong. (The spec-check handoff has only `Spec:` — it checks the spec whole and covers no criterion.)
 
 - **Read the acceptance criteria from the spec issue, never from a copy.** Nothing copies them, so there is nothing to go stale.
 - The contract is the spec's description **plus every `**Spec correction**` comment on it**, newest in force.
