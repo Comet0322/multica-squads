@@ -30,10 +30,11 @@ Most likely to look acceptable but are not: UI or visual work, performance or nu
 - Ask focused questions. Propose an architecture and trade-offs; get explicit agreement.
 - Produce **two** things for the user to approve: the spec, and the ticket plan. Wait for an explicit yes. Create nothing before it.
 
-**Spec sections:** goal, non-goals, architecture, `Repo intake` (verbatim), `Impact analysis` (files to touch, files that must not change, and the conventions a fresh context cannot infer — error-message shape, what must never be committed, formatter, allowed dependencies; cite an `AGENTS.md`/`CLAUDE.md` as the source if one exists, otherwise write them yourself and say so), `Reproduction` (bugs only), `Acceptance criteria` numbered `AC1..ACn`, the branch name, `Ticket plan`, `Human gates`.
+**Spec sections:** goal, non-goals, architecture, `Repo intake` (verbatim), `Impact analysis` (files to touch, files that must not change, and the conventions a fresh context cannot infer — error-message shape, what must never be committed, formatter, allowed dependencies; cite an `AGENTS.md`/`CLAUDE.md` as the source if one exists, otherwise write them yourself and say so), `Reproduction` (bugs only), `Acceptance criteria` numbered `AC1..ACn`, `Invariants` numbered `I1..In`, the branch name, `Ticket plan`, `Human gates`.
 
-- Every AC must be checkable by a test someone can write before the code exists.
-- `Ticket plan`: one line per ticket — title, what it delivers, `Covers: AC#`, `Blocked by`. One independently verifiable behaviour each; a vertical slice, not a layer. The plan lives in the description because you create the tickets on a later wake with a fresh context.
+- **An `AC` is behaviour that does NOT hold yet.** Every one must be checkable by a test that someone can write before the code exists **and watch fail**. If you catch yourself writing an AC for behaviour the repo already has, it is not an AC — move it to `Invariants`. Getting this wrong costs a guaranteed rework round, because the test writer cannot produce a failing test for behaviour that already passes.
+- **An `Invariant` is behaviour that already holds and must not break.** One line each: `I1..In`, the statement, and `Covered by:` — the existing test or check that proves it (a named test function, `go test ./...`, `gofmt -l .`), or `Covered by: nothing yet` when nothing does. You establish which by running, not by assuming; the `Repo intake` you pasted is the evidence.
+- `Ticket plan`: one line per ticket — title, what it delivers, `Covers: AC#`, `Blocked by`. One independently verifiable behaviour each; a vertical slice, not a layer. The plan lives in the description because you create the tickets on a later wake with a fresh context. A `Covers:` line names an `I#` **only** when that invariant's `Covered by:` is `nothing yet` — an already-covered invariant needs no ticket, because the check that covers it runs on every verified head anyway.
 - `Human gates` default: "Only the final PR review. **Leave review comments on this issue, not on the pull request** — nothing reads a pull request's comments."
 - **After the user agrees, never edit the description again.** It is the contract. Corrections are `**Spec correction**` comments; progress is the Status comment.
 
@@ -66,7 +67,7 @@ Read the closed child's `Result` property (`multica issue property list <id>` �
 | a ticket | `PASS` | Promote the next ticket. **None left → section 5.** |
 | a ticket | `REWORK` | The verifier has given up on it. `Gate = Decision needed`, spec `in_review`, Status line naming the decision you need. |
 
-**Creating tickets:** `--parent <spec-id> --stage <n>` (stage 2 for the first ticket, 3 for the second, …), `--assignee sq-reviewer`, labels `ticket` + run label, all `backlog`. The description carries only `Spec: <spec-id>`, `Covers: AC#...`, what it delivers, and the branch. **Never copy the acceptance criteria** — everyone reads them from the spec, so nothing can go stale. Before you promote the first, check the union of all `Covers:` lines equals `AC1..ACn`; a gap is yours to fix now.
+**Creating tickets:** `--parent <spec-id> --stage <n>` (stage 2 for the first ticket, 3 for the second, …), `--assignee sq-reviewer`, labels `ticket` + run label, all `backlog`. The description carries only `Spec: <spec-id>`, `Covers: AC#...`, what it delivers, and the branch. **Never copy the acceptance criteria** — everyone reads them from the spec, so nothing can go stale. Before you promote the first, check the union of all `Covers:` lines equals `AC1..ACn` plus every `I#` whose `Covered by:` is `nothing yet`; a gap is yours to fix now.
 
 **Promote one ticket at a time.** A stage that completes while a lower stage is still open closes no barrier at all.
 

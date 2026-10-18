@@ -367,6 +367,18 @@ neither of which is written down anywhere**:
   wrong: apply a throwaway mutation to `save()`, then paste the failing output."* That is
   mutation proof standing in for a red run. `sq-qa` complied and reported honestly that the
   AC4 test passes at `Red SHA` while the AC3 tests still fail.
+
+  **Correction (2026-10-18): this rework was not a defect in stage 1's work, it was v8
+  contradicting itself.** `sq-qa`'s first report says, verbatim: *"**AC4**: **This already
+  holds on this branch, so I committed no test for it.** I ran a throwaway probe test and did
+  not commit [it]"* — it had even run a probe to establish that the AC held. That is exactly
+  what `qa.md`'s own rule told it to do ("If an AC already holds on this branch, say so in the
+  report rather than writing a test that passes — then the ticket may need no implementation
+  and the verifier decides"), while `reviewer.md` §3 check 1 told the verifier that every AC
+  on `Covers:` needs a test. Both agents obeyed their own instructions; the instructions
+  disagreed, and the escape hatch pointed at a decision with no rule behind it. So the cost of
+  this gap is not probabilistic — **any spec containing an already-holding AC buys a wasted
+  rework round**, which makes the fix worth more than first estimated.
 - **a3, on the spec (`ACHE-211`).** The reviewer rejected the spec instead, and invented a
   second issue level for it: AC3, AC4, AC8 and AC9 were demoted out of `Acceptance criteria`
   into a new **`Guards`** section — *"already hold on `main`. Each must be covered by a test

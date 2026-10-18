@@ -47,11 +47,11 @@ A reopen arrives as `backlog` then `todo`, with a `**Brief (cycle N)**` comment 
 
 - `multica repo checkout <url>` gives you a worktree. Work on the branch the spec names; never commit to `main`.
 - Commit and push your own stage before you set yourself `done`. Push as `squadbot`; never print a credential.
-- **Commit with this exact identity, every time:**
+- **Commit as yourself, every time, with `-c` on the command:**
 
   ```
-  git -c user.name=squadbot -c user.email=squadbot@localhost commit -m "<subject>" -m "Co-Authored-By: <your agent name> <your-name@multica.local>"
+  git -c user.name=<your agent name> -c user.email=<your agent name>@multica.local commit -m "<subject>"
   ```
 
-  Pass it with `-c` on the command, never `git config`, which would write into a config the whole repository shares. A checkout is a **git worktree**, so it inherits that shared config — on an unconfigured machine that has produced commits authored as a *person* on a squad branch, which makes a hands-off run look like it was not. One author for the pusher, the trailer for who actually did the stage.
+  So `sq-qa` commits as `sq-qa <sq-qa@multica.local>`. Pass it with `-c`, never `git config`: a checkout is a **git worktree** and shares the repository's config, so a `git config` write lands on every other stage too. That shared config is also why this matters — on an unconfigured machine it has produced commits authored as a *person* on a squad branch, which makes a hands-off run look like it was not, and the verifier now rejects a stage for it. Your own name in the author field is what makes each stage's work attributable without a trailer.
 - Record the SHA your work ended on in the property your own instructions name.

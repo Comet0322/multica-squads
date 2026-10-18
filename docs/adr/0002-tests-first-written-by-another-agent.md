@@ -148,7 +148,10 @@ What the three runs add beyond the probes, all of which had exactly one ticket:
 - **Both rework paths were entered for real reasons and both converged in one cycle**, which
   is the part no static audit could have produced:
   - a2, `reviewer.md` §3 → §6: an AC on the ticket's `Covers:` line had no test. Sent back to
-    **stage 1**, the owner of tests — the right target per the §4 table.
+    **stage 1**, the owner of tests — the right target per the §4 table. The mechanism worked;
+    the *cause* turned out to be this ADR's own gap, not stage 1's work. `sq-qa` had reported
+    that the AC already held and deliberately written no test, exactly as `qa.md` instructs,
+    and `reviewer.md` required one anyway (`bench/failures.md` F1, Correction).
   - a3, `lead.md` §4 row 2: the spec check **rejected the spec**. The leader posted a
     `**Spec correction**`, briefed the check and restarted it with two writes. The rejection
     was substantive: `//go:build unix` is wrong for `syscall.Flock` (undefined on solaris and
