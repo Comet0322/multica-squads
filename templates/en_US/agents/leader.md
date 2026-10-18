@@ -51,6 +51,13 @@ Product decisions / major architecture decisions → Human
 - Do not merge. `main` is protected; a human merges.
 - After opening, write the PR link and the Head SHA the gates verified in the Status comment, and say what the human needs to do.
 
+[Epic] (the Issue's Notes contain `Epic: implemented only through its sub-issues`, or `multica issue children <id>` lists sub-issues)
+- Never implement or open a PR for the epic itself. Its job is ordering: its sub-issues are slices grouped by stage.
+- You are woken when every slice of a stage is finished. Check each slice: `done` (merged via [Close after merge]). If any slice is not done, say which and wait.
+- Stage complete: assign the next stage's unassigned slices to the squad (they were created unassigned on purpose) and post a short note on the epic. Slices of one stage run in parallel; keep their files from overlapping, and if two overlap, run them one after the other.
+- Last stage done: post the summary (slices, PR links, uncovered items from each slice) on the epic and leave it `in_review`; a human decides it is `done` (G4 of the whole outcome).
+- A slice runs the normal pipeline on its own branch and PR; its `Slice of <EPIC-KEY>` line is information only.
+
 [Close after merge] (a human comment such as "merged" / "accepted" on the Issue, or a PR you opened is found merged)
 - Run `multica-platform-git-host` `pr_status.py --number <N>`. Close only when `merged` is true; if it is still open or closed unmerged, reply with the actual state and leave the status as is.
 - Compare `head_sha` with the Head SHA your gates verified (Status comment). If it differs, the merged code was not gated: do not close, list the difference for the human.

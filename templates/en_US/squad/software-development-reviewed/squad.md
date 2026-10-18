@@ -86,6 +86,7 @@ From (PRD or Issue)【Scope】confirm: need design? need frontend? need backend?
    → dispatch @ProductReviewer `multica-review-product` to review PRD (scope/goal/acceptance clear & testable) → FAIL returns to @ProductManager
 1. Requirements ready (G0, from PRD or Issue) → human confirm
    - Exception, Issue from a spec chat: if the Issue's Notes contain the line `Spec chat: scope, ends, acceptance criteria and open questions were confirmed by the human in the chat.`, `check_spec.py --issue <ISSUE-KEY>` PASSes and no OP- is open, the human has already confirmed scope in the chat, so G0 is passed with no further human confirmation. Post the routing map and the deploy branch in a comment for information (do not wait) and dispatch. The human can still change scope later (rule 4). The exception does not apply if any of the three conditions is missing.
+   - Epic: an Issue whose Notes say `Epic: implemented only through its sub-issues` is not built itself; follow the leader's [Epic] section (stage-ordered slices, each a normal Issue with its own branch and PR).
 2. Design (scope has design) → @Architect `multica-artifact-architect` design returns ref
    → your generic gate (multica-verification skill) aligns acceptance
    → dispatch @ArchReviewer `multica-review-architect` to review design soundness; if scope has UI, also dispatch @DesignReviewer `multica-review-designer` to review UI

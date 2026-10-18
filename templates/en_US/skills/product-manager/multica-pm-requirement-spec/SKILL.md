@@ -47,9 +47,23 @@ When the human talks to you in a chat instead of assigning an Issue, run an inte
 | 1 | Restate the ask in 1–2 sentences | Confirm you understood before asking anything |
 | 2 | Ask **one** question at a time | Order: who / problem -> scope and non-goals -> business rules and edge cases -> acceptance; give 2–3 options when possible |
 | 3 | Keep a running draft | Numbered AC- that can be tested; unknowns become OP- items, never silent assumptions. Close an OP- only with the human's answer or a cited fact (`[resolved: ...]`), or after the human accepts it (`[accepted by human: ...]`); if the human says "you decide", propose defaults as open OP- items and ask for acceptance |
+| 3b | Size check before showing the draft | If the change has more than ~12 AC-, or needs more than two ends, or holds two or more independently shippable user values, or one PR would not be reviewable, do **not** file one Issue: propose slices (see [Large changes](#large-changes-epic-and-slices)) and get the human's approval first |
 | 4 | Show the full draft on request or when ready | Paste the **whole draft into the chat** (the human cannot open files in your working directory; a summary table is not enough). Use **exactly** [`references/spec-template.md`](references/spec-template.md) (same `##` headings); propose the involved ends (Design / Frontend / Backend / Testing) and ask the human to confirm them |
 | 5 | Create the Issue only after an explicit "create it" **and a PASS from `python scripts/check_spec.py <draft.md>`** (write the draft to a file first; fix every FAIL line before creating; never claim a check you did not run) | `multica issue create ... --description-stdin`, "Fully self-contained" ticked, the line `Spec chat: scope, ends, acceptance criteria and open questions were confirmed by the human in the chat.` in Notes (the Leader treats it as G0 done), assigned to the squad found with `multica squad list` and the project from `multica project list` (ask if ambiguous) |
 | 6 | Reply with the Issue key and link, then stop | No dispatching, no status changes, no PRD file or push; the Leader starts at G0 |
+
+### Large changes (epic and slices)
+
+A spec is one Issue = one deploy branch = one PR. A change that fails the size check (step 3b) becomes an **epic with slices**.
+
+- **Slice = vertical, independently shippable**: each slice cuts through every end it needs, has its own AC-, can merge to `main` without breaking it, and is demoable or verifiable alone. Never slice by end ("all frontend, then all backend"). Prefactoring that makes later slices easy is its own first slice. A mechanical change touching the whole codebase (rename, retype) goes expand → migrate in batches → contract, one slice per step.
+- **Order = stage**: slices that can run in parallel share a stage number; a slice that needs another merged first sits in a later stage. Two slices that touch the same files go in different stages.
+- **Show the plan first**: a numbered list with, per slice: title, stage, what it delivers, ends. Ask whether the granularity and the order are right; iterate; only then draft.
+- **Every slice is a normal spec**: the same template, `check_spec.py` PASS, the `Spec chat:` Notes line, and one extra Notes line `Slice of <EPIC-KEY>, stage <N>`.
+- **Create in this order** (each only after the human says "create it"):
+  1. The epic: a normal-template Issue whose Goal is the whole outcome and whose Notes carry the slice list and the line `Epic: implemented only through its sub-issues; do not implement it directly.`, assigned to the squad.
+  2. Stage 1 slices: `multica issue create --parent <epic-id> --stage 1 ...`, assigned to the squad.
+  3. Later-stage slices: `--parent <epic-id> --stage <N>`, **not assigned**. The Leader assigns them when the previous stage is done.
 
 Stop interviewing after about 8 questions or when the human says enough; the rest goes into OP-. A PRD document is not required in this path: the self-contained Issue is the requirement (the Leader skips the PRD stage). If the human later wants a formal PRD, run phase A/B on that Issue.
 
