@@ -21,7 +21,8 @@ Every requirement that enters the squad uses exactly this layout, whether a huma
 ## Scope
 <!-- The Leader routes by this; ends that are not ticked are not dispatched and their artifacts are skipped -->
 - Involved ends (check):
-  - [ ] Design (needs Architect)
+  - [ ] Design (needs Architect: technical design)
+  - [ ] UI design (needs Designer: screens / interaction / visual)
   - [ ] Frontend (needs FrontendDev)
   - [ ] Backend (needs BackendDev + API contract)
   - [ ] Testing (needs Tester for functional/API cases and the test report)
@@ -50,7 +51,7 @@ Every requirement that enters the squad uses exactly this layout, whether a huma
 | # | Rule |
 | --- | --- |
 | 1 | Exactly one Issue Source box is ticked. External link: a URL and a one-line summary are present and the other sections may be omitted. |
-| 2 | At least one involved end is ticked (Design / Frontend / Backend / Testing). |
+| 2 | At least one involved end is ticked (Design / UI design / Frontend / Backend / Testing). |
 | 3 | Self-contained: Background, Goal, Scope "Changes", Non-goals and Acceptance Criteria are non-empty. |
 | 4 | Acceptance criteria are numbered `AC-1`, `AC-2`, ... without gaps, each with a real sentence. |
 | 5 | No vague words in an AC (`etc.`, `and so on`, `appropriate`, `relevant`, `as needed`, `user-friendly`, `TBD`, `TODO`, `a bit`). |

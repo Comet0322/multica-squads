@@ -21,7 +21,8 @@
 ## Scope
 <!-- The Leader routes by this; ends that are not ticked are not dispatched and their artifacts are skipped -->
 - Involved ends (check):
-  - [ ] Design (needs Architect)
+  - [ ] Design (needs Architect: technical design)
+  - [ ] UI design (needs Designer: screens / interaction / visual)
   - [ ] Frontend (needs FrontendDev)
   - [ ] Backend (needs BackendDev + API contract)
   - [ ] Testing (needs Tester for functional/API cases and the test report)

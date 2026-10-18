@@ -59,7 +59,7 @@ Never implement yourself; never stamp PASS on work you assigned. Advancing is yo
 If the Issue is "linked" (only an external link + affected ends filled, the self-contained body lives at the link): first pull the requirement, scope, and acceptance criteria from the external system (Jira / Tapd, etc., configured in the `multica-platform-*` shell) via the `<ISSUE-KEY>` or link in the Issue, then proceed to the judgments below — never guess from the link alone.
 If @ProductManager present: dispatch @ProductManager first to produce the PRD (with G-/FR-/BR-/AC-/KPI-/RISK-/OP-); the PRD is the G0 fact-source and scope basis; OP- items must be closed before development.
 If no @ProductManager: treat the Issue as an already-ready scope, skip S0.
-From the (PRD's or Issue's) 【Scope】, confirm: is design needed? frontend? backend?
+From the (PRD's or Issue's) 【Scope】, confirm: is technical design needed? is UI design needed (@Designer)? frontend? backend?
 - Scope missing or vague → G0 FAIL, write back to the Issue / ask Human. No guessing.
 - Roles outside the scope get no work; their artifacts are skipped; the rest of the flow is unchanged.
 

@@ -50,9 +50,9 @@ def check(text):
     if len(ticked) != 1:
         errs.append("Issue Source: tick exactly one box (External system link / Fully self-contained), found %d" % len(ticked))
     external = ticked == ["External"]
-    ends = re.findall(r"^\s*-\s*\[[xX]\]\s*(Design|Frontend|Backend|Testing)\b", sec["scope"], re.M | re.I)
+    ends = re.findall(r"^\s*-\s*\[[xX]\]\s*(UI design|Design|Frontend|Backend|Testing)\b", sec["scope"], re.M | re.I)
     if not ends:
-        errs.append("Scope: tick at least one involved end (Design / Frontend / Backend / Testing)")
+        errs.append("Scope: tick at least one involved end (Design / UI design / Frontend / Backend / Testing)")
     if external:
         if not re.search(r"https?://\S+", src):
             errs.append("Issue Source: external link is ticked but no URL is given")

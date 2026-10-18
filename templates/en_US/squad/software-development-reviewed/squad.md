@@ -76,7 +76,7 @@ You hold both "generic gate" and "dispatch professional review": you run multica
 If Issue is "link-type" (only external link + involved ends filled, body self-contained content is in the link): first fetch requirements/scope/acceptance from the external system (Jira / Tapd etc., via `multica-platform-*` shell config) by `<ISSUE-KEY>` or link, then proceed—never guess from a link alone.
 If @ProductManager present: dispatch @ProductManager to produce PRD (with G-/FR-/BR-/AC-/KPI-/RISK-/OP-)—PRD is the factual source & scope basis for G0; unclosed OP- blocks dev entry.
 If no @ProductManager: Issue is treated as ready scope; skip S0.
-From (PRD or Issue)【Scope】confirm: need design? need frontend? need backend?
+From (PRD or Issue)【Scope】confirm: need technical design (@Architect)? need UI design (@Designer)? need frontend? need backend?
 - Scope missing or vague → G0 FAIL, write back to Issue / ask human; no guessing.
 - Roles not in scope aren't dispatched; their artifacts skipped; rest unchanged.
 

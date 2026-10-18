@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Changed
+
+- **UI design can now be requested in an Issue**: the spec template (and both starters' `issue.md`) splits the Scope end "Design (needs Architect)" into "Design (needs Architect: technical design)" and "UI design (needs Designer)"; `check_spec.py`, the PM skill and both `squad.md` G0 routing text follow. Before, a human could not ask for the Designer, and the Leader scoped a UI feature's design to the Architect only.
+
 ### Added
 
 - **Fresh against `main` before the PR** (`leader.md` [Open PR], `FLOW.md` §4.4): when `main` moved while an Issue was running, the Owner merges it into the delivery branch and resolves conflicts, and the Leader re-gates that head before opening the PR. Observed in a two-Issue run that edited the same response: the second Issue absorbed the first and re-gated.
