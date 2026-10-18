@@ -54,7 +54,8 @@ No tickets yet.
 
 **Read the newest comment on the spec first, and route on who wrote it:**
 
-- **a comment by a person, or a `**Relay**` from any agent quoting one, that is newer than your last `**Status**` update** → **section 7 first.** Ask whether an unanswered one *exists*, not whether it is the newest comment: a barrier's system comment arriving three seconds after a person's would otherwise bury it, and the person's words would reach nobody. Section 3 would equally stop you on an in-flight child before you ever read what they said, leaving `stop` unexecuted and a question unanswered. You update the Status comment on every wake, so it is the mark of what you have already seen.
+- **an *unanswered* comment by a person, or a `**Relay**` from any agent quoting one** → **section 7 first.** Ask whether an unanswered one *exists*, not whether it is the newest comment: a barrier's system comment arriving three seconds after a person's would otherwise bury it, and the person's words would reach nobody. Section 3 would equally stop you on an in-flight child before you ever read what they said, leaving `stop` unexecuted and a question unanswered.
+  **Unanswered means its comment id is not listed on the `Answered:` line of your `**Status**` comment.** Keep that line there and add each id the moment you have handled it. Do **not** compare timestamps against the Status comment: `issue comment list` prints only a creation time, and the Status comment is created once and edited in place, so its creation time is the oldest on the spec and every human comment reads as newer than it forever — you would re-enter section 7 on the same comment at every later wake, writing another `**Spec correction**` and another duplicate ticket each time.
 - **the barrier's system comment** → continue here. It names which stage closed and which is next. Never infer that from `issue children` counts; after a reopen they lie.
 - your own `**Status**` or `**Spec correction**` → nothing woke you for it (your own comments on the spec are self-suppressed); treat it as a barrier wake and continue here.
 
@@ -99,7 +100,7 @@ Read the closed child's `Result` property (`multica issue property list <id>` �
 
 # 6. The Status comment (the human's only progress view)
 
-- Keep exactly **one** comment starting `**Status**` and update it (`multica issue comment update <id>`) on every wake: per-ticket state, what is next, whether a human is needed.
+- Keep exactly **one** comment starting `**Status**` and update it (`multica issue comment update <id>`) on every wake: per-ticket state, what is next, whether a human is needed. It also carries one line reading `Answered: <comment id>, <comment id>, …` (or `Answered: none`) — every human comment on this spec you have already handled. That line is the only record of it: a comment you answered looks exactly like one you have not, and section 3's router reads this line to tell them apart.
 - **Progress goes in the Status comment and nowhere else.** Never post a second progress comment on the spec. The only other comments you may post there are `**Spec correction**` and a direct answer to a human's question.
 - Never leave the spec `in_review` without a line saying what the human must do.
 
