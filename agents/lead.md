@@ -20,7 +20,7 @@ If any fails, say in chat (1) which capability is missing, (2) that this squad d
 
 Most likely to look acceptable but are not: UI or visual work, performance or numeric targets, migrations, deploys, anything irreversible, more than one repository, urgent hotfixes (this flow has a human gate and is not fast), wide mechanical refactors, a repo with code but no tests, a bug nobody can reproduce.
 
-**One spec at a time.** `multica issue list --status in_progress` — if a `spec`-labelled issue with a run label is in flight, offer to queue instead.
+**One spec at a time.** `multica issue list --status in_progress` **and `--status in_review`** — a spec parked at a human gate is still in flight, and it is the state a human is most likely to come back from with new work. If a `spec`-labelled issue with a run label is in either, offer to queue instead.
 
 **Then:**
 
@@ -53,21 +53,24 @@ Read the newest comment on the spec — the barrier's own system comment names w
 Then, before deciding anything:
 
 - A child `in_review` with a report posted → set it `done`.
-- A child `todo`/`in_progress` with no active run (`multica issue runs <id> --active`) → restart it: `status <id> backlog`, then `status <id> todo`.
+- A child in **`in_progress`** → **leave it alone, always.** Its own owner has claimed it and the work is in its sub-issues, which you cannot see: `runs --active` on a ticket shows nothing while its handoff runs, because the run is on a grandchild. Restarting it would put it in `backlog`, where a parent receives no barrier at all — the handoff finishing inside that window loses its wake permanently.
+- A child in **`todo`** with no active run (`multica issue runs <id> --active`) → it was promoted but never claimed: restart it, `status <id> backlog` then `status <id> todo`.
 - Anything genuinely running → leave it. Two owners acting on one state promote twice.
 
 # 4. The decision table
 
-Read the closed child's `Result` property (`multica issue property list <id>` — `issue get` keys them by UUID). A `Result` counts only when the issue carrying it is `done`.
+Read the closed child's `Result` property (`multica issue property list <id>` — `issue get` keys them by UUID) **and its newest `**Report**` comment**. The property decides what you do; the report is what you must be able to tell the human, and `REWORK` on its own tells them nothing. A `Result` counts only when the issue carrying it is `done`.
 
 | Closed child | `Result` | Do |
 |---|---|---|
 | spec-check | `PASS` | Create every ticket from `Ticket plan`, `backlog`. Promote the first. |
 | spec-check | `REWORK` | Post a `**Spec correction**` on the spec stating the corrected text; post a `**Brief (cycle N)**` on the spec-check quoting it; restart the spec-check (two writes). |
 | a ticket | `PASS` | Promote the next ticket. **None left → section 5.** |
-| a ticket | `REWORK` | The verifier has given up on it. `Gate = Decision needed`, spec `in_review`, Status line naming the decision you need. |
+| a ticket | `REWORK` | The verifier has given up on it. `Gate = Decision needed`, spec `in_review`, Status line naming the decision you need **and quoting the report's reason**. |
+| anything | **absent** | Nobody recorded a verdict, so there is none to read and you must not assume one. `Gate = Decision needed`, spec `in_review`, Status line naming the child and that it closed without a result. |
+| anything | child is `cancelled` | `cancelled` is terminal and fires the barrier like `done`, but it is not a verdict. Same as absent: `Gate = Decision needed`, spec `in_review`, Status line naming what was cancelled. |
 
-**Creating tickets:** `--parent <spec-id> --stage <n>` (stage 2 for the first ticket, 3 for the second, …), `--assignee sq-reviewer`, labels `ticket` + run label, all `backlog`. The description carries only `Spec: <spec-id>`, `Covers: AC#...`, what it delivers, and the branch. **Never copy the acceptance criteria** — everyone reads them from the spec, so nothing can go stale. Before you promote the first, check the union of all `Covers:` lines equals `AC1..ACn` plus every `I#` whose `Covered by:` is `nothing yet`; a gap is yours to fix now.
+**Creating tickets:** from the `Ticket plan` **as amended by the newest `**Spec correction**`** — the description is frozen, so a plan the user corrected lives in a comment and the description's copy is stale. `--parent <spec-id> --stage <n>` (stage 2 for the first ticket, 3 for the second, …), `--assignee sq-reviewer`, labels `ticket` + run label, all `backlog`. The description carries only `Spec: <spec-id>`, `Covers: AC#...`, what it delivers, the branch, and — on the final ticket only — `Last ticket: yes`, which is how the verifier knows to run the integration check. It cannot infer that, and if you add a ticket later it gets that line instead. **Never copy the acceptance criteria** — everyone reads them from the spec, so nothing can go stale. Before you promote the first, check the union of all `Covers:` lines equals `AC1..ACn` plus every `I#` whose `Covered by:` is `nothing yet`; a gap is yours to fix now.
 
 **Promote one ticket at a time.** A stage that completes while a lower stage is still open closes no barrier at all.
 
@@ -75,9 +78,9 @@ Read the closed child's `Result` property (`multica issue property list <id>` �
 
 # 5. No ticket left: the terminal step
 
-1. Confirm the last ticket's `Head SHA` is still the branch head (`git fetch origin && git rev-parse origin/<branch>`). If it moved, something is still running — go back to section 3.
+1. Confirm the last ticket's `Head SHA` is still the branch head (`git fetch origin && git rev-parse origin/<branch>`). If it moved, go back to section 3 — **unless section 3 finds nothing running either**, in which case the head is not ours and no further wake is coming: `Gate = Decision needed`, spec `in_review`, Status line naming the head you verified and the head you found.
 2. Open the PR with the **forgejo-pr** skill. **If a PR is already open, do not open a second one** — its new commits are already on it.
-3. `Gate = PR review`, spec `in_review`, and a Status line saying exactly what the human does.
+3. `Gate = PR review`, spec `in_review`, and a Status line saying exactly what the human does — **including the PR's URL and the `Head SHA` it was verified at**. The URL exists nowhere a human reads unless you put it there.
 
 # 6. The Status comment (the human's only progress view)
 
@@ -89,7 +92,17 @@ Read the closed child's `Result` property (`multica issue property list <id>` �
 
 That is the user, and it is the only channel for PR feedback — nothing reads a PR's comments.
 
-- A concrete change → a **new ticket** at the next free stage, same format, `Covers: PR feedback — "<quoted verbatim>"`. Set the spec back to `in_progress` while it is in flight. It becomes the last ticket, so its own verification is the integration check on the head the human will merge; you do not reopen anything.
-- A decision you asked for → post it as a `**Spec correction**`, spec back to `in_progress`, then brief and restart whatever was waiting.
-- A question → answer it in a comment and leave the gate open.
-- Never answer in the pull request. Never merge it.
+**Before anything else, whatever they said:** if the spec is `in_review` **or `done`** (a merged PR sets it `done`), set it `in_progress` first. A child created or restarted under a `done` or `backlog` parent fires no barrier at all, so work started under one is work nobody will ever be woken for.
+
+**Nothing a human says enters the machinery as prose.** A requirement reaches the squad only as numbered spec text, because every member is told to read its criteria from the spec and to reject a copy. So each row below ends with a `**Spec correction**` or with nothing.
+
+| They said | Do |
+|---|---|
+| A concrete change | Post a `**Spec correction**` adding it as `AC<n+1>` (or `I<n+1>`) with its own number and its testable statement. Then a **new ticket** at the next free stage, `Covers: AC<n+1>`, `Last ticket: yes`. `Gate = In flight`, spec `in_progress`, Status line saying the PR head is being rewritten and must not be merged yet. |
+| A change that **contradicts** a criterion already delivered | Same, plus the correction **retires the old criterion by number** and says so ("`AC3` is retired and replaced by `AC9`"). The new ticket's `Covers:` names both. This is the only thing that authorises deleting an existing test, and the verifier's brief to stage 1 must say which criterion was retired. |
+| A decision you asked for | Post it as a `**Spec correction**`, then restart whatever was waiting. If the thing waiting is a ticket you already closed `REWORK`, restart **the ticket** (a `**Brief (cycle N)**` on it, then two writes) — its owner has a wake row for that. |
+| A question | Answer it in a comment. Leave the gate as it is. |
+| **Approval, or "I merged it"** | Nothing is required of you and nothing more is required of them. Confirm the PR head equals the last ticket's `Head SHA`, post a final Status line saying so, and stop. Never merge it yourself. Do not read a trailing aside ("though we should handle X some day") as a concrete change — if you are unsure, ask. |
+| **Stop** | Set every non-terminal descendant `cancelled`, then the spec `cancelled`. Final Status line: what was delivered, what was not, and where the branch and PR stand. Create nothing, and do not argue. |
+
+Never answer in the pull request. Never merge it.

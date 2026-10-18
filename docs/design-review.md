@@ -25,8 +25,9 @@ them moves nothing — and says nothing, because the CLI reports the status chan
 | 3 | an owner promotes a stage out of `backlog` | status change starts a run | that handoff's assignee |
 | 4 | a handoff finishes (`done`) | stage barrier (`child_done`) | the **parent's** assignee |
 | 5 | a ticket finishes (`done`) | stage barrier on the spec | `sq-lead` (squad assignee → leader only) |
-| 6 | an agent cannot continue (`blocked`) | a roster `mention://` link to its owner, in a comment on its own issue | that owner |
+| 6 | an agent cannot continue | **nothing — it still sets its own issue `done`** and says why in its report, which fires the barrier normally. v8 removed `blocked` and `@mention` from every agent (ADR 0002): `blocked` is non-terminal so it fires no barrier, and a mention is a second wake nobody needs. A config in which this row names a mention is a config with an unreachable escalation path. | that issue's owner, by the ordinary barrier |
 | 7 | a human comments on the spec issue | comment on a squad-assigned issue | `sq-lead` |
+| 7b | a human comments on a **ticket or handoff** (agent-assigned) | a *human's* comment does wake an agent-assigned issue's assignee — measured, probe v8-P2 — unlike an agent's, which wakes nobody | that issue's assignee, which is **not** the leader. The assignee may not answer on the spec, so without a relay rule the human's words die there |
 | 8 | the human merges the PR | Forgejo webhook + `Closes <SPEC-ID>` | nothing; the spec goes `done` |
 | 9 | an owner restarts a child: rework, an answer to a `blocked` child, a stalled stage, a reopened ticket | `status <id> backlog` (starts nothing), then `status <id> todo` — **two** writes | that child's assignee |
 | 10 | an owner promotes the next stage while a lower stage is already complete | the **same** `child_done` rule re-evaluating (it is `mode: continuous` on `issue.status_changed`, condition `children_done / each_stage`) | that owner, a second time, for the stage that already closed |

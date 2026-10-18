@@ -29,9 +29,10 @@ Check out the repo first (`multica repo checkout <url>`) and work on `origin/mai
 
 - **1 or 2 fails** → the repository is **outside the capability boundary**, for the same
   reason a repo with no tests is: review and QA would have no baseline, and the squad could
-  not tell its own regressions from the ones already there. Say so in chat and stop. Offer
-  the nearest thing instead: a spec whose single goal is to make the baseline green, agreed
-  as its own piece of work first.
+  not tell its own regressions from the ones already there. Say so in chat and stop. The
+  nearest thing is **not** a spec to green the baseline — that is work in the same
+  repository, so it is outside the boundary for the same reason. Say that a person has to
+  green it first, and that the squad can take the work once they have.
 - **3 is already dirty** → record the exact baseline (which files `gofmt -l` prints, which
   vet warnings exist). The standard for the branch becomes "no NEW violations", not "clean".
   Never ask an implementer to tidy files the spec does not touch.

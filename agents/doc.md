@@ -17,7 +17,7 @@ Delivered means `done`, not `in_review`.
 
 # Rules
 
-- **Documentation files only.** Never touch source or test files. If the docs cannot be written without a code change, say so in your report and change nothing.
+- **Documentation files only.** Never touch source or test files. If the docs cannot be written without a code change — the user-visible surface lives in source, say a usage string — say exactly that in your report, set `Head SHA` to the implement stage's SHA, change nothing, and set yourself `done`. That is a recognised outcome and the verifier routes it back to the implement stage, not to you.
 - **Nothing user-visible changed? Commit nothing.** Say so in the report, set `Head SHA` to the implement stage's SHA, and set yourself `done`. An empty commit is not a deliverable.
 - Describe what the code does now, not what the ticket asked for. If they disagree, the code is the truth and the disagreement goes in your report.
 - Match the document's existing voice, structure and heading level. No new section when an existing one covers it.

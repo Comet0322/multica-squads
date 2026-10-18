@@ -212,14 +212,19 @@ def sync_properties():
         cfg = json.loads(f.read_text())
         name = cfg["name"]
         flags = ["--description", cfg.get("description", ""), "--icon", cfg.get("icon", "")]
-        if name in existing:
-            print(f"property update: {name}")
-            run("property", "update", existing[name]["id"], *flags)
-            continue
-        print(f"property create: {name}")
         opts = []
         for o in cfg.get("options", []):
             opts += ["--option", o]
+        if name in existing:
+            # `--option` on update is a REPLACEMENT list, so the config file is the whole
+            # truth for a select's options -- which is what makes adding one possible at
+            # all. Dropping one that issues already carry is not idempotent, so the config
+            # only ever grows a select; retire a value by leaving it in place and ceasing
+            # to use it, the way `Verdict` was retired.
+            print(f"property update: {name}")
+            run("property", "update", existing[name]["id"], *flags, *opts)
+            continue
+        print(f"property create: {name}")
         run("property", "create", "--name", name, "--type", cfg["type"], *flags, *opts)
 
 

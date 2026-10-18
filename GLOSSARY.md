@@ -10,8 +10,10 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
 - **Ticket issue** — one independently verifiable behaviour from a spec (a
   vertical slice, not a layer). Child of a spec issue.
 - **Handoff issue** — one task for one agent. Internal; humans are not
-  expected to read these. There are exactly three kinds, and every ticket has
-  one of each, in this order:
+  expected to read these. One stands alone — the **spec-check handoff**, the
+  spec's own first child, which checks the spec before any ticket exists. The
+  other three sit under a ticket, which has exactly one of each, in this
+  order:
   - **Test handoff** — turns a ticket's acceptance criteria into executable
     tests that fail. Written without sight of any implementation.
   - **Implement handoff** — makes those tests pass. May add tests; may not

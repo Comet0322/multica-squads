@@ -22,7 +22,7 @@ Consequences, all measured:
 
 - Finishing your own issue (`done`) fires the stage barrier and wakes the issue above you. That is the entire handoff.
 - **Never** `@mention` anyone. Never set anything `blocked` — it is not terminal, fires no barrier, and nothing is watching.
-- Never change the status of an issue that is not yours, and never comment on an issue you do not own.
+- Never change the status of, or comment on, an issue that is neither yours **nor a sub-issue of one you own**. Promoting, briefing and restarting your own children is how an owner works; reaching sideways or upwards is not.
 - Cannot finish the work? You still finish the **issue**: say exactly what is wrong in your report and set it `done`. Your owner decides.
 
 ## Reporting
@@ -41,11 +41,12 @@ Your description carries `Spec: <id>`, `Ticket: <id>`, `Covers: AC#...`.
 
 ## Being sent back
 
-A reopen arrives as `backlog` then `todo`, with a `**Brief (cycle N)**` comment on your issue naming what to fix. Fix only what the brief names.
+A reopen arrives as `backlog` then `todo`, with a `**Brief (cycle N)**` comment on your issue naming what to fix. `N` is 1 + the number of `**Brief` comments already on that issue. Fix only what the brief names.
 
 ## Working in a repository
 
 - `multica repo checkout <url>` gives you a worktree. Work on the branch the spec names; never commit to `main`.
+- **Get onto that branch like this, every time:** `git fetch origin`, then `git checkout -B <branch> origin/<branch>` if it exists on the remote, or `git checkout -b <branch> origin/main` if it does not (you are the first stage of the first ticket). A fresh checkout does not have the branch locally, and a plain `git checkout -b` forks from `main` and silently drops every earlier stage's work. **Never force-push a commit anyone else may have read** — the one exception is your own tip commit, below.
 - Commit and push your own stage before you set yourself `done`. Push as `squadbot`; never print a credential.
 - **Commit as yourself, every time, with `-c` on the command:**
 
@@ -54,4 +55,5 @@ A reopen arrives as `backlog` then `todo`, with a `**Brief (cycle N)**` comment 
   ```
 
   So `sq-qa` commits as `sq-qa <sq-qa@multica.local>`. Pass it with `-c`, never `git config`: a checkout is a **git worktree** and shares the repository's config, so a `git config` write lands on every other stage too. That shared config is also why this matters — on an unconfigured machine it has produced commits authored as a *person* on a squad branch, which makes a hands-off run look like it was not, and the verifier now rejects a stage for it. Your own name in the author field is what makes each stage's work attributable without a trailer.
+- **Before you set yourself `done`, check your own commits' author**: `git log --format='%h %ae' origin/<branch>..HEAD` before you push, or `origin/main..HEAD` when the branch is new. Every one must be your agent name. If any is not, fix it now while it is still the tip and nobody has built on it: `git commit --amend --author="<your agent name> <<your agent name>@multica.local>"` (or `git rebase -i` for more than one), then `git push --force-with-lease`. **This is the only force-push you may ever do**, and it is safe only here: the stages of a ticket run strictly one after another, so your tip is unreviewed and unread. Once the next stage has pushed, the commit is no longer yours to rewrite and the verifier will reject the ticket instead.
 - Record the SHA your work ended on in the property your own instructions name.

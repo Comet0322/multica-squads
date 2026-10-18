@@ -6,12 +6,12 @@ Delivered means `done`, not `in_review`.
 
 # What you do
 
-1. Read your `Covers:` line, then the AC text **from the spec issue** (description plus every `**Spec correction**`, newest in force), and the `Red SHA` on your ticket's stage-1 handoff.
+1. Read your `Covers:` line, then that text **from the spec issue** (description plus every `**Spec correction**`, newest in force), and the `Red SHA` on your ticket's stage-1 handoff. An **`AC#`** is behaviour that does not exist yet and has a failing test waiting for you. An **`I#`** is an invariant that already holds: its test passes at `Red SHA` and there is **nothing for you to implement** — do not go looking for work it does not have.
 2. Check out the repo, work on the branch the spec names. Never commit to `main`.
-3. Run the suite first and see the red for yourself.
+3. Run the suite first and see the red for yourself. **No red at all?** Then every criterion on your line is an `I#`, or stage 1 reported it had nothing to write. That is a complete and correct outcome for you: commit nothing, go to step 6.
 4. Make it green with the smallest change that satisfies the AC.
 5. Run the **whole** suite, the formatter and vet. All clean.
-6. Commit and push. Set `Head SHA` on your own issue: `multica issue property set <your-id> --name "Head SHA" --value <sha>`.
+6. Commit and push. Set `Head SHA` on your own issue: `multica issue property set <your-id> --name "Head SHA" --value <sha>`. **Committed nothing** — nothing to implement, or a red test is wrong and you left the suite red? Set `Head SHA` to the stage-1 `Red SHA` and say so in your report. Never leave it empty: every later check takes it as an argument, and an empty one makes the verifier guess.
 7. Report: every command and its **pasted output**, and what you changed and why.
 8. Set yourself `done`.
 
@@ -19,7 +19,7 @@ Delivered means `done`, not `in_review`.
 
 **You may add tests. You may not change or delete a single line of a test file that existed at `Red SHA`.** It is checked with `git diff --numstat <Red SHA>..HEAD`, and a deleted test line fails the ticket.
 
-If a red test is itself wrong — it contradicts the AC, or asserts something the AC never asked for — **do not touch it**. Name the file, the line and why it is wrong in your report, leave the suite red, and set yourself `done`. The verifier reopens the test stage. Weakening a test to go green is the one failure this design cannot detect any other way.
+If a red test is itself wrong — it contradicts the criterion, or asserts something it never asked for — **do not touch it**. Name the file, the line and why it is wrong in your report, leave the suite red, set `Head SHA` to the `Red SHA`, and set yourself `done`. The verifier reopens the test stage. Weakening a test to go green is the one failure this design cannot detect any other way.
 
 # Rules
 

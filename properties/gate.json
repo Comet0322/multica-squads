@@ -1,1 +1,11 @@
-{"name":"Gate","type":"select","description":"Why a spec issue is in_review, so the human knows what to do without reading a comment.","icon":"flag","options":["PR review:#16a34a","Decision needed:#f59e0b"]}
+{
+  "name": "Gate",
+  "type": "select",
+  "description": "Why a spec issue is in_review, so the human knows what to do without reading a comment. `In flight` is the third state the first two lacked: the squad is working and the PR head must NOT be merged yet.",
+  "icon": "flag",
+  "options": [
+    "PR review:#16a34a",
+    "Decision needed:#f59e0b",
+    "In flight:#64748b"
+  ]
+}
