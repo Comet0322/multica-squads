@@ -1,0 +1,15 @@
+# Job catalog for the cicd space (dev / sit)
+# Logical service name -> full Jenkins job name; mark explicitly where dev/sit names differ
+# Note: the original file held a company-specific microservice list; it has been sanitized into a placeholder skeleton.
+#       Fill in your own team's "service name -> full Jenkins job name" mapping.
+version: "1.0"
+
+services:
+  # Example (replace with your services):
+  # <service-a>:
+  #   dev: <jenkins-job-dev-a>
+  #   sit: <jenkins-job-sit-a>
+  # <service-b>:
+  #   dev: <jenkins-job-dev-b>
+  # <service-c>:
+  #   sit: <jenkins-job-sit-c>

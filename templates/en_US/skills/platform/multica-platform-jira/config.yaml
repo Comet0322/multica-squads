@@ -1,0 +1,96 @@
+# multica-platform-jira — JIRA platform config (no credentials)
+version: "1.0"
+
+jira:
+  url: "http://your-domain.atlassian.net:8080"
+  issue_type_id: "10001"   # Story
+
+workflow_fields:
+  sprint:                 { customId: "10004", type: "number", label: "Sprint",       required: false }
+  design_hours:           { customId: "15700", type: "number", label: "Design hours",       required: false }
+  test_owner:             { customId: "14301", type: "user",   label: "Test owner",     required: false }
+  estimated_test_date:    { customId: "14303", type: "date",   label: "Estimated test-submission date",   required: false }
+  estimated_release_date: { customId: "12500", type: "date",   label: "Estimated release date",   required: false }
+
+projects:
+  PROJ:
+    id: "18500"
+    name: "Example Product"
+    default_epic: "PROJ-1"
+    epics:
+      - { key: "PROJ-1", name: "2026 - Example Project" }
+    fields:
+      need_user:     { customId: "11700", type: "user",   label: "Requester",             required: true }
+      background:    { customId: "12200", type: "string", label: "Background",            required: true }
+      center_source: { customId: "14700", type: "array",  label: "Requirement source (center level)",  required: true }
+      region_source: { customId: "16100", type: "object", label: "Requirement source (region)",    required: true }
+      req_type:      { customId: "14305", type: "array",  label: "Requirement type",            required: true }
+      compliance:    { customId: "14602", type: "object", label: "Compliance involved",        required: true }
+      epic_link:     { customId: "10000", type: "string", label: "Epic Link",          required: true }
+    field_options:
+      center_source:
+        - { label: "Center A",          id: "14100" }
+        - { label: "Center B",       id: "12906" }
+        - { label: "Center C",  id: "12903" }
+        - { label: "Center D",       id: "12900" }
+        - { label: "Center E",       id: "12904" }
+        - { label: "Center F",       id: "12905" }
+      region_source:
+        - { label: "Region 1",     id: "14600" }
+        - { label: "Group",     id: "14606" }
+        - { label: "Region 2", id: "14601" }
+      req_type:
+        - { label: "Business requirement", id: "12500" }
+        - { label: "Product requirement", id: "12501" }
+        - { label: "Technical requirement", id: "12502" }
+        - { label: "Configuration requirement", id: "14500" }
+      compliance:
+        - { label: "Involved",   id: "12704" }
+        - { label: "Not involved", id: "12705" }
+  PLAT:
+    id: "18700"
+    name: "Platform Project"
+    default_epic: "PLAT-1"
+    epics:
+      - { key: "PLAT-1", name: "Platform Project" }
+    fields:
+      need_user:     { customId: "11700", type: "user",   label: "Requester",             required: true }
+      background:    { customId: "12200", type: "string", label: "Background",            required: true }
+      center_source: { customId: "14700", type: "array",  label: "Requirement source (center level)",  required: true }
+      region_source: { customId: "16100", type: "object", label: "Requirement source (region)",    required: true }
+      req_type:      { customId: "14305", type: "array",  label: "Requirement type",            required: true }
+      compliance:    { customId: "14602", type: "object", label: "Compliance involved",        required: true }
+      epic_link:     { customId: "10000", type: "string", label: "Epic Link",          required: true }
+    field_options:
+      center_source:
+        - { label: "Center B", id: "12906" }
+        - { label: "Center E", id: "12904" }
+        - { label: "Center F", id: "12905" }
+      region_source:
+        - { label: "Region 1", id: "14600" }
+        - { label: "Group", id: "14606" }
+      req_type:
+        - { label: "Product requirement", id: "12501" }
+        - { label: "Technical requirement", id: "12502" }
+        - { label: "Configuration requirement", id: "14500" }
+      compliance:
+        - { label: "Involved",   id: "12704" }
+        - { label: "Not involved", id: "12705" }
+
+defaults:
+  project: "PROJ"
+  center_source: "Center A"
+  region_source: "Group"
+  req_type: "Business requirement"
+  compliance: "Not involved"
+  need_user: "<requester-username>"
+  background: "None"
+
+dingtalk:
+  enabled: true
+  project_webhook_map:
+    PROJ: "DINGTALK_PROJ_WEBHOOK"
+    PLAT: "DINGTALK_PLAT_WEBHOOK"
+
+description_append:
+  design_heading: "h3. Design Document"

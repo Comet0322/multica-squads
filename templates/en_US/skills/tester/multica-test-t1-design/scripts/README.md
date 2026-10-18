@@ -1,54 +1,54 @@
 # multica-test-t1-design / scripts
 
-> 本 skill 的 T1 落地脚本；内容规范见 `../references/`。采集走 platform skill（`fetch_all` 按 **skill 名** 定位 platform 脚本）。
+> T1 landing scripts for this skill; content conventions live in `../references/`. Collection goes through the platform skills (`fetch_all` locates platform scripts by **skill name**).
 
-## 随本 skill 发布的脚本
+## Scripts shipped with this skill
 
-| 脚本 | 用途 |
+| Script | Purpose |
 | --- | --- |
-| `fetch_all.py` | 一键采集 Issue + 团队文档（含图片）+ 设计稿（调 `multica-platform-jira` / `-confluence` / `-figma`） |
-| `generate_xmind.py` | 功能用例 → 双格式 XMind（Zen JSON + XMind 8 XML） |
-| `dedup_check.py` | 用例去重检查 |
-| `generate_test_cases.py` | 结构化用例 dataclass 辅助 |
-| `local_env.py` | 加载 `config.local.env` / 环境变量 |
+| `fetch_all.py` | One-shot collection of Issue + team docs (including images) + design files (calls `multica-platform-jira` / `-confluence` / `-figma`) |
+| `generate_xmind.py` | Functional cases -> dual-format XMind (Zen JSON + XMind 8 XML) |
+| `dedup_check.py` | Test-case dedup check |
+| `generate_test_cases.py` | Structured test-case dataclass helper |
+| `local_env.py` | Load `config.local.env` / environment variables |
 
-## 团队自备（**不随本 skill 发布**）
+## Team-provided (**not shipped with this skill**)
 
-批量把用例导入测试管理平台的脚本，强绑定具体工具（Jira 用例插件 / TestRail / Zephyr / 自研平台…），无法通用化。
+The script that bulk-imports cases into the test-management platform is tightly bound to a specific tool (Jira case plugin / TestRail / Zephyr / in-house platform...) and cannot be generalized.
 
-- 约定名：`import_to_tracker.py`
-- 接口与验收约定见 [`../references/import-contract.md`](../references/import-contract.md)
-- **硬约束**：只有收到人类明确口令后才能运行；每批只导入一次
+- Conventional name: `import_to_tracker.py`
+- Interface and acceptance conventions: see [`../references/import-contract.md`](../references/import-contract.md)
+- **Hard constraint**: run only after an explicit human go-ahead; import only once per batch
 
-## Platform 单步调试（非 T1 日常入口）
+## Platform single-step debugging (not the daily T1 entry point)
 
-| Platform skill | 脚本 |
+| Platform skill | Script |
 | --- | --- |
 | `multica-platform-jira` | `get_issue.py` / `jira_cli.py get-issue` |
 | `multica-platform-confluence` | `fetch_page_by_url.py` |
 | `multica-platform-figma` | `fetch_file.py` |
 
-## 常用命令
+## Common commands
 
 ```bash
-# 采集
+# Collect
 python scripts/fetch_all.py --jira-url https://your-domain.atlassian.net/browse/PROJ-123 -o ./data
 
-# XMind（双格式）
+# XMind (dual format)
 python scripts/generate_xmind.py \
   --input ./data/test_cases.json \
   --output ./data/test_cases_PROJ-123.xmind \
   --project PROJ
 
-# 导入（团队自备脚本；仅功能用例；口令后）
+# Import (team-provided script; functional cases only; after the go-ahead)
 python scripts/import_to_tracker.py \
   --jira-url "https://your-domain.atlassian.net/browse/PROJ-123" \
   --input ./data/test_cases.json \
-  --suite-name "<需求标题>"
+  --suite-name "<requirement title>"
 ```
 
-## 编码与用例树注意
+## Encoding and case-tree notes
 
-- **UTF-8**：JSON / XMind / 脚本 stdout 均按 UTF-8；Windows 终端乱码时先 `chcp 65001` 或设 `PYTHONIOENCODING=utf-8`
-- **用例树**：XMind 与导入脚本都依赖 `module` 字段的 `/` 层级；层级写错会导致用例挂错节点
-- **去重**：生成阶段按「模块 + 场景 + 操作路径」去重；导入阶段另有一次目标平台侧去重，两边都要做
+- **UTF-8**: JSON / XMind / script stdout are all UTF-8; if the Windows terminal is garbled, run `chcp 65001` first or set `PYTHONIOENCODING=utf-8`
+- **Case tree**: both XMind and the import script rely on the `/` hierarchy in the `module` field; a wrong hierarchy hangs cases on the wrong node
+- **Dedup**: generation dedups by "module + scenario + operation path"; the import stage does another dedup on the target platform; do both

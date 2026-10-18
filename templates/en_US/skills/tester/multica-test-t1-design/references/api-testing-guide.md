@@ -1,123 +1,123 @@
-# API Testing Guide（接口测试指南）
+# API Testing Guide
 
-## 常见 Web API 测试场景模板
+## Common Web API test scenario templates
 
-### 1. 登录/认证类接口
+### 1. Login/authentication APIs
 
-**典型接口:** `POST /api/v1/login` `POST /api/v1/register` `POST /api/v1/refresh-token`
+**Typical endpoints:** `POST /api/v1/login` `POST /api/v1/register` `POST /api/v1/refresh-token`
 
-**参数校验点：**
-| 测试场景 | 输入 | 预期 |
+**Validation points:**
+| Test scenario | Input | Expected |
 |---------|------|------|
-| 正确凭证 | user/pass 正确 | 200 + token |
-| 错误密码 | user正确/pass错误 | 401 + 错误提示 |
-| 不存在用户 | 未注册的user | 401 + 对应提示 |
-| 空用户名 | 不传或传空 | 400 + 参数校验提示 |
-| 空密码 | 不传或传空 | 400 + 参数校验提示 |
-| 超长字段 | 1000字符用户名 | 400 + 长度限制提示 |
-| SQL注入 | `admin' OR 1=1--` | 登录失败，不被绕过 |
-| 已锁定账号 | 多次失败后被锁定 | 403 + 锁定提示 |
+| Correct credentials | Correct user/pass | 200 + token |
+| Wrong password | Correct user / wrong pass | 401 + error message |
+| Non-existent user | Unregistered user | 401 + corresponding message |
+| Empty username | Omitted or empty | 400 + parameter validation message |
+| Empty password | Omitted or empty | 400 + parameter validation message |
+| Overlong field | 1000-character username | 400 + length limit message |
+| SQL injection | `admin' OR 1=1--` | Login fails, not bypassed |
+| Locked account | Locked after repeated failures | 403 + lockout message |
 
-### 2. CRUD 资源类接口
+### 2. CRUD resource APIs
 
-**典型接口:** `GET/POST/PUT/DELETE /api/v1/resources/{id}`
+**Typical endpoints:** `GET/POST/PUT/DELETE /api/v1/resources/{id}`
 
-**参数校验点：**
-| 测试场景 | 输入 | 预期 |
+**Validation points:**
+| Test scenario | Input | Expected |
 |---------|------|------|
-| 查询成功 | 有效ID | 200 + 完整资源数据 |
-| 资源不存在 | 不存在的ID | 404 + 对应code |
-| 无效ID格式 | 字母/负数ID | 400 |
-| 创建成功 | 完整合法参数 | 201 + 创建的资源 |
-| 缺少必填字段 | 缺省 | 400 + 字段提示 |
-| 创建重复数据 | 已存在的唯一约束 | 409/400 |
-| 更新成功 | 合法数据 | 200 + 更新后的资源 |
-| 更新不存在的资源 | 不存在ID | 404 |
-| 删除成功 | 存在ID | 204/200 |
-| 删除不存在的资源 | 不存在ID | 404 |
+| Query succeeds | Valid ID | 200 + full resource data |
+| Resource not found | Non-existent ID | 404 + corresponding code |
+| Invalid ID format | Letters / negative ID | 400 |
+| Create succeeds | Complete valid parameters | 201 + created resource |
+| Missing required field | Omitted | 400 + field message |
+| Create duplicate data | Existing unique constraint | 409/400 |
+| Update succeeds | Valid data | 200 + updated resource |
+| Update non-existent resource | Non-existent ID | 404 |
+| Delete succeeds | Existing ID | 204/200 |
+| Delete non-existent resource | Non-existent ID | 404 |
 
-### 3. 列表/分页类接口
+### 3. List/pagination APIs
 
-**典型接口:** `GET /api/v1/resources`
+**Typical endpoint:** `GET /api/v1/resources`
 
-**参数校验点：**
-| 测试场景 | 输入 | 预期 |
+**Validation points:**
+| Test scenario | Input | Expected |
 |---------|------|------|
-| 默认分页 | 不传page/pageSize | 默认第一页，默认条数 |
-| 指定分页 | page=2, pageSize=10 | 正确分页数据 |
-| pageSize边界 | 最小值1，最大值100 | 正确 |
-| pageSize超界 | pageSize=0 或 pageSize=10000 | 取默认值或最大值 |
-| page为负数 | page=-1 | 取默认值或报错 |
-| 排序 | sort=field, order=asc/desc | 正确排序结果 |
-| 筛选 | 条件参数 | 筛选结果正确 |
-| 所有数据条数 | total字段值与实际一致 | 一致 |
-| 空结果 | 不存在的筛选条件 | 空数组 + total=0 |
+| Default pagination | page/pageSize omitted | Default first page, default page size |
+| Specified pagination | page=2, pageSize=10 | Correct page data |
+| pageSize boundary | Minimum 1, maximum 100 | Correct |
+| pageSize out of range | pageSize=0 or pageSize=10000 | Falls back to default or maximum |
+| Negative page | page=-1 | Falls back to default or errors |
+| Sorting | sort=field, order=asc/desc | Correctly sorted result |
+| Filtering | Condition parameters | Filtered result correct |
+| Total count | total field matches actual count | Consistent |
+| Empty result | Non-existent filter condition | Empty array + total=0 |
 
-### 4. 文件上传类接口
+### 4. File upload APIs
 
-**典型接口:** `POST /api/v1/upload`
+**Typical endpoint:** `POST /api/v1/upload`
 
-**参数校验点：**
-| 测试场景 | 输入 | 预期 |
+**Validation points:**
+| Test scenario | Input | Expected |
 |---------|------|------|
-| 上传成功 | 合规格式/大小的文件 | 200 + 文件URL |
-| 格式不支持 | .exe等不允许格式 | 400 + 格式错误提示 |
-| 文件过大 | 超过限制 | 413 + 大小限制提示 |
-| 空文件 | 0字节文件 | 400 + 提示 |
-| 无文件 | 不传文件 | 400 |
-| 大文件边界 | 文件大小刚好等于限制 | 成功或明确提示 |
-| 文件名特殊字符 | 中文/空格/emoji文件名 | 正确处理 |
+| Upload succeeds | File of allowed format/size | 200 + file URL |
+| Unsupported format | .exe or other disallowed formats | 400 + format error message |
+| File too large | Exceeds the limit | 413 + size limit message |
+| Empty file | 0-byte file | 400 + message |
+| No file | File not sent | 400 |
+| Large-file boundary | File size exactly equal to the limit | Success or a clear message |
+| Special characters in file name | Chinese/space/emoji file names | Handled correctly |
 
 ---
 
-## 响应字段校验方法论
+## Response field validation methodology
 
-### 逐字段校验流程
+### Field-by-field validation flow
 
-对每个接口的响应体，执行以下流程：
+For each API's response body, run the following flow:
 
 ```
-对于响应中的每个字段：
-  1. 字段存在性 —— 文档中定义的字段是否都返回了？
-  2. 字段类型 —— 类型与实际返回是否一致？
-     - string 返回的是否是字符串（数字字符串也算字符串）
-     - number 返回的是整数还是浮点，精度是否对
-     - boolean 返回的是 true/false 还是 0/1
-     - array 返回的是数组而非 null 或其他
-     - object 返回的是对象格式正确
-  3. 字段值范围 —— 值是否在业务允许范围内
-  4. 边界条件 —— 最大值、最小值、极长字符串
-  5. null/空值 —— 字段无数据时返回 null 还是空字符串还是缺省
-  6. 格式 —— 日期格式、URL格式、枚举值拼写
+For each field in the response:
+  1. Field presence -- are all fields defined in the docs returned?
+  2. Field type -- does the type match what is actually returned?
+     - string: is the returned value a string (a numeric string still counts as a string)
+     - number: integer or float, and is the precision correct
+     - boolean: true/false or 0/1
+     - array: an array rather than null or something else
+     - object: an object with the correct format
+  3. Field value range -- is the value within the range allowed by the business
+  4. Boundary conditions -- maximum, minimum, extremely long strings
+  5. null/empty values -- when the field has no data, does it return null, an empty string, or omit the field
+  6. Format -- date format, URL format, enum value spelling
 ```
 
-### 常见响应结构示例及校验
+### Common response structure example and validation
 
 ```json
 {
-  "code": 0,                    // number，业务状态码，需验证所有枚举值
-  "message": "success",         // string，提示信息，中文或英文
+  "code": 0,                    // number, business status code; verify all enum values
+  "message": "success",         // string, message text, Chinese or English
   "data": {
-    "id": 10001,               // number，始终为正整数
-    "name": "测试商品",         // string，1-50字符
-    "price": "99.99",          // string（金额用字符串避免精度问题）
-    "status": 1,               // number，枚举值 0|1|2
-    "createdAt": "2026-05-31T10:00:00Z", // string，ISO 8601格式
-    "tags": ["tag1", "tag2"],  // array of string，可为空数组 []
-    "extra": null              // object or null，无附加数据时为 null
+    "id": 10001,               // number, always a positive integer
+    "name": "Test Product",    // string, 1-50 characters
+    "price": "99.99",          // string (amounts use strings to avoid precision issues)
+    "status": 1,               // number, enum value 0|1|2
+    "createdAt": "2026-05-31T10:00:00Z", // string, ISO 8601 format
+    "tags": ["tag1", "tag2"],  // array of string, may be an empty array []
+    "extra": null              // object or null, null when there is no extra data
   }
 }
 ```
 
-### 常见业务状态码参考
+### Common business status code reference
 
-| 业务码 | 含义 | 说明 |
+| Business code | Meaning | Description |
 |--------|------|------|
-| 0 | 成功 | 请求处理成功 |
-| 1001 | 参数错误 | 请求参数校验失败 |
-| 1002 | 未授权 | 未登录或Token无效 |
-| 1003 | 无权限 | 已登录但无操作权限 |
-| 1004 | 资源不存在 | 请求的资源不存在 |
-| 1005 | 资源冲突 | 重复提交/数据已存在 |
-| 1006 | 服务端错误 | 系统异常 |
-| 1007 | 频率限制 | 请求过于频繁 |
+| 0 | Success | Request processed successfully |
+| 1001 | Invalid parameter | Request parameter validation failed |
+| 1002 | Unauthorized | Not logged in or token invalid |
+| 1003 | Forbidden | Logged in but no permission for the operation |
+| 1004 | Resource not found | The requested resource does not exist |
+| 1005 | Resource conflict | Duplicate submission / data already exists |
+| 1006 | Server error | System exception |
+| 1007 | Rate limited | Too many requests |

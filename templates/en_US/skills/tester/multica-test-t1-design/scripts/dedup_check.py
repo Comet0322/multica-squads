@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-Dedup Check - 与 Jira 已有用例对比去重。
+Dedup Check - compare against existing Jira cases and remove duplicates.
 
-用法:
+Usage:
   python scripts/dedup_check.py \\
     --jira-url https://your-domain.atlassian.net/browse/PROJ-123 \\
     --input proposed_test_cases.json \\
     --output deduped_test_cases.json
 
-功能:
-  1. 拉取 Jira 需求下已有的测试用例（子任务/关联 issue）
-  2. 对每个新用例，按标题+步骤与已有用例做模糊匹配
-  3. 标记重复项并给出相似度分数
-  4. 输出去重后的用例列表
+Features:
+  1. Fetch existing test cases under the Jira requirement (subtasks / linked issues)
+  2. For each new case, fuzzy-match against existing cases by title + steps
+  3. Flag duplicates and give a similarity score
+  4. Output the deduplicated case list
 
-环境变量:
-  JIRA_EMAIL, JIRA_API_TOKEN  - Cloud Jira 认证
-  JIRA_COOKIE                 - 自部署 Jira 认证（如 JSESSIONID=xxx）
+Environment variables:
+  JIRA_EMAIL, JIRA_API_TOKEN  - Cloud Jira authentication
+  JIRA_COOKIE                 - self-hosted Jira authentication (e.g. JSESSIONID=xxx)
 """
 
 import argparse
@@ -24,7 +24,7 @@ import json
 import os
 import re
 import sys
-# Fix Windows terminal encoding for Chinese output
+# Fix Windows terminal encoding for non-ASCII output
 if sys.platform == 'win32' and hasattr(sys.stdout, 'buffer'):
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
@@ -35,14 +35,14 @@ from difflib import SequenceMatcher
 from urllib.parse import urlparse
 
 try:
-    import local_env  # noqa: F401  — 加载 config.local.env
+    import local_env  # noqa: F401  - loads config.local.env
 except ImportError:
     pass
 
 try:
     import requests
 except ImportError:
-    print('缺少 requests 库，请执行: pip install requests', file=sys.stderr)
+    print('Missing requests library; run: pip install requests', file=sys.stderr)
     sys.exit(1)
 
 
@@ -50,8 +50,10 @@ except ImportError:
 # JQL / API Constants
 # ============================================================
 
-# 常见的测试用例 issue 类型名称
-TEST_ISSUE_TYPES = {"Test", "测试用例", "测试", "Sub-test", "Subtask", "子任务"}
+# Common test-case issue type names. The non-ASCII entries are Chinese Jira issue type names
+# (kept as \u escapes because they must match the localized Jira instance):
+#   \u6d4b\u8bd5\u7528\u4f8b = "test case", \u6d4b\u8bd5 = "test", \u5b50\u4efb\u52a1 = "subtask"
+TEST_ISSUE_TYPES = {"Test", "\u6d4b\u8bd5\u7528\u4f8b", "\u6d4b\u8bd5", "Sub-test", "Subtask", "\u5b50\u4efb\u52a1"}
 
 
 # ============================================================
@@ -63,7 +65,7 @@ def get_rest_path() -> str:
 
 
 def build_auth_headers() -> dict:
-    """根据环境变量自动选择认证方式（优先使用用户名密码，防止 cookie 过期）"""
+    """Pick the auth method from environment variables (username/password first, since cookies expire)."""
     headers = {"Accept": "application/json"}
 
     username = os.environ.get("JIRA_USERNAME")
@@ -86,8 +88,8 @@ def build_auth_headers() -> dict:
         return headers
 
     print(
-        "请配置认证（优先 Windows 系统环境变量 JIRA_USERNAME/PASSWORD 或 JIRA_USERNAME / JIRA_PASSWORD；可选 config.local.env 兜底）:\n"
-        "  复制 config.local.env.example → config.local.env 并填写",
+        "Please configure authentication (prefer Windows system environment variables JIRA_USERNAME / JIRA_PASSWORD; config.local.env is an optional fallback):\n"
+        "  copy config.local.env.example -> config.local.env and fill it in",
         file=sys.stderr,
     )
     sys.exit(1)
@@ -98,36 +100,36 @@ def parse_jira_url(url: str) -> tuple[str, str]:
     base = f"{parsed.scheme}://{parsed.netloc}"
     m = re.search(r'/browse/([A-Z]+-\d+)', parsed.path)
     if not m:
-        raise ValueError(f"无法解析 Jira URL: {url}")
+        raise ValueError(f"Unable to parse Jira URL: {url}")
     return base, m.group(1)
 
 
 def jira_get(base: str, path: str, auth: dict) -> dict:
-    """请求 Jira API，自动适配 /rest/api/2 或 /rest/api/3"""
+    """Call the Jira API, auto-adapting to /rest/api/2 or /rest/api/3."""
     rest_path = get_rest_path()
     url = f"{base}{rest_path}{path}" if not path.startswith("/rest/") else f"{base}{path}"
     resp = requests.get(url, headers=auth, timeout=30)
     if resp.status_code == 401:
-        print("认证失败：请检查 JIRA_USERNAME+JIRA_PASSWORD 或 JIRA_COOKIE 或 JIRA_EMAIL+JIRA_API_TOKEN", file=sys.stderr)
+        print("Authentication failed: check JIRA_USERNAME+JIRA_PASSWORD, or JIRA_COOKIE, or JIRA_EMAIL+JIRA_API_TOKEN", file=sys.stderr)
         sys.exit(1)
     resp.raise_for_status()
     return resp.json()
 
 
 # ============================================================
-# 拉取已有测试用例
+# Fetch existing test cases
 # ============================================================
 
 def fetch_existing_test_cases(base_url: str, parent_key: str, auth: dict) -> list[dict]:
     """
-    通过 JQL 查询该需求下所有子任务 / 关联 issue 中的测试用例。
-    策略：
-      1. 查询 parent = parent_key 的子任务
-      2. 查询 issueLink 关联到 parent_key 且类型为 Test 的 issue
+    Use JQL to find test cases among all subtasks / linked issues of the requirement.
+    Strategy:
+      1. Query subtasks where parent = parent_key
+      2. Query issues linked to parent_key via issueLink whose type is Test
     """
     existing = {}
 
-    # 策略1: 子任务
+    # Strategy 1: subtasks
     jql = f'parent = "{parent_key}" ORDER BY created'
     data = jira_get(base_url, f"/search?jql={requests.utils.quote(jql)}&maxResults=200&fields=summary,description,issuetype,customfield_*", auth)
     for issue in data.get("issues", []):
@@ -141,10 +143,10 @@ def fetch_existing_test_cases(base_url: str, parent_key: str, auth: dict) -> lis
             "source": "subtask",
         }
 
-    # 策略2: 通过 issue link 关联的测试用例
+    # Strategy 2: test cases linked via issue link
     jql = (
         f'issue in linkedIssues("{parent_key}") '
-        f'AND issuetype in ("Test", "测试用例", "测试") '
+        f'AND issuetype in ("Test", "\u6d4b\u8bd5\u7528\u4f8b", "\u6d4b\u8bd5") '
         f'ORDER BY created'
     )
     data = jira_get(base_url, f"/search?jql={requests.utils.quote(jql)}&maxResults=200&fields=summary,description", auth)
@@ -164,17 +166,17 @@ def fetch_existing_test_cases(base_url: str, parent_key: str, auth: dict) -> lis
 
 
 # ============================================================
-# 文本相似度计算
+# Text similarity
 # ============================================================
 
 def normalize(text: str) -> str:
-    """标准化文本用于比较"""
-    text = re.sub(r'[^\w一-鿿]', '', text)  # 只保留中文、字母、数字
+    """Normalize text for comparison."""
+    text = re.sub(r'[^\w\u4e00-\u9fff]', '', text)  # keep only CJK characters, letters, digits
     return text.lower().strip()
 
 
 def title_similarity(t1: str, t2: str) -> float:
-    """标题相似度 (0~1)"""
+    """Title similarity (0~1)."""
     n1, n2 = normalize(t1), normalize(t2)
     if not n1 or not n2:
         return 0.0
@@ -182,10 +184,10 @@ def title_similarity(t1: str, t2: str) -> float:
 
 
 def keyword_overlap(t1: str, t2: str) -> float:
-    """关键词交集占比 — 捕捉功能关键词相同但措辞不同的情况"""
-    # 分词: 按非字母数字中文拆分
+    """Keyword overlap ratio - catches cases with the same functional keywords but different wording."""
+    # Tokenize: split on anything that is not a letter, digit or CJK character
     def tokenize(s):
-        return set(re.findall(r'[\w一-鿿]+', normalize(s)))
+        return set(re.findall(r'[\w\u4e00-\u9fff]+', normalize(s)))
     tok1, tok2 = tokenize(t1), tokenize(t2)
     if not tok1 or not tok2:
         return 0.0
@@ -195,8 +197,8 @@ def keyword_overlap(t1: str, t2: str) -> float:
 
 def compute_similarity(proposed: dict, existing: dict) -> float:
     """
-    综合计算两个用例的相似度。
-    考虑: 标题 + 步骤/描述
+    Compute the overall similarity of two cases.
+    Considers: title + steps/description
     """
     p_title = proposed.get("title", "")
     p_steps = " ".join(proposed.get("steps", []))
@@ -207,33 +209,33 @@ def compute_similarity(proposed: dict, existing: dict) -> float:
     e_summary = existing.get("summary", "")
     e_desc = existing.get("description", "")
 
-    # 标题相似度权重 0.6
+    # Title similarity weight 0.6
     title_sim = title_similarity(p_title, e_summary)
     kw_sim = keyword_overlap(p_title, e_summary)
 
-    # 内容相似度权重 0.4
+    # Content similarity weight 0.4
     content_sim = title_similarity(p_text, e_summary + " " + e_desc)
 
-    # 综合评分
+    # Combined score
     score = max(title_sim, kw_sim) * 0.6 + content_sim * 0.4
     return score
 
 
 # ============================================================
-# 去重主逻辑
+# Main dedup logic
 # ============================================================
 
-# 相似度阈值
-SIMILARITY_HIGH = 0.75   # 高度相似 → 自动跳过
-SIMILARITY_MEDIUM = 0.50  # 中等相似 → 标记需人工确认
+# Similarity thresholds
+SIMILARITY_HIGH = 0.75   # highly similar -> skip automatically
+SIMILARITY_MEDIUM = 0.50  # moderately similar -> flag for human confirmation
 
 
 def dedup(proposed: list[dict], existing: list[dict]) -> dict:
     """
-    返回去重结果:
-      - new: 无重复的新用例
-      - skipped: 因高度相似被自动跳过的用例 (附匹配到的已有用例)
-      - ambiguous: 中等相似需人工确认的用例
+    Return the dedup result:
+      - new: new cases with no duplicates
+      - skipped: cases skipped automatically due to high similarity (with the matched existing case)
+      - ambiguous: moderately similar cases that need human confirmation
     """
     new_list = []
     skipped_list = []
@@ -256,10 +258,10 @@ def dedup(proposed: list[dict], existing: list[dict]) -> dict:
         }
 
         if best_score >= SIMILARITY_HIGH:
-            entry["reason"] = f"与 {best_match['key']} 相似度 {best_score:.0%}，自动跳过"
+            entry["reason"] = f"{best_score:.0%} similar to {best_match['key']}, skipped automatically"
             skipped_list.append(entry)
         elif best_score >= SIMILARITY_MEDIUM:
-            entry["reason"] = f"与 {best_match['key']} 相似度 {best_score:.0%}，需确认是否重复"
+            entry["reason"] = f"{best_score:.0%} similar to {best_match['key']}, confirm whether it is a duplicate"
             ambiguous_list.append(entry)
         else:
             new_list.append(entry)
@@ -278,18 +280,18 @@ def dedup(proposed: list[dict], existing: list[dict]) -> dict:
 
 
 # ============================================================
-# 主入口
+# Entry point
 # ============================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="测试用例去重检查")
-    parser.add_argument("--jira-url", required=True, help="Jira 需求的完整 URL")
-    parser.add_argument("--input", "-i", required=True, help="新生成的测试用例 JSON 文件")
-    parser.add_argument("--output", "-o", default="deduped_test_cases.json", help="去重后输出文件")
-    parser.add_argument("--dry-run", action="store_true", help="仅输出去重报告，不生成输出文件")
+    parser = argparse.ArgumentParser(description="Test-case dedup check")
+    parser.add_argument("--jira-url", required=True, help="Full URL of the Jira requirement")
+    parser.add_argument("--input", "-i", required=True, help="JSON file of newly generated test cases")
+    parser.add_argument("--output", "-o", default="deduped_test_cases.json", help="Output file after dedup")
+    parser.add_argument("--dry-run", action="store_true", help="Only print the dedup report; do not write an output file")
     args = parser.parse_args()
 
-    # 认证检测
+    # Auth check
     cookie = os.environ.get("JIRA_COOKIE")
     email = os.environ.get("JIRA_EMAIL")
     api_token = os.environ.get("JIRA_API_TOKEN")
@@ -297,8 +299,8 @@ def main():
     password = os.environ.get("JIRA_PASSWORD")
     if not cookie and not (email and api_token) and not (username and password):
         print(
-            "请配置认证（优先 Windows 系统环境变量 JIRA_USERNAME/PASSWORD 或 JIRA_USERNAME / JIRA_PASSWORD；可选 config.local.env 兜底）:\n"
-            "  复制 config.local.env.example → config.local.env 并填写",
+            "Please configure authentication (prefer Windows system environment variables JIRA_USERNAME / JIRA_PASSWORD; config.local.env is an optional fallback):\n"
+            "  copy config.local.env.example -> config.local.env and fill it in",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -306,65 +308,65 @@ def main():
     auth = build_auth_headers()
     base_url, parent_key = parse_jira_url(args.jira_url)
 
-    # 读取新用例
+    # Read the new cases
     with open(args.input, "r", encoding="utf-8") as f:
         proposed = json.load(f)
 
-    # 如果输入是 dict 且包含 key "test_cases" 或 "functional"/"api"
+    # If the input is a dict containing key "test_cases" or "functional"/"api"
     if isinstance(proposed, dict):
         for key in ("test_cases", "functional", "api", "cases"):
             if key in proposed and isinstance(proposed[key], list):
                 proposed = proposed[key]
                 break
 
-    print(f"\n待检查用例数: {len(proposed)}", file=sys.stderr)
+    print(f"\nCases to check: {len(proposed)}", file=sys.stderr)
 
-    # 拉取已有用例
-    print(f"正在拉取 {parent_key} 下已有测试用例...", file=sys.stderr)
+    # Fetch existing cases
+    print(f"Fetching existing test cases under {parent_key}...", file=sys.stderr)
     existing = fetch_existing_test_cases(base_url, parent_key, auth)
-    print(f"已有测试用例数: {len(existing)}", file=sys.stderr)
+    print(f"Existing test cases: {len(existing)}", file=sys.stderr)
 
     if existing:
-        print("\n已有用例列表:", file=sys.stderr)
+        print("\nExisting case list:", file=sys.stderr)
         for et in existing:
             print(f"  {et['key']}: {et['summary'][:60]}", file=sys.stderr)
 
-    # 去重
-    print("\n去重中...", file=sys.stderr)
+    # Dedup
+    print("\nDeduplicating...", file=sys.stderr)
     result = dedup(proposed, existing)
 
-    # 报告
+    # Report
     s = result["summary"]
     print(f"\n{'='*50}", file=sys.stderr)
-    print(f"去重报告:", file=sys.stderr)
-    print(f"  总计: {s['total_proposed']} 个", file=sys.stderr)
-    print(f"  新增: {s['new']} 个", file=sys.stderr)
-    print(f"  跳过: {s['skipped']} 个 (相似度 ≥ {SIMILARITY_HIGH:.0%})", file=sys.stderr)
-    print(f"  存疑: {s['ambiguous']} 个 (相似度 {SIMILARITY_MEDIUM:.0%} ~ {SIMILARITY_HIGH:.0%})", file=sys.stderr)
+    print(f"Dedup report:", file=sys.stderr)
+    print(f"  Total: {s['total_proposed']}", file=sys.stderr)
+    print(f"  New: {s['new']}", file=sys.stderr)
+    print(f"  Skipped: {s['skipped']} (similarity >= {SIMILARITY_HIGH:.0%})", file=sys.stderr)
+    print(f"  Ambiguous: {s['ambiguous']} (similarity {SIMILARITY_MEDIUM:.0%} ~ {SIMILARITY_HIGH:.0%})", file=sys.stderr)
     print(f"{'='*50}", file=sys.stderr)
 
     if result["skipped"]:
-        print("\n已自动跳过:", file=sys.stderr)
+        print("\nSkipped automatically:", file=sys.stderr)
         for item in result["skipped"]:
             tc = item["test_case"]
-            print(f"  ✗ [{item['similarity']:.0%}] {tc.get('title', tc.get('case_id', ''))}", file=sys.stderr)
-            print(f"    匹配: {item['best_match']['key']} - {item['best_match']['summary'][:50]}", file=sys.stderr)
+            print(f"  x [{item['similarity']:.0%}] {tc.get('title', tc.get('case_id', ''))}", file=sys.stderr)
+            print(f"    Matched: {item['best_match']['key']} - {item['best_match']['summary'][:50]}", file=sys.stderr)
 
     if result["ambiguous"]:
-        print("\n需人工确认:", file=sys.stderr)
+        print("\nNeeds human confirmation:", file=sys.stderr)
         for item in result["ambiguous"]:
             tc = item["test_case"]
             print(f"  ? [{item['similarity']:.0%}] {tc.get('title', tc.get('case_id', ''))}", file=sys.stderr)
-            print(f"    匹配: {item['best_match']['key']} - {item['best_match']['summary'][:50]}", file=sys.stderr)
+            print(f"    Matched: {item['best_match']['key']} - {item['best_match']['summary'][:50]}", file=sys.stderr)
 
     if not args.dry_run:
-        # 只输出确认新增的用例
+        # Output only the cases confirmed as new
         new_cases = [item["test_case"] for item in result["new"]]
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(new_cases, f, ensure_ascii=False, indent=2)
-        print(f"\n去重后用例已保存: {args.output}", file=sys.stderr)
+        print(f"\nDeduplicated cases saved: {args.output}", file=sys.stderr)
 
-    # stdout 输出去重结果 JSON（供下游脚本消费）
+    # Print the dedup result JSON to stdout (for downstream scripts)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 

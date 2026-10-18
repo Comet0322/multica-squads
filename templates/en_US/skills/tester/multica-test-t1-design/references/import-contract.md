@@ -1,31 +1,31 @@
-# T1 用例导入契约（import_to_tracker.py）
+# T1 Case Import Contract (import_to_tracker.py)
 
-> 本 skill **不随附**批量导入脚本——它强绑定具体测试管理平台（Jira 用例插件 / TestRail / Zephyr / 自研平台…），无法通用化。
-> 团队按所用平台自行实现 `import_to_tracker.py`，**满足以下契约与硬约束**即可与 T1 流程无缝衔接。
+> This skill **does not ship** a bulk import script — it is tightly bound to a specific test-management platform (Jira case plugin / TestRail / Zephyr / in-house platform…) and cannot be generalized.
+> Teams implement `import_to_tracker.py` for the platform they use; **meeting the contract and hard constraints below** is enough to plug into the T1 flow seamlessly.
 
-## 接口约定
+## Interface convention
 
-| 参数 | 含义 | 约束 |
+| Parameter | Meaning | Constraint |
 | --- | --- | --- |
-| `--jira-url` | 目标需求 Issue 完整 URL | 必填 |
-| `--input` | `test_cases.json`（T1 结构化用例，见 `output-format.md`） | 必填；**仅功能用例** |
-| `--suite-name` | 测试集名称 | **必填且唯一**，命名规则见 `generation-workflow.md` |
-| `--dry-run` | 预览，不实际写入 | 可选 |
-| `--manual` | 逐条确认 | 可选 |
-| `--update-existing` | 更新已存在用例描述 | 可选 |
+| `--jira-url` | Full URL of the target requirement Issue | Required |
+| `--input` | `test_cases.json` (T1 structured cases, see `output-format.md`) | Required; **functional cases only** |
+| `--suite-name` | Test suite name | **Required and unique**; naming rules in `generation-workflow.md` |
+| `--dry-run` | Preview without actually writing | Optional |
+| `--manual` | Confirm one by one | Optional |
+| `--update-existing` | Update descriptions of existing cases | Optional |
 
-可选输出：返回用例集 URL，由 Tester 回写 Issue（Relates）+ 更新 Confluence 状态「已导入 JIRA」。
+Optional output: return the case-set URL, which the Tester writes back to the Issue (Relates) + updates the Confluence status to "Imported to JIRA".
 
-## 硬约束（与 T1 流程一致）
+## Hard constraints (consistent with the T1 flow)
 
-1. **人类口令后才运行**：仅当收到明确导入指令（如「审核通过，导入 JIRA」）才执行；阶段 A 发布 Confluence 后**不**同轮跳过审核或生成 XMind。
-2. **每批只导入一次**、只归入**一个**测试集；禁止重复执行、禁止二次关联脚本。
-3. **接口用例永不导入**（接口走 Apifox + manifest）。
-4. **Relates 闭环**：需求(Story) ↔ 用例集(Task) 仅 Relates；用例不建 Include 铺开；需求面板挂用例集 Task 而非 Story。
-5. **导入前前置校验**：确认 JIRA Key、确认尚未导入、确认 `--suite-name` 唯一、确认名称与需求严格对应。
-6. **导入后关联校验**：按上述 Relates 规则自检（参考现网样例）。
+1. **Run only after a human passphrase**: execute only on an explicit import instruction (e.g. "Review approved, import to JIRA"); after Phase A publishes to Confluence, **do not** skip review or generate XMind in the same turn.
+2. **Import only once per batch**, into **one** test suite only; no repeated runs, no secondary link scripts.
+3. **API cases are never imported** (API cases go through Apifox + manifest).
+4. **Relates closed loop**: requirement (Story) <-> case set (Task) via Relates only; no Include fan-out for cases; the requirement panel links the case-set Task, not the Story.
+5. **Pre-import validation**: confirm the JIRA Key, confirm it has not been imported yet, confirm `--suite-name` is unique, confirm the name strictly corresponds to the requirement.
+6. **Post-import link validation**: self-check against the Relates rules above (refer to live examples).
 
-## 失败处理
+## Failure handling
 
-- 已导入过：不要再次导入，直接报告已有用例信息。
-- 任一校验失败：停止并报告 BLOCKED，不臆造。
+- Already imported: do not import again; report the existing case info directly.
+- Any validation failure: stop and report BLOCKED; do not fabricate.

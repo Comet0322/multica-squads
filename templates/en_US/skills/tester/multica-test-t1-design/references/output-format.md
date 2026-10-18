@@ -1,14 +1,14 @@
-# JSON 输出与交付格式（强制）
+# JSON Output and Delivery Format (mandatory)
 
-> 整合自 `test-case-generator-squad` Output Format / Output Delivery / 覆盖自查表。与 [`generation-workflow.md`](generation-workflow.md)、[`test-case-template.md`](test-case-template.md) 配合。
+> Consolidated from `test-case-generator-squad` Output Format / Output Delivery / coverage self-check table. Works together with [`generation-workflow.md`](generation-workflow.md) and [`test-case-template.md`](test-case-template.md).
 
-## JSON 结构（`test_cases.json`）
+## JSON structure (`test_cases.json`)
 
-**强制要求：** `steps` 与 `expected_results` **数组长度必须完全一致（1:1）**，禁止自动填充或占位。生成后须校验，不一致则中断报错。
+**Mandatory:** the `steps` and `expected_results` **arrays must have exactly the same length (1:1)**; no auto-padding or placeholders. Validate after generation and abort with an error on mismatch.
 
-> **与步骤编写原则的关系：** 单步内可用 `1）` `2）` 在同一 `expected_results` 元素中列多个验证点；但 **数组层面** 仍须一步对应一条预期（一个数组元素）。
+> **Relation to the step-writing principle:** within a single step you may list several verification points in one `expected_results` element using `1)` `2)`; but **at the array level** each step still maps to exactly one expected result (one array element).
 
-**接口用例：** 存放在 `"api"` 键；同时导出 `test_cases_api.json` 作本地备份。**不参与** JIRA / XMind / 测试管理平台 导入。
+**API cases:** stored under the `"api"` key; also export `test_cases_api.json` as a local backup. They **do not take part** in JIRA / XMind / test-management-platform import.
 
 ```json
 {
@@ -16,23 +16,23 @@
   "functional": [
     {
       "case_id": "TC-F-LOGIN-001",
-      "module": "用户登录",
-      "coverage_dimension": "全量场景",
-      "title": "验证正确用户名密码登录成功",
-      "preconditions": ["已注册", "已打开登录页"],
+      "module": "User Login",
+      "coverage_dimension": "Full scenario",
+      "title": "Verify login succeeds with correct username and password",
+      "preconditions": ["Registered", "Login page opened"],
       "test_data": "user: test@c.com / pass: Abc@123456",
-      "steps": ["输入用户名", "输入密码", "点击登录"],
-      "expected_results": ["登录成功跳转首页"],
+      "steps": ["Enter username", "Enter password", "Click Login"],
+      "expected_results": ["Login succeeds and redirects to the home page"],
       "priority": "P1",
-      "case_type": "功能流程"
+      "case_type": "Functional flow"
     }
   ],
   "api": [
     {
       "case_id": "TC-I-LOGIN-001",
-      "module": "用户登录",
-      "coverage_dimension": "全量场景",
-      "title": "验证POST /api/v1/login正确参数返回成功"
+      "module": "User Login",
+      "coverage_dimension": "Full scenario",
+      "title": "Verify POST /api/v1/login with correct parameters returns success"
     }
   ],
   "generated_summary": {
@@ -43,75 +43,75 @@
 }
 ```
 
-### 字段要点
+### Field notes
 
-| 字段 | 说明 |
+| Field | Description |
 | --- | --- |
-| `jira_key` | 与 XMind 文件名、导入目标 Story 一致 |
-| `coverage_dimension` | `全量场景` / `边界场景` / `页面检查` |
-| `priority` | P1 / P2 / P3；**禁止 P0** |
-| `generated_summary` | 阶段 A 汇报须含 total / functional / api |
+| `jira_key` | Matches the XMind file name and the target Story for import |
+| `coverage_dimension` | `Full scenario` / `Boundary scenario` / `Page check` |
+| `priority` | P1 / P2 / P3; **P0 is forbidden** |
+| `generated_summary` | The Phase A report must include total / functional / api |
 
 ---
 
-## 输出到用户（可读格式）
+## Output to the user (readable format)
 
-1. **功能与接口分开输出**
-2. **按模块分组**；模块内排序：全量场景 → 边界场景 → 页面检查（仅展示实际覆盖的维度）
-3. **每模块开头必须输出覆盖矩阵**：
+1. **Output functional and API cases separately**
+2. **Group by module**; within a module, order: Full scenario -> Boundary scenario -> Page check (show only the dimensions actually covered)
+3. **Every module must start with a coverage matrix**:
 
 ```text
 ========================================
-模块: {模块名}
+Module: {module name}
 ========================================
-[覆盖矩阵]
-  ┌ 全量场景: {覆盖清单}
-  ┌ 边界场景: {覆盖清单}（未覆盖则不展示）
-  ┌ 页面检查: {覆盖清单}（未覆盖则不展示）
+[Coverage matrix]
+  ┌ Full scenario: {coverage list}
+  ┌ Boundary scenario: {coverage list} (omit if not covered)
+  ┌ Page check: {coverage list} (omit if not covered)
 
---- 用例 ---
-（用例详情）
+--- Cases ---
+(case details)
 ```
 
 ---
 
-## Output Delivery 规则（六条）
+## Output Delivery rules (six)
 
-1. **功能与接口分开输出**
-2. **按模块分组**；模块内按维度排序（仅展示实际覆盖维度）
-3. **必须输出覆盖矩阵** — 未覆盖维度不展示
-4. **材料不足时** — 缺 Figma/接口文档且无法获取 → **不得**生成占位符用例；生成前报告阻塞项。不依赖缺失材料即可写清预期时，正常生成
-5. **生成阶段结束必须声明待审** — Confluence 已更新；写明「未 XMind/未导入 JIRA」及导入口令；**不得**宣称已导入
-6. **导入阶段结束才汇报 Issue Key** — 仅 Step B 完成后输出用例/用例集 Key 与关联校验结果
+1. **Output functional and API cases separately**
+2. **Group by module**; order by dimension within a module (show only dimensions actually covered)
+3. **The coverage matrix must be output** — dimensions not covered are not shown
+4. **When materials are insufficient** — missing Figma/API docs that cannot be obtained -> **do not** generate placeholder cases; report the blockers before generating. If expected results can be written clearly without the missing material, generate normally
+5. **At the end of the generation phase, declare pending review** — Confluence is updated; state "not XMind / not imported to JIRA" and the import passphrase; **do not** claim it has been imported
+6. **Report Issue Keys only at the end of the import phase** — output the case / case-set Keys and the link-validation result only after Step B completes
 
 ---
 
-## 覆盖自查表（阶段 A 强制输出）
+## Coverage self-check table (mandatory output in Phase A)
 
-生成结束时逐项检查并输出（仅列实际覆盖维度）：
+At the end of generation, check item by item and output (list only dimensions actually covered):
 
 ```text
-=== 覆盖检查报告 ===
+=== Coverage Check Report ===
 
-=== 历史上下文参考（Step 0.5）===
-  Confluence 历史: {标题/链接列表，或「未命中」}
-  团队知识库: {问答摘要 + 引用来源，或「不可用/未命中」}
-  使用说明: 仅作背景理解；用例范围严格限于当前需求，未引入参考源中的额外测试点
+=== Historical context reference (Step 0.5) ===
+  Confluence history: {list of titles/links, or "no hit"}
+  Team knowledge base: {Q&A summary + cited sources, or "unavailable / no hit"}
+  Usage note: background understanding only; case scope is strictly limited to the current requirement, with no extra test points introduced from reference sources
 
-模块: 用户登录
-  [✓] 全量场景 — 已覆盖 6/6 条业务路径
-  [✓] 边界场景 — 已覆盖 8/10 条边界条件 (缺: 并发登录、Token过期)
-  [✓] 页面检查 — 已覆盖 5/5 个页面元素
+Module: User Login
+  [✓] Full scenario — covered 6/6 business paths
+  [✓] Boundary scenario — covered 8/10 boundary conditions (missing: concurrent login, token expiry)
+  [✓] Page check — covered 5/5 page elements
 
-模块: 商品列表
-  [✓] 全量场景 — 已覆盖 4/4 条业务路径
-  [ ] 边界场景 — 已覆盖 3/6 条边界条件 (缺: 分页边界、排序边界、筛选组合)
+Module: Product List
+  [✓] Full scenario — covered 4/4 business paths
+  [ ] Boundary scenario — covered 3/6 boundary conditions (missing: pagination boundary, sort boundary, filter combination)
 
-=== 整体覆盖率 ===
-  [✓] 所有模块的全量场景已覆盖
-  [✓] 所有模块的边界场景已覆盖（未覆盖的模块已标注原因）
-  [✓] 所有模块的页面检查已覆盖（未覆盖的模块已标注原因）
-  [ ] 有维度未覆盖（列出原因）
+=== Overall coverage ===
+  [✓] Full scenarios covered in all modules
+  [✓] Boundary scenarios covered in all modules (modules not covered are annotated with a reason)
+  [✓] Page checks covered in all modules (modules not covered are annotated with a reason)
+  [ ] Some dimensions not covered (list reasons)
 ```
 
-可与 [`generation-workflow.md`](generation-workflow.md) 中的 Markdown 覆盖报告模板并用；**覆盖自查表不可省略**。
+May be used together with the Markdown coverage report template in [`generation-workflow.md`](generation-workflow.md); **the coverage self-check table must not be omitted**.

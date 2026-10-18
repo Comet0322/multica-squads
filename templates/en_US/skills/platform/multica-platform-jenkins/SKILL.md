@@ -1,6 +1,6 @@
 ---
 name: multica-platform-jenkins
-description: Platform-layer skill (placeholder shell): read/write capability for CI/CD systems (Jenkins-class) — trigger parameterized builds, poll status, fetch console logs. Parameters are auto-discovered; never hardcode. Credentials injected via runtime env. Concrete CI URL / Job list in config.yaml, never in role prompts.
+description: "Platform-layer skill (placeholder shell): read/write capability for CI/CD systems (Jenkins-class) — trigger parameterized builds, poll status, fetch console logs. Parameters are auto-discovered; never hardcode. Credentials injected via runtime env. Concrete CI URL / Job list in config.yaml, never in role prompts."
 metadata:
   layer: platform
   replaces: any CI/CD system (Jenkins / GitLab CI / GitHub Actions / self-hosted pipeline / etc.)
@@ -40,10 +40,16 @@ multica-platform-jenkins/
 ├── config.yaml
 ├── jobs-catalog.yaml     # per-env Job list (service → Job name)
 ├── .env.example
+├── README.md
+├── reference.md
 └── scripts/
     ├── trigger_env.py    # trigger by env + service
+    ├── build_sit.py      # trigger a sit build
+    ├── promote_prod.py   # promote sit → prod (two-person review)
     ├── list_jobs.py      # list / query Jobs
-    ├── cicd_cli.py       # low-level API
+    ├── validate.py       # validate parameters / branch naming
+    ├── jenkins_cli.py    # low-level API
+    ├── requirements.txt
     └── lib/
 ```
 
@@ -63,7 +69,7 @@ python scripts/list_jobs.py --env sit --service <service>
 ## Discover parameters (live from CI, per Job)
 
 ```bash
-python scripts/cicd_cli.py discover-params --env sit --service <service> --branch release/<ISSUE>-<slug> --json
+python scripts/jenkins_cli.py discover-params --env sit --service <service> --branch release/<ISSUE>-<slug> --json
 ```
 
 ## Trigger build (auto-params by default)

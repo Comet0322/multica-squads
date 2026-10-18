@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""认证环境变量加载：优先使用本机 Windows 系统 / 进程环境变量。
+"""Load authentication environment variables: prefer the local Windows system / process environment variables.
 
-优先级（高 → 低）:
-  1) 操作系统环境变量（User / Machine / 进程已有）
-  2) 可选本地文件（仅补齐空缺，不覆盖系统变量）:
+Priority (high -> low):
+  1) OS environment variables (User / Machine / already in the process)
+  2) Optional local files (only fill gaps; never override system variables):
        <skill>/config.local.env
        <skill>/.env.local
        <skill>/.env
 
-规则:
-  - 默认不在 Skill 目录存放真实账号密码；推荐在系统环境变量中配置
-  - 若仍存在本地文件，其中的键仅在对应环境变量为空时写入
-  - 禁止把含真实密码的 config.local.env 提交到仓库
+Rules:
+  - By default, do not store real credentials in the Skill directory; configure them as system environment variables
+  - If a local file exists, its keys are written only when the matching environment variable is empty
+  - Never commit a config.local.env that contains real passwords
 """
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ _CANDIDATES = (
 _LOADED_FROM: str | None = None
 _SYSTEM_ENV_MERGED = False
 
-# 脚本关心的认证相关键（从 Windows User/Machine 环境补进当前进程）
+# Authentication-related keys the scripts care about (merged from Windows User/Machine environment into the current process)
 _AUTH_KEYS = (
     "JIRA_USERNAME",
     "JIRA_PASSWORD",
@@ -50,7 +50,7 @@ def skill_root() -> Path:
 
 
 def _merge_windows_system_env() -> None:
-    """把本机 User/Machine 级系统变量合并进 os.environ（不覆盖进程已有非空值）。"""
+    """Merge local User/Machine-level system variables into os.environ (never overriding non-empty values already in the process)."""
     global _SYSTEM_ENV_MERGED
     if _SYSTEM_ENV_MERGED:
         return
@@ -115,14 +115,14 @@ def _parse_env_file(path: Path) -> dict[str, str]:
 
 
 def load_local_env(prefer_local: bool = False) -> str | None:
-    """合并系统环境变量，并可选从本地文件补齐空缺项。
+    """Merge system environment variables, optionally filling gaps from a local file.
 
     Args:
-        prefer_local: False（默认）时，系统/进程环境变量优先，本地文件仅填充空缺；
-            True 时本地文件覆盖已有同名变量（不推荐）。
+        prefer_local: When False (default), system/process environment variables win and the local file only fills gaps;
+            when True, the local file overrides existing variables of the same name (not recommended).
 
     Returns:
-        实际加载的本地文件路径字符串；未使用本地文件则返回 None。
+        Path string of the local file actually loaded; None if no local file was used.
     """
     global _LOADED_FROM
     _merge_windows_system_env()
@@ -144,12 +144,12 @@ def load_local_env(prefer_local: bool = False) -> str | None:
 
 
 def ensure_local_env(prefer_local: bool = False) -> str | None:
-    """幂等加载：重复调用只解析一次；系统环境每次确保已合并。"""
+    """Idempotent load: repeated calls parse only once; the system environment is merged every time."""
     _merge_windows_system_env()
     if _LOADED_FROM:
         return _LOADED_FROM
     return load_local_env(prefer_local=prefer_local)
 
 
-# 被 import 时即尝试加载，便于各脚本只需一行 import
+# Load on import so each script needs only a single import line
 ensure_local_env()

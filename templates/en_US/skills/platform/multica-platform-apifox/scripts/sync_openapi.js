@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * OpenAPI → Apifox 同步：导入增/改、打 Issue tag、删除带 tag 的 orphan endpoint。
- * 供 @BackendDev / multica-artifact-backend 在契约发布后调用。
+ * OpenAPI -> Apifox sync: import additions/changes, apply the Issue tag, delete orphan endpoints that carry the tag.
+ * Called by @BackendDev / multica-artifact-backend after a contract is published.
  */
 const fs = require('fs');
 const path = require('path');

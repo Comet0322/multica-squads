@@ -9,7 +9,7 @@ description: Land UI / interaction design artifacts to the design collaboration 
 
 Land UI design artifacts to the team's unified design platform and let downstream (frontend) retrieve them via a stable reference.
 
-> This skill decouples "platform integration" from "role prompt": the role prompt only says "produce UI design", not which platform. Changing companies (Zeplin / 蓝湖 / MasterGo) means editing only this skill, not the @Designer prompt.
+> This skill decouples "platform integration" from "role prompt": the role prompt only says "produce UI design", not which platform. Changing companies (Zeplin / MasterGo) means editing only this skill, not the @Designer prompt.
 
 ## Default platform: Figma
 
@@ -31,7 +31,7 @@ Regardless of platform, the UI artifact at least contains:
 
 ## Swap platform (no role-prompt change)
 
-Replace this skill's "default platform" section with your tool (蓝湖 / Zeplin / MasterGo / internal design library), keeping the "upload + return stable link" interface unchanged.
+Replace this skill's "default platform" section with your tool (Zeplin / MasterGo / internal design library), keeping the "upload + return stable link" interface unchanged.
 
 ## Why it works
 

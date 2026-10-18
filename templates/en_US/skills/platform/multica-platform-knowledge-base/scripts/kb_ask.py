@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""通过 Knowledge Base Bridge（知识库 Bridge） 发起 Wiki 知识库问答（仅 stdlib，跨平台）。"""
+"""Ask Wiki knowledge-base questions through the Knowledge Base Bridge (stdlib only, cross-platform)."""
 
 from __future__ import annotations
 
@@ -41,15 +41,16 @@ def http_json(method: str, url: str, body: dict | None = None, timeout: int = 60
         raise RuntimeError(f"HTTP {exc.code} {url}: {detail}") from exc
     except urllib.error.URLError as exc:
         raise RuntimeError(
-            f"无法连接 Bridge ({url})：{exc.reason}。"
-            f"请确认内网可达 {DEFAULT_BRIDGE}，并设置 KB_BRIDGE（如需要）。"
+            f"Cannot connect to Bridge ({url}): {exc.reason}. "
+            f"Make sure {DEFAULT_BRIDGE} is reachable on the intranet, and set KB_BRIDGE if needed."
         ) from exc
 
 
 def build_prompt(question: str, system_code: str) -> str:
+    # Functional: the bridge matches this exact Chinese prefix ("Wiki knowledge-base Q&A"); do not translate.
     prompt = "【Wiki 知识库问答】"
     if system_code and system_code.upper() != "ALL":
-        prompt += f"系统：{system_code}。"
+        prompt += f"系统：{system_code}。"  # "系统" = "System"; part of the bridge prompt format
     prompt += question.strip()
     return prompt
 
@@ -58,7 +59,7 @@ def check_health(bridge: str | None = None, verbose: bool = True) -> dict:
     base = (bridge or _bridge_url()).rstrip("/")
     health = http_json("GET", f"{base}/health")
     if not health.get("ok"):
-        raise RuntimeError(f"Bridge 健康检查失败: {json.dumps(health, ensure_ascii=False)}")
+        raise RuntimeError(f"Bridge health check failed: {json.dumps(health, ensure_ascii=False)}")
     if verbose:
         print(
             f"bridge=ok cwd={health.get('cwd')} node={health.get('node')}",
@@ -84,7 +85,7 @@ def ask(
         os.environ.get("KB_TASK_ID") or (MIN_TASK_ID + random.randint(0, 999_999))
     )
     if task_id < MIN_TASK_ID:
-        raise ValueError(f"taskId 须 >= {MIN_TASK_ID}，当前 {task_id}")
+        raise ValueError(f"taskId must be >= {MIN_TASK_ID}, got {task_id}")
 
     check_health(base, verbose=verbose)
 
@@ -103,7 +104,7 @@ def ask(
     )
     run_id = run_resp.get("runId")
     if not run_id:
-        raise RuntimeError(f"未返回 runId: {json.dumps(run_resp, ensure_ascii=False)}")
+        raise RuntimeError(f"No runId returned: {json.dumps(run_resp, ensure_ascii=False)}")
 
     if verbose:
         print(f"runId={run_id} taskId={task_id}", file=sys.stderr)
@@ -134,7 +135,7 @@ def ask(
         if status in ("failed", "error", "cancelled"):
             raise RuntimeError(json.dumps(run, ensure_ascii=False))
 
-    raise RuntimeError(f"轮询超时（{poll_timeout}s），runId={run_id}")
+    raise RuntimeError(f"Polling timed out ({poll_timeout}s), runId={run_id}")
 
 
 def main() -> int:
@@ -142,17 +143,17 @@ def main() -> int:
         sys.stdout.reconfigure(encoding="utf-8")
         sys.stderr.reconfigure(encoding="utf-8")
 
-    parser = argparse.ArgumentParser(description="Knowledge Base Bridge Wiki 知识库问答")
-    parser.add_argument("question", nargs="?", help="用户问题")
+    parser = argparse.ArgumentParser(description="Knowledge Base Bridge Wiki Q&A")
+    parser.add_argument("question", nargs="?", help="user question")
     parser.add_argument(
         "system_code",
         nargs="?",
         default="ALL",
-        help="系统代码（CRM/MES/…），默认 ALL",
+        help="system code (CRM/MES/...), default ALL",
     )
-    parser.add_argument("--health", action="store_true", help="仅执行步骤 1 健康检查")
-    parser.add_argument("--json", action="store_true", help="以 JSON 输出完整结果")
-    parser.add_argument("-q", "--quiet", action="store_true", help="不输出进度到 stderr")
+    parser.add_argument("--health", action="store_true", help="run only the step 1 health check")
+    parser.add_argument("--json", action="store_true", help="print the full result as JSON")
+    parser.add_argument("-q", "--quiet", action="store_true", help="do not print progress to stderr")
     args = parser.parse_args()
 
     verbose = not args.quiet
@@ -166,7 +167,7 @@ def main() -> int:
             return 0
 
         if not args.question:
-            parser.error("缺少 question；仅健康检查请用 --health")
+            parser.error("missing question; use --health for a health check only")
 
         result = ask(args.question, args.system_code, verbose=verbose)
         if args.json:
@@ -174,7 +175,7 @@ def main() -> int:
         else:
             print(result["answer"])
         return 0
-    except Exception as exc:  # noqa: BLE001 — CLI 统一错误出口
+    except Exception as exc:  # noqa: BLE001 — single CLI error exit
         print(str(exc), file=sys.stderr)
         return 1
 

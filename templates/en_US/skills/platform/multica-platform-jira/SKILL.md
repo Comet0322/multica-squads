@@ -1,6 +1,6 @@
 ---
 name: multica-platform-jira
-description: Platform-layer skill (placeholder shell): read/write capability for Issue-tracking systems (JIRA-class) — Issue query, upstream-Wiki-link parsing, Story creation, transition, scheduling, description write-back, notification. Decoupled from the Wiki platform; called by artifact-orchestration skills. Concrete URLs / projects / fields live in config.yaml, never in role prompts.
+description: "Platform-layer skill (placeholder shell): read/write capability for Issue-tracking systems (JIRA-class) — Issue query, upstream-Wiki-link parsing, Story creation, transition, scheduling, description write-back, notification. Decoupled from the Wiki platform; called by artifact-orchestration skills. Concrete URLs / projects / fields live in config.yaml, never in role prompts."
 metadata:
   layer: platform
   replaces: any Issue-tracking system (JIRA / ZenTao / TAPD / GitHub Issues / etc.)
@@ -27,31 +27,38 @@ multica-platform-jira/
 ├── SKILL.md
 ├── config.yaml
 ├── .env.example
+├── README.md
+├── references/
+│   └── upstream-read.md
 └── scripts/
     ├── credentials.sh
-    ├── issue.sh
+    ├── jira.sh            # Unix full-featured wrapper (optional)
+    ├── jira_cli.py        # cross-platform CLI
+    ├── get_issue.py       # Issue → JSON (with Confluence/Figma links)
+    ├── lib/jira_client.py
+    ├── requirements.txt
     └── validate.sh
 ```
 
 ## Read (pull Issue / locate upstream Wiki)
 
 ```bash
-bash scripts/issue.sh get-issue <ISSUE-KEY>
-bash scripts/issue.sh get-wiki-url <ISSUE-KEY> [text|json]
-bash scripts/issue.sh search "<JQL>" [max_results]
+bash scripts/jira.sh get-issue <ISSUE-KEY>
+bash scripts/jira.sh get-confluence-url <ISSUE-KEY> [text|json]
+bash scripts/jira.sh search "<JQL>" [max_results]
 ```
 
-**Typical chain**: `get-issue` reads acceptance criteria → `get-wiki-url` gets PRD pageId → `multica-platform-confluence` `fetch-page` pulls body.
+**Typical chain**: `get-issue` reads acceptance criteria → `get-confluence-url` gets PRD pageId → `multica-platform-confluence` `fetch-page` pulls body.
 
 ## Write (artifact / workflow write-back)
 
 ```bash
-bash scripts/issue.sh create-story --project <PREFIX> --summary "..." ...
-bash scripts/issue.sh get-transitions <ISSUE-KEY>
-bash scripts/issue.sh transition <ISSUE-KEY> <state_name>
-bash scripts/issue.sh schedule <ISSUE-KEY> <owner> <start> <end>
-bash scripts/issue.sh append-description <ISSUE-KEY> "<wiki_link_block>"
-bash scripts/issue.sh notify <ISSUE-KEY> <wiki_page_id>
+bash scripts/jira.sh create-story --project <PREFIX> --summary "..." ...
+bash scripts/jira.sh get-transitions <ISSUE-KEY>
+bash scripts/jira.sh transition <ISSUE-KEY> <state_name>
+bash scripts/jira.sh schedule <ISSUE-KEY> <owner> <start> <end>
+bash scripts/jira.sh append-description <ISSUE-KEY> "<wiki_link_block>"
+bash scripts/jira.sh notify-story <ISSUE-KEY> <wiki_page_id>
 ```
 
 ## Wiki description format

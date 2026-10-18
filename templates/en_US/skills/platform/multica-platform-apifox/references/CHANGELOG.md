@@ -1,20 +1,20 @@
-# Changelog（Apifox 接口场景补充）
+# Changelog (Apifox endpoint scenario supplement)
 
-> 整合自 `apifox-test-case-supplement-squad` 版本历史；platform skill 脚本行为以此为准。
+> Consolidated from the `apifox-test-case-supplement-squad` version history; this is the authority for platform skill script behavior.
 
 ## 1.4.9
 
-- 多人多项目：任务卡片、登记表路径可配置、按 OPERATOR 隔离
-- Skill 分发空登记模板；运行态/私有文件 gitignore
-- config.example 全占位；禁止照搬真实项目 ID
-- AI 分支按操作者复用；跨人冲突先问；场景 import 前并发检查
-- MULTICA 可复制指令（无本机绝对路径）
+- Multi-user, multi-project: task cards, configurable registry path, isolation per OPERATOR
+- Empty registry template for Skill distribution; runtime/private files are gitignored
+- config.example is all placeholders; do not copy real project IDs
+- AI branches are reused per operator; ask first on cross-user conflicts; concurrency check before scenario import
+- Copyable MULTICA instructions (no local absolute paths)
 
 ## 1.4.8
 
-- 项目 ID 禁止写死示例清单；仅用户输入/登记精确命中/唯一按名
-- systems-registry lookup 取消模糊 includes
+- Project IDs must not be hard-coded as an example list; only user input / exact registry hit / unique match by name
+- systems-registry lookup no longer does fuzzy includes
 
 ## 1.4.7
 
-- 同一接口只挂一个场景（WS-40）；断言质量约束
+- One scenario per endpoint (WS-40); assertion quality constraints

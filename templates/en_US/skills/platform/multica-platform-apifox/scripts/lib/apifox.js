@@ -1,5 +1,5 @@
 /**
- * 共享 Apifox CLI 调用
+ * Shared Apifox CLI invocation
  */
 const { execFileSync } = require('child_process');
 const fs = require('fs');
@@ -26,7 +26,7 @@ function resolveApifoxBin() {
     'cli.js'
   );
   if (fs.existsSync(fallback)) return fallback;
-  throw new Error('apifox-cli 未安装：npm install -g apifox-cli');
+  throw new Error('apifox-cli is not installed: npm install -g apifox-cli');
 }
 
 function ensureTls() {
@@ -37,7 +37,7 @@ function ensureTls() {
 
 function extractFirstJson(text) {
   const start = text.indexOf('{');
-  if (start < 0) throw new Error('apifox 无 JSON 输出: ' + text.slice(0, 300));
+  if (start < 0) throw new Error('apifox produced no JSON output: ' + text.slice(0, 300));
   let depth = 0;
   let inString = false;
   let escaped = false;
@@ -56,7 +56,7 @@ function extractFirstJson(text) {
       if (depth === 0) return text.slice(start, i + 1);
     }
   }
-  throw new Error('apifox JSON 输出不完整: ' + text.slice(start, start + 300));
+  throw new Error('apifox JSON output is incomplete: ' + text.slice(start, start + 300));
 }
 
 function apifoxJson(args) {
@@ -83,7 +83,7 @@ function apifoxJson(args) {
 
 function projectId() {
   const id = process.env.APIFOX_PROJECT_ID;
-  if (!id) throw new Error('请设置 APIFOX_PROJECT_ID');
+  if (!id) throw new Error('Please set APIFOX_PROJECT_ID');
   return String(id);
 }
 
@@ -102,7 +102,7 @@ function writeJson(file, obj) {
 }
 
 /**
- * 将 get 到的 case 收成可 update 的主体，再合并 patch
+ * Turn the fetched case into an updatable body, then merge the patch
  */
 function buildUpdatePayload(caseData, patch = {}) {
   const d = caseData;
@@ -135,13 +135,13 @@ function buildUpdatePayload(caseData, patch = {}) {
   if (patch.preProcessors) {
     merged.preProcessors = patch.preProcessors.filter((p) => p.type !== 'placeholder');
   }
-  if (!merged.method) throw new Error('update 载荷 method 为空，已中止（禁止默认改为 POST）');
+  if (!merged.method) throw new Error('update payload method is empty; aborted (defaulting to POST is forbidden)');
   return merged;
 }
 
 function assertPathOk(payload) {
   if (!payload.path) {
-    throw new Error('update 载荷 path 为空，已中止（禁止自动猜测或修复接口路径）');
+    throw new Error('update payload path is empty; aborted (guessing or repairing the endpoint path is forbidden)');
   }
   return payload;
 }

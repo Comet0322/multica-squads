@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-将测试用例 JSON 导出为 XMind 2020+ 格式 (.xmind)
-兼容 XMind 2020 / XMind 8 / MindMaster / 百度脑图
+Export test-case JSON to XMind 2020+ format (.xmind)
+Compatible with XMind 2020 / XMind 8 / MindMaster / Baidu Naotu
 
-格式说明（匹配 test_cases_PROJ-123.xmind 参考格式）:
-  - 根主题标题 = 项目名称（如 MDP、PROJ）
-  - 模块主题以 / 结尾表示文件夹
-  - 支持多层模块嵌套（模块名用 / 分隔）
-  - 用例结构：前置条件（第一子节点）+ 步骤（含预期作为子节点）
-  - 优先级标记：P1→priority-1, P2→priority-2, P3→priority-3（兼容历史 P0→priority-1、P4→priority-3）
+Format notes (matches the test_cases_PROJ-123.xmind reference format):
+  - Root topic title = project name (e.g. PLAT, PROJ)
+  - Module topics end with / to denote folders
+  - Multi-level module nesting is supported (module names separated by /)
+  - Case structure: preconditions (first child node) + steps (expected results as child nodes)
+  - Priority markers: P1->priority-1, P2->priority-2, P3->priority-3 (legacy P0->priority-1, P4->priority-3 also accepted)
 
   content.json: [
-    {"id":"s1","class":"sheet","rootTopic":{"id":"root","title":"MDP","children":{"attached":[...]}}}
+    {"id":"s1","class":"sheet","rootTopic":{"id":"root","title":"PLAT","children":{"attached":[...]}}}
   ]
   metadata.json: {"dataStructureVersion":"3","layoutEngineVersion":"5","creator":{...}}
   manifest.json: {"file-entries":{"content.json":{},"metadata.json":{}}}
 """
 import json, os, sys, zipfile, uuid, re
 
-# Fix Windows terminal encoding for Chinese output
+# Fix Windows terminal encoding for non-ASCII output
 if sys.platform == 'win32' and hasattr(sys.stdout, 'buffer'):
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
@@ -36,7 +36,7 @@ def strip_module_prefix(name):
 
 
 def build_topic_json(title, children=None, tid=None, markers=None):
-    """构建单个 topic 的 JSON dict"""
+    """Build the JSON dict of a single topic."""
     topic = {
         "id": tid or _make_id(),
         "title": title,
@@ -49,19 +49,19 @@ def build_topic_json(title, children=None, tid=None, markers=None):
 
 
 def build_case_json(case_title, preconditions, steps, expected_results, priority):
-    """构建一个测试用例的 JSON 结构
+    """Build the JSON structure of one test case.
 
-    格式（匹配 test_cases_PROJ-123.xmind）:
+    Format (matches test_cases_PROJ-123.xmind):
     {
       "id": "xxx",
-      "title": "用例标题",
+      "title": "case title",
       "children": {
         "attached": [
-          {"title": "前置条件：xxx"},
+          {"title": "Preconditions: xxx"},
           {
-            "title": "步骤",
+            "title": "steps",
             "children": {"attached": [
-              {"title": "预期：xxx"}
+              {"title": "Expected: xxx"}
             ]}
           }
         ]
@@ -71,28 +71,28 @@ def build_case_json(case_title, preconditions, steps, expected_results, priority
     """
     children = []
 
-    # 前置条件
+    # Preconditions
     if preconditions:
-        pc_text = "；".join(p[:100] for p in preconditions)
-        children.append(build_topic_json(f"前置条件：{pc_text}"))
+        pc_text = "; ".join(p[:100] for p in preconditions)
+        children.append(build_topic_json(f"Preconditions: {pc_text}"))
 
-    # 严格校验预期结果数量
+    # Strictly validate the number of expected results
     if len(steps) != len(expected_results):
         raise ValueError(
-            f"步骤与预期结果数量不一致！case_title='{case_title}' "
+            f"Steps and expected results differ in count! case_title='{case_title}' "
             f"steps={len(steps)} expected_results={len(expected_results)}\n"
-            f"禁止自动填充预期结果，请修改生成逻辑后重试。"
+            f"Auto-filling expected results is forbidden; fix the generation logic and retry."
         )
 
-    # 步骤 + 预期结果（每个步骤一一对应，完整输出）
-    # 预期结果支持多行编号格式：1）xxx\n\n2）xxx\n\n3）xxx（仍属于同一个预期结果）
+    # Steps + expected results (one-to-one per step, output in full)
+    # An expected result may use a multi-line numbered format: 1) xxx\n\n2) xxx\n\n3) xxx (still one expected result)
     for i, step in enumerate(steps):
         exp_text = expected_results[i]
-        exp_list = [build_topic_json(f"预期：{exp_text}")]
+        exp_list = [build_topic_json(f"Expected: {exp_text}")]
         step_node = build_topic_json(step, children=exp_list)
         children.append(step_node)
 
-    # 优先级映射
+    # Priority mapping
     priority_map = {
         "P0": "priority-1",
         "P1": "priority-1",
@@ -107,13 +107,13 @@ def build_case_json(case_title, preconditions, steps, expected_results, priority
 
 
 def build_module_tree(modules):
-    """将扁平的模块列表转换为嵌套的树形结构，支持多级模块路径
+    """Convert a flat module list into a nested tree, supporting multi-level module paths.
 
     modules: [(mod_name, [case_tuple, ...]), ...]
       case_tuple = (title, preconditions, steps, expected, priority)
-      mod_name 可为 "父模块/子模块" 表示嵌套
+      mod_name may be "parent/child" to express nesting
 
-    返回: 根级 topic JSON 列表（模块名以 / 结尾）
+    Returns: list of root-level topic JSONs (module names end with /)
     """
     tree = {}
     for mod_name, cases in modules:
@@ -143,9 +143,9 @@ def build_module_tree(modules):
 
 
 def build_sheet_json(sheet_title, root_title, module_topics):
-    """构建一个 Sheet 的 JSON
+    """Build the JSON of one Sheet.
 
-    module_topics: build_module_tree 返回的 topic 列表
+    module_topics: topic list returned by build_module_tree
     """
     root_topic = build_topic_json(root_title, children=module_topics)
     return {
@@ -158,13 +158,13 @@ def build_sheet_json(sheet_title, root_title, module_topics):
 def group_by_module(test_cases):
     modules = {}
     for tc in test_cases:
-        mod = tc.get("module", "未分类")
+        mod = tc.get("module", "Uncategorized")
         modules.setdefault(mod, []).append(tc)
     return sorted(modules.items(), key=lambda x: x[0])
 
 
 def build_functional_sheets(data, project_key):
-    """构建功能测试 Sheet"""
+    """Build the functional-test Sheet."""
     func_cases = data.get("functional", [])
     if not func_cases:
         return None
@@ -173,7 +173,7 @@ def build_functional_sheets(data, project_key):
     sheet_module_tuples = []
     for mod_name, cases in modules:
         module_cases = []
-        clean_mod = strip_module_prefix(mod_name)  # "FR-01 文件条目增删改" -> "文件条目增删改"
+        clean_mod = strip_module_prefix(mod_name)  # "FR-01 File entry CRUD" -> "File entry CRUD"
         for c in cases:
             title = c.get("title", "")
             preconditions = c.get("preconditions", [])
@@ -184,18 +184,18 @@ def build_functional_sheets(data, project_key):
         sheet_module_tuples.append((clean_mod, module_cases))
 
     module_topics = build_module_tree(sheet_module_tuples)
-    return build_sheet_json("功能测试用例", project_key, module_topics)
+    return build_sheet_json("Functional test cases", project_key, module_topics)
 
 
 def build_api_sheets(data, project_key):
-    """构建接口测试 Sheet"""
+    """Build the API-test Sheet."""
     api_cases = data.get("api", [])
     if not api_cases:
         return None
 
     seen_apis = {}
     for tc in api_cases:
-        name = tc.get("module", tc.get("api_name", "未分类"))
+        name = tc.get("module", tc.get("api_name", "Uncategorized"))
         seen_apis.setdefault(name, []).append(tc)
     api_modules = sorted(seen_apis.items(), key=lambda x: x[0])
 
@@ -213,18 +213,18 @@ def build_api_sheets(data, project_key):
                 label = f"{case_id} [{method}] {endpoint} - {title}"
             else:
                 label = f"{case_id} - {title}"
-            steps = [f"请求参数: {k}={v}" for k, v in c.get("request_params", {}).items()][:5]
+            steps = [f"Request parameter: {k}={v}" for k, v in c.get("request_params", {}).items()][:5]
             expected = c.get("validation_points", [])
             preconditions = c.get("preconditions", [])
             module_cases.append((label, preconditions, steps, expected, pri))
         sheet_module_tuples.append((clean_mod, module_cases))
 
     module_topics = build_module_tree(sheet_module_tuples)
-    return build_sheet_json("接口测试用例", project_key, module_topics)
+    return build_sheet_json("API test cases", project_key, module_topics)
 
 
 def extract_jira_key(data):
-    """从用例 JSON 中提取完整需求编号（如 PROJ-100）"""
+    """Extract the full requirement key (e.g. PROJ-100) from the case JSON."""
     if not isinstance(data, dict):
         return ""
     for field in ("jira_key", "parent_issue"):
@@ -238,9 +238,9 @@ def extract_jira_key(data):
 
 
 def resolve_output_path(input_json, output_xmind, jira_key):
-    """解析输出路径：文件名必须带需求编号；仅写入目标文件，不删除其他 .xmind。
+    """Resolve the output path: the file name must carry the requirement key; only the target file is written and no other .xmind is deleted.
 
-    命名约定：test_cases_{JIRA_KEY}.xmind（如 test_cases_PROJ-100.xmind）
+    Naming convention: test_cases_{JIRA_KEY}.xmind(e.g. test_cases_PROJ-100.xmind)
     """
     input_dir = os.path.dirname(os.path.abspath(input_json)) or "."
 
@@ -248,7 +248,7 @@ def resolve_output_path(input_json, output_xmind, jira_key):
         name = f"test_cases_{jira_key}.xmind" if jira_key else "test_cases.xmind"
         return os.path.join(input_dir, name)
 
-    # 若传入的是目录，在目录下按需求编号落盘
+    # If a directory is given, write into it named by the requirement key
     if os.path.isdir(output_xmind):
         name = f"test_cases_{jira_key}.xmind" if jira_key else "test_cases.xmind"
         return os.path.join(output_xmind, name)
@@ -259,7 +259,7 @@ def resolve_output_path(input_json, output_xmind, jira_key):
     if not ext:
         ext = ".xmind"
 
-    # 文件名未含需求编号时自动补上，避免固定名 test_cases.xmind 覆盖混淆
+    # Append the requirement key when the file name lacks it, to avoid confusing overwrites of a fixed test_cases.xmind
     if jira_key and jira_key not in base:
         base = f"{name}_{jira_key}{ext}"
         return os.path.join(out_dir, base)
@@ -268,13 +268,13 @@ def resolve_output_path(input_json, output_xmind, jira_key):
 
 
 def generate(input_json, output_xmind=None, project_key=None):
-    """生成 XMind 文件
+    """Generate the XMind file.
 
     Args:
-        input_json: 测试用例 JSON 文件路径
-        output_xmind: 输出 .xmind 文件路径；为 None 时按 jira_key 自动命名为
-            test_cases_{JIRA_KEY}.xmind。仅覆盖当前目标文件，不删除其他需求的旧文件。
-        project_key: 项目标识（用作根主题标题）。默认为 None，会自动从数据中的 jira_key 提取前缀
+        input_json: Path of the test-case JSON file
+        output_xmind: Output .xmind path; when None, auto-named by jira_key as
+            test_cases_{JIRA_KEY}.xmind。Only the current target file is overwritten; old files of other requirements are not deleted.
+        project_key: Project key (used as the root topic title). Defaults to None, in which case the prefix is extracted from jira_key in the data
 
     Returns:
         (success: bool, output_path: str|None)
@@ -295,25 +295,25 @@ def generate(input_json, output_xmind=None, project_key=None):
 
     jira_key = extract_jira_key(test_cases)
 
-    # 自动从 jira_key 中提取系统前缀作为根节点标题（如 PROJ-100 → PROJ）
+    # Auto-extract the system prefix from jira_key as the root title (e.g. PROJ-100 -> PROJ)
     if project_key is None:
         if jira_key:
             m = re.match(r'([A-Z]+)-\d+', jira_key)
-            project_key = m.group(1) if m else "MDP"
+            project_key = m.group(1) if m else "PLAT"
         else:
-            project_key = "MDP"
+            project_key = "PLAT"
 
     sheets = []
     func_sheet = build_functional_sheets(test_cases, project_key)
     if func_sheet:
         sheets.append(func_sheet)
-    # 接口用例不生成 XMind，仅保存本地 JSON 文件
+    # API cases are not exported to XMind; they are only saved as a local JSON file
     if not sheets:
-        print("错误: 没有找到测试用例数据", file=sys.stderr)
+        print("Error: no test case data found", file=sys.stderr)
         return False, None
 
     output_path = resolve_output_path(input_json, output_xmind, jira_key)
-    # 只写入/覆盖当前需求对应文件；禁止删除同目录其他 .xmind
+    # Only write/overwrite the file for the current requirement; never delete other .xmind files in the directory
     out_dir = os.path.dirname(os.path.abspath(output_path))
     if out_dir and not os.path.isdir(out_dir):
         os.makedirs(out_dir, exist_ok=True)
@@ -347,23 +347,23 @@ def generate(input_json, output_xmind=None, project_key=None):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(
-        description="导出测试用例为 XMind 2020+ 格式（文件名含需求编号，不删除旧文件）"
+        description="Export test cases to XMind 2020+ format (file name carries the requirement key; old files are not deleted)"
     )
-    parser.add_argument("--input", "-i", required=True, help="测试用例 JSON 文件路径")
+    parser.add_argument("--input", "-i", required=True, help="Path of the test-case JSON file")
     parser.add_argument(
         "--output", "-o", default=None,
-        help="输出 .xmind 路径；省略则自动命名为 test_cases_{JIRA_KEY}.xmind。"
-             "若传入 test_cases.xmind 且 JSON 含 jira_key，会自动改为 test_cases_{JIRA_KEY}.xmind",
+        help="Output .xmind path; if omitted, auto-named test_cases_{JIRA_KEY}.xmind. "
+             "If test_cases.xmind is given and the JSON has jira_key, it is renamed to test_cases_{JIRA_KEY}.xmind",
     )
-    parser.add_argument("--project", "-p", default=None, help="项目名称/标识（用作根主题标题，默认自动从 jira_key 提取）")
+    parser.add_argument("--project", "-p", default=None, help="Project name/key (used as the root topic title; by default extracted from jira_key)")
     args = parser.parse_args()
 
     success, out_path = generate(args.input, args.output, project_key=args.project)
     if success and out_path:
         size = os.path.getsize(out_path)
-        print(f"XMind 已生成: {out_path} ({size/1024:.1f} KB)")
-        print("  说明: 仅写入当前需求文件，未删除同目录其他 .xmind")
+        print(f"XMind generated: {out_path} ({size/1024:.1f} KB)")
+        print("  Note: only the current requirement file was written; other .xmind files in the directory were not deleted")
         with zipfile.ZipFile(out_path, 'r') as zf:
-            print(f"  包含: {', '.join(zf.namelist())}")
+            print(f"  Contains: {', '.join(zf.namelist())}")
     else:
         sys.exit(1)

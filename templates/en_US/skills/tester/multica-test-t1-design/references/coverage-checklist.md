@@ -1,257 +1,257 @@
-# Coverage Checklist — T1 生成前自检
+# Coverage Checklist — T1 Pre-generation Self-check
 
-> **用途**：T1 写用例时逐项检查是否写全（见 `multica-test-t1-design` Step 4）。  
-> **T2 缺口评估**用 `multica-test-t2-coverage`，不要用本清单代替 T2 报告。
+> **Purpose**: check item by item that the T1 cases are complete (see `multica-test-t1-design` Step 4).  
+> Use `multica-test-t2-coverage` for **T2 gap assessment**; do not use this checklist as a substitute for the T2 report.
 
-每个模块生成用例时，必须逐项检查三个维度是否已全部覆盖。
-
----
-
-## 维度一：全量场景覆盖
-
-### 正常流程（Happy Path）
-- [ ] 核心业务主路径完整走通
-- [ ] 每一个正向分支路径各走一次
-- [ ] 页面/状态正常跳转
-
-### 分支流程
-- [ ] 每个条件判断的 if 分支覆盖
-- [ ] 每个条件判断的 else/else-if 分支覆盖
-- [ ] 每个下拉/单选/多选的选项值选择
-
-### 异常流程
-- [ ] 网络超时 / 连接断开
-- [ ] 服务端返回系统错误（500）
-- [ ] 数据不存在（404）
-- [ ] 无权限访问（403/401）
-- [ ] 请求被限流/频率限制
-- [ ] 第三方服务不可用
-
-### 状态流转
-- [ ] 正向状态流转（A → B → C → D）
-- [ ] 逆向/回退状态流转（D → C → A）
-- [ ] 跳过中间状态流转
-- [ ] 已结束状态再次操作
-
-### 权限场景
-- [ ] 管理员操作
-- [ ] 普通用户操作
-- [ ] 未登录访客操作
-- [ ] 只读权限用户操作
-- [ ] 跨部门/跨角色数据可见性
-
-### 数据联动
-- [ ] 新增/创建后列表更新
-- [ ] 编辑修改后关联字段刷新
-- [ ] 删除后关联数据变化
-- [ ] 主表操作对子表级联影响
-
-### 组合场景
-- [ ] 多筛选条件组合
-- [ ] 排序 + 分页 + 筛选
-- [ ] 批量操作 + 选择项
-- [ ] 跨 Tab/跨页面数据一致性
-
-### 并发场景
-- [ ] 快速连续点击提交
-- [ ] 浏览器回退后操作
-- [ ] 多标签页打开同一页面操作
-- [ ] 重复提交相同数据
+When generating cases for each module, you must check item by item that all three dimensions are covered.
 
 ---
 
-## 维度二：边界场景覆盖
+## Dimension 1: Full-scenario coverage
 
-### 数值输入
-- [ ] 最小值
-- [ ] 最大值
-- [ ] 最小值 - 1
-- [ ] 最大值 + 1
+### Normal flow (Happy Path)
+- [ ] The core business main path runs through completely
+- [ ] Each positive branch path is run once
+- [ ] Pages/states transition normally
+
+### Branch flow
+- [ ] Every if branch of each conditional is covered
+- [ ] Every else/else-if branch of each conditional is covered
+- [ ] Every option value of each dropdown/radio/multi-select is selected
+
+### Exception flow
+- [ ] Network timeout / connection drop
+- [ ] Server returns a system error (500)
+- [ ] Data does not exist (404)
+- [ ] No permission (403/401)
+- [ ] Request throttled / rate limited
+- [ ] Third-party service unavailable
+
+### State transitions
+- [ ] Forward state transitions (A -> B -> C -> D)
+- [ ] Reverse/rollback state transitions (D -> C -> A)
+- [ ] State transitions that skip intermediate states
+- [ ] Operating again on a finished state
+
+### Permission scenarios
+- [ ] Administrator operation
+- [ ] Regular user operation
+- [ ] Anonymous (not logged in) visitor operation
+- [ ] Read-only user operation
+- [ ] Cross-department/cross-role data visibility
+
+### Data linkage
+- [ ] List updates after add/create
+- [ ] Related fields refresh after edit
+- [ ] Related data changes after delete
+- [ ] Cascade effect of parent-table operations on child tables
+
+### Combination scenarios
+- [ ] Multiple filter conditions combined
+- [ ] Sort + pagination + filter
+- [ ] Bulk operation + selected items
+- [ ] Data consistency across tabs/pages
+
+### Concurrency scenarios
+- [ ] Rapid consecutive clicks on submit
+- [ ] Operating after browser back
+- [ ] Operating on the same page opened in multiple tabs
+- [ ] Submitting the same data repeatedly
+
+---
+
+## Dimension 2: Boundary-scenario coverage
+
+### Numeric input
+- [ ] Minimum value
+- [ ] Maximum value
+- [ ] Minimum - 1
+- [ ] Maximum + 1
 - [ ] 0
-- [ ] 负数
-- [ ] 小数精度（超出精度截断/四舍五入）
-- [ ] 科学计数法输入
+- [ ] Negative number
+- [ ] Decimal precision (truncation/rounding beyond precision)
+- [ ] Scientific notation input
 
-### 字符串输入
-- [ ] 空字符串
-- [ ] 1 个字符
-- [ ] 最大长度
-- [ ] 最大长度 + 1
-- [ ] 超长文本（最大长度的 10 倍）
-- [ ] 纯空格
-- [ ] 特殊字符（!@#$%^&*()_+）
-- [ ] HTML 标签（<script>、<div>、<img onerror>）
-- [ ] SQL 注入语句（' OR 1=1--）
-- [ ] Unicode 字符（emoji、中文、日文、阿拉伯文）
-- [ ] 换行符
+### String input
+- [ ] Empty string
+- [ ] 1 character
+- [ ] Maximum length
+- [ ] Maximum length + 1
+- [ ] Overlong text (10x the maximum length)
+- [ ] Spaces only
+- [ ] Special characters (!@#$%^&*()_+)
+- [ ] HTML tags (<script>, <div>, <img onerror>)
+- [ ] SQL injection statements (' OR 1=1--)
+- [ ] Unicode characters (emoji, Chinese, Japanese, Arabic)
+- [ ] Line breaks
 
-### 列表/数组
-- [ ] 空列表
-- [ ] 1 个元素
-- [ ] 最大数量
-- [ ] 最大数量 + 1
-- [ ] 大量元素（性能边界）
+### List/array
+- [ ] Empty list
+- [ ] 1 element
+- [ ] Maximum count
+- [ ] Maximum count + 1
+- [ ] Large number of elements (performance boundary)
 
-### 枚举/选项
-- [ ] 每个枚举值各一次
-- [ ] 不存在的枚举值
-- [ ] 枚举值为 null/undefined
-- [ ] 枚举值为数字/字符串（类型边界）
+### Enum/options
+- [ ] Each enum value once
+- [ ] Non-existent enum value
+- [ ] Enum value is null/undefined
+- [ ] Enum value as number/string (type boundary)
 
-### 时间日期
-- [ ] 当前时间
-- [ ] 过去时间（1970-01-01）
-- [ ] 未来时间（2099-12-31）
-- [ ] 闰年 2 月 29 日
-- [ ] 跨时区（UTC+8, UTC+0, UTC-5）
-- [ ] 时间格式异常（2026/13/01, 2026-02-30）
-- [ ] 0 时间戳
-- [ ] 空时间字段
+### Date and time
+- [ ] Current time
+- [ ] Past time (1970-01-01)
+- [ ] Future time (2099-12-31)
+- [ ] Leap-year February 29
+- [ ] Across time zones (UTC+8, UTC+0, UTC-5)
+- [ ] Malformed time (2026/13/01, 2026-02-30)
+- [ ] 0 timestamp
+- [ ] Empty time field
 
-### 文件上传
-- [ ] 空文件（0 字节）
-- [ ] 边界大小文件（刚好等于限制）
-- [ ] 超限文件（超过大小限制）
-- [ ] 不支持的格式
-- [ ] 文件名含特殊字符
-- [ ] 损毁/不可读文件
-- [ ] 同时上传多个文件
+### File upload
+- [ ] Empty file (0 bytes)
+- [ ] File at the size limit (exactly equal to the limit)
+- [ ] Oversized file (exceeds the size limit)
+- [ ] Unsupported format
+- [ ] File name containing special characters
+- [ ] Corrupted/unreadable file
+- [ ] Uploading multiple files at once
 
-### 分页
-- [ ] page = 1（第一页）
-- [ ] page = 总页数（最后一页）
-- [ ] page = 0 或负数
-- [ ] page > 总页数
+### Pagination
+- [ ] page = 1 (first page)
+- [ ] page = total pages (last page)
+- [ ] page = 0 or negative
+- [ ] page > total pages
 - [ ] pageSize = 1
-- [ ] pageSize = 最大值
-- [ ] pageSize = 0 或负数
-- [ ] pageSize > 最大值
+- [ ] pageSize = maximum
+- [ ] pageSize = 0 or negative
+- [ ] pageSize > maximum
 
-### 必填项边界
-- [ ] 所有必填项都为空
-- [ ] 仅填部分必填项
-- [ ] 必填项只填空格
-- [ ] 所有字段均不传
+### Required-field boundaries
+- [ ] All required fields empty
+- [ ] Only some required fields filled
+- [ ] Required field filled with spaces only
+- [ ] No fields sent at all
 
-### 唯一性约束
-- [ ] 重复提交相同数据
-- [ ] 并发创建相同数据
-- [ ] 修改为已存在的唯一值
-
----
-
-## 维度三：页面检查覆盖
-
-### 元素完整性
-- [ ] 所有按钮存在且文案正确
-- [ ] 所有输入框存在且 placeholder 正确
-- [ ] 所有文本/标签存在且内容正确
-- [ ] 所有图标/图片存在且能正常显示
-- [ ] 所有链接/导航存在且跳转正确
-- [ ] 不存在多余/残留元素
-
-### 布局一致性（对照 Figma 设计稿）
-- [ ] 元素水平对齐正确
-- [ ] 元素垂直对齐正确
-- [ ] 元素间距（margin/padding）与设计稿一致
-- [ ] 元素宽高尺寸与设计稿一致
-- [ ] 栅格系统/响应式断点正确
-- [ ] 列表/表格列宽与设计稿一致
-
-### 样式规范
-- [ ] 字体（font-family、font-size、font-weight）符合设计规范
-- [ ] 文字颜色符合设计规范
-- [ ] 背景色/边框色符合设计规范
-- [ ] 圆角（border-radius）符合设计规范
-- [ ] 阴影（box-shadow）符合设计规范
-- [ ] 间距（留白）符合设计规范
-
-### 交互状态（元素级别）
-- [ ] 默认态样式正确
-- [ ] 悬停态（:hover）样式正确
-- [ ] 聚焦态（:focus）样式正确
-- [ ] 点击态（:active）样式正确
-- [ ] 禁用态（:disabled）样式正确
-- [ ] 选中态（:checked/:selected）样式正确
-- [ ] 加载态样式正确
-- [ ] 错误态（输入校验失败）样式正确
-
-### 页面状态
-- [ ] 初始状态（页面刚加载时各元素默认状态）
-- [ ] 加载中状态（有 loading 指示，操作按钮禁用）
-- [ ] 空数据状态（占位图 + 提示文字）
-- [ ] 错误状态（错误提示 + 重试按钮）
-- [ ] 数据正常展示状态
-- [ ] 页脚/底部是否贴合
-
-### 响应式适配
-- [ ] 1920 × 1080 展示完整
-- [ ] 1440 × 900 展示完整
-- [ ] 1366 × 768 展示完整（无滚动条或可正常滚动）
-- [ ] 768 × 1024（平板）布局适配正确
-- [ ] 375 × 667（手机）布局适配正确
-- [ ] 缩放 150% / 200% 页面不严重错乱
-
-### 文案检查
-- [ ] 无错别字
-- [ ] 术语与产品文档/需求一致
-- [ ] 标点符号使用一致（全角/半角统一）
-- [ ] 日期、数字格式统一
-- [ ] 错误提示措辞清晰，不包含技术术语（如 "404"、"Internal Server Error"）
-
-### 极限内容
-- [ ] 超长文本使用省略号截断或展开收起
-- [ ] 超长列表滚动性能良好（无卡顿）
-- [ ] 大量图片加载不卡顿
-- [ ] 表格列数过多时有横向滚动
-- [ ] 长文本在弹窗中不撑破布局
-
-### 键盘与无障碍
-- [ ] Tab 键按正确顺序聚焦
-- [ ] 回车键触发主要操作（表单提交等）
-- [ ] 使用键盘可以完成所有主要操作
-- [ ] 图片有 alt 文本
-- [ ] 表单 label 关联正确的 input
-
-### 浏览器兼容
-- [ ] Chrome 最新版
-- [ ] Firefox 最新版
-- [ ] Edge 最新版
-- [ ] Safari 最新版
-- [ ] 核心功能在所有浏览器正常
+### Uniqueness constraints
+- [ ] Submit the same data repeatedly
+- [ ] Create the same data concurrently
+- [ ] Modify to an already existing unique value
 
 ---
 
-## 接口测试覆盖点（补充）
+## Dimension 3: Page-check coverage
 
-按三个维度组织：
+### Element completeness
+- [ ] All buttons exist with correct text
+- [ ] All input boxes exist with correct placeholders
+- [ ] All text/labels exist with correct content
+- [ ] All icons/images exist and display normally
+- [ ] All links/navigation exist and jump correctly
+- [ ] No redundant/leftover elements
 
-### 全量场景
-- [ ] 成功请求返回正确数据和业务码
-- [ ] 资源不存在返回 404 + 错误码
-- [ ] 无权限返回 403 + 错误码
-- [ ] 未登录返回 401 + 错误码
-- [ ] 请求参数校验失败返回 400 + 错误提示
-- [ ] 服务端异常返回 500
-- [ ] 频率限制返回 429
+### Layout consistency (against the Figma design)
+- [ ] Horizontal alignment of elements is correct
+- [ ] Vertical alignment of elements is correct
+- [ ] Element spacing (margin/padding) matches the design
+- [ ] Element width/height matches the design
+- [ ] Grid system / responsive breakpoints are correct
+- [ ] List/table column widths match the design
 
-### 边界场景（参数级别）
-- [ ] 必填参数缺省
-- [ ] 参数类型错误
-- [ ] 参数格式错误
-- [ ] 参数值为空/null
-- [ ] 参数超出最大长度
-- [ ] 参数为最小值/最大值边界
-- [ ] 参数为不存在的枚举值
-- [ ] 传多余的未定义参数
-- [ ] 请求头缺失/错误
+### Style conventions
+- [ ] Fonts (font-family, font-size, font-weight) follow the design spec
+- [ ] Text color follows the design spec
+- [ ] Background/border color follows the design spec
+- [ ] Corner radius (border-radius) follows the design spec
+- [ ] Shadow (box-shadow) follows the design spec
+- [ ] Spacing (white space) follows the design spec
 
-### 字段校验（响应级别）
-- [ ] 字段完整性：无缺失、无多余
-- [ ] 字段类型正确
-- [ ] 字段格式正确（日期、金额、URL）
-- [ ] 嵌套结构正确
-- [ ] 空值处理（null、""、[]）
-- [ ] 数组边界（空、单元素、多元素）
-- [ ] 分页字段（page、total、pageSize）正确
-- [ ] 业务状态码枚举值完整
+### Interaction states (element level)
+- [ ] Default state style is correct
+- [ ] Hover state (:hover) style is correct
+- [ ] Focus state (:focus) style is correct
+- [ ] Active state (:active) style is correct
+- [ ] Disabled state (:disabled) style is correct
+- [ ] Selected state (:checked/:selected) style is correct
+- [ ] Loading state style is correct
+- [ ] Error state (input validation failure) style is correct
+
+### Page states
+- [ ] Initial state (default state of each element right after page load)
+- [ ] Loading state (loading indicator, action buttons disabled)
+- [ ] Empty-data state (placeholder image + hint text)
+- [ ] Error state (error message + retry button)
+- [ ] Normal data display state
+- [ ] Whether the footer/bottom fits properly
+
+### Responsive adaptation
+- [ ] 1920 x 1080 displays fully
+- [ ] 1440 x 900 displays fully
+- [ ] 1366 x 768 displays fully (no scrollbar, or scrolls normally)
+- [ ] 768 x 1024 (tablet) layout adapts correctly
+- [ ] 375 x 667 (phone) layout adapts correctly
+- [ ] At 150% / 200% zoom the page is not badly broken
+
+### Copy text check
+- [ ] No typos
+- [ ] Terminology matches the product docs/requirement
+- [ ] Consistent punctuation (full-width/half-width unified)
+- [ ] Consistent date and number formats
+- [ ] Error messages are clearly worded and contain no technical jargon (such as "404", "Internal Server Error")
+
+### Extreme content
+- [ ] Overlong text is truncated with an ellipsis or expand/collapse
+- [ ] Overlong lists scroll smoothly (no lag)
+- [ ] Loading many images does not lag
+- [ ] Tables with too many columns scroll horizontally
+- [ ] Long text in dialogs does not break the layout
+
+### Keyboard and accessibility
+- [ ] Tab key focuses in the correct order
+- [ ] Enter key triggers the primary action (form submit, etc.)
+- [ ] All main operations can be completed with the keyboard
+- [ ] Images have alt text
+- [ ] Form labels are associated with the correct inputs
+
+### Browser compatibility
+- [ ] Latest Chrome
+- [ ] Latest Firefox
+- [ ] Latest Edge
+- [ ] Latest Safari
+- [ ] Core features work in all browsers
+
+---
+
+## API test coverage points (supplement)
+
+Organized by the three dimensions:
+
+### Full scenario
+- [ ] A successful request returns correct data and business code
+- [ ] Resource not found returns 404 + error code
+- [ ] No permission returns 403 + error code
+- [ ] Not logged in returns 401 + error code
+- [ ] Request parameter validation failure returns 400 + error message
+- [ ] Server exception returns 500
+- [ ] Rate limiting returns 429
+
+### Boundary scenario (parameter level)
+- [ ] Required parameter omitted
+- [ ] Wrong parameter type
+- [ ] Wrong parameter format
+- [ ] Parameter value empty/null
+- [ ] Parameter exceeds maximum length
+- [ ] Parameter at minimum/maximum boundary
+- [ ] Parameter is a non-existent enum value
+- [ ] Extra undefined parameters sent
+- [ ] Request header missing/wrong
+
+### Field validation (response level)
+- [ ] Field completeness: none missing, none extra
+- [ ] Field types correct
+- [ ] Field formats correct (date, amount, URL)
+- [ ] Nested structure correct
+- [ ] Null handling (null, "", [])
+- [ ] Array boundaries (empty, single element, multiple elements)
+- [ ] Pagination fields (page, total, pageSize) correct
+- [ ] Business status-code enum values complete

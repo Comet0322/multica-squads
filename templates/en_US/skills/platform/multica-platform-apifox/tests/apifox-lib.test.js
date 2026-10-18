@@ -41,8 +41,8 @@ test('update payload preserves identity and deeply merges protected options', ()
 });
 
 test('empty method and path are rejected instead of silently defaulting', () => {
-  assert.throws(() => buildUpdatePayload({ ...fullCase, method: '' }, {}), /method 为空/);
-  assert.throws(() => assertPathOk({ ...fullCase, path: '' }), /path 为空/);
+  assert.throws(() => buildUpdatePayload({ ...fullCase, method: '' }, {}), /method is empty/);
+  assert.throws(() => assertPathOk({ ...fullCase, path: '' }), /path is empty/);
 });
 
 test('CLI JSON extraction ignores warnings before and after object', () => {

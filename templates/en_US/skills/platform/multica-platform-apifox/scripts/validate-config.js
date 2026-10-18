@@ -1,6 +1,6 @@
 /**
- * 离线严格校验 config，不生成文件、不访问网络。
- * 用法：node validate-config.js [config.json]
+ * Strict offline config validation: generates no files and makes no network access.
+ * Usage: node validate-config.js [config.json]
  */
 const path = require('path');
 const { spawnSync } = require('child_process');

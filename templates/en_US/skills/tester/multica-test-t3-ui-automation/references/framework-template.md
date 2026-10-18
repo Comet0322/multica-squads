@@ -1,6 +1,6 @@
-# 从零框架（pytest + Playwright + Allure）
+# Framework from scratch (pytest + Playwright + Allure)
 
-目标目录为空或不存在时，Agent **必须原样创建**下列结构（可替换 `{JIRA_KEY}`）。
+When the target directory is empty or missing, the Agent **must create the structure below verbatim** (`{JIRA_KEY}` may be substituted).
 
 ```text
 <target_dir>/
@@ -10,7 +10,7 @@
 ├── conftest.py
 ├── config/
 │   ├── env.yaml.example
-│   └── env.yaml              # gitignore；base_url 来自评论 deploy/page_url
+│   └── env.yaml              # gitignored; base_url comes from the comment deploy/page_url
 ├── tests/
 │   └── __init__.py
 ├── artifacts/
@@ -41,11 +41,11 @@ markers =
     blocked: missing locator or data
 ```
 
-## conftest.py（要点）
+## conftest.py (key points)
 
-- `pytest_playwright` 的 `page` fixture
-- session 级读 `config/env.yaml` 的 `base_url`
-- 禁止在 conftest 写死账号密码；登录凭据来自环境变量名
+- the `page` fixture from `pytest_playwright`
+- read `base_url` from `config/env.yaml` at session scope
+- never hardcode accounts or passwords in conftest; login credentials come from environment variable names
 
 ## config/env.yaml.example
 
@@ -68,9 +68,9 @@ artifacts/allure-results/
 artifacts/allure-report/
 ```
 
-## README.md 须写
+## README.md must state
 
 ```text
-1:1 来源：multica-test-t1-design functional JSON
-执行：.venv/Scripts/pytest tests/ --alluredir artifacts/allure-results
+1:1 source: multica-test-t1-design functional JSON
+Run: .venv/Scripts/pytest tests/ --alluredir artifacts/allure-results
 ```

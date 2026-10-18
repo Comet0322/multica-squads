@@ -1,0 +1,23 @@
+# multica-platform-confluence — Confluence platform config (no credentials)
+version: "1.0"
+
+confluence:
+  url: "http://your-domain.atlassian.net/wiki:8090"
+  default_space: "TEAM"
+  default_parent_page_id: "234567"      # default parent page for PRDs when there is no JIRA link
+  design_parent_page_id: "345678"       # fallback parent page for document artifacts when there is no JIRA link (Issue Hub preferred)
+  # see spaces.json for the full space list (from dev-workflow/confluence.conf)
+
+projects:
+  default:
+    design_parent_page_id: "345678"
+  acme:
+    confluence_space: "<CONFLUENCE_SPACE>"
+    design_parent_page_id: "345678"
+  PROJ:
+    confluence_space: "TEAM"
+    design_parent_page_id: "345678"
+
+local_paths:
+  requirements_dir: "docs/requirements"    # local cache for requirement docs (used by fetch)
+  design_dir: "docs/design"                # technical design drafts: docs/design/<ISSUE-KEY>/design.md

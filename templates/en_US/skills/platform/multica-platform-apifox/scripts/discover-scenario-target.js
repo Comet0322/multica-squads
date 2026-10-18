@@ -1,13 +1,13 @@
 /**
- * 发现同模块历史场景目录，供补充用例挂载。
- * 输出：scenario-target.json
+ * Discover the historical scenario folder of the same module, for mounting supplementary cases.
+ * Output: scenario-target.json
  *
- * 策略（WS-40 沉淀）：
- * - 同一 endpoint 默认只挂一个场景（selfHit → append-existing）
- * - 扩充覆盖 = 向该场景追加差异化步骤，禁止擅自 create 同接口多场景
- * - 仅当同接口尚无场景时，才允许 create-in-same-folder 新建一个
+ * Strategy (distilled from WS-40):
+ * - By default one endpoint belongs to only one scenario (selfHit -> append-existing)
+ * - Expanding coverage = appending differentiated steps to that scenario; creating several scenarios for the same endpoint on your own is forbidden
+ * - Only when the endpoint has no scenario yet may create-in-same-folder create one
  *
- * 环境变量：APIFOX_PROJECT_ID、APIFOX_ENDPOINT_ID、APIFOX_SOURCE_BRANCH
+ * Environment variables: APIFOX_PROJECT_ID, APIFOX_ENDPOINT_ID, APIFOX_SOURCE_BRANCH
  */
 const path = require('path');
 const {
@@ -23,7 +23,7 @@ ensureTls();
 
 const endpointId = process.env.APIFOX_ENDPOINT_ID;
 if (!endpointId) {
-  console.error('请设置 APIFOX_ENDPOINT_ID');
+  console.error('Please set APIFOX_ENDPOINT_ID');
   process.exit(1);
 }
 
@@ -34,7 +34,7 @@ const common = ['--project', project, '--branch', branch, '--api-base-url', BASE
 function call(args, operation) {
   const result = apifoxJson(args);
   if (!result.success) {
-    throw new Error(`${operation} 失败: ${result.error?.message || JSON.stringify(result.error)}`);
+    throw new Error(`${operation} failed: ${result.error?.message || JSON.stringify(result.error)}`);
   }
   return result.data;
 }
@@ -54,21 +54,21 @@ function walk(value, visitor, seen = new Set()) {
   }
 }
 
-const endpoint = call(['endpoint', 'get', String(endpointId), ...common], '读取接口');
+const endpoint = call(['endpoint', 'get', String(endpointId), ...common], 'read endpoint');
 const moduleId = endpoint.moduleId;
 const endpointName = endpoint.name || `endpoint-${endpointId}`;
 
 const moduleEndpoints = moduleId
-  ? asArray(call(['endpoint', 'list', ...common, '--module-id', String(moduleId)], '列出同模块接口'))
+  ? asArray(call(['endpoint', 'list', ...common, '--module-id', String(moduleId)], 'list same-module endpoints'))
   : [];
 const moduleEndpointIds = new Set(moduleEndpoints.map((item) => String(item.id)));
 moduleEndpointIds.add(String(endpointId));
 
-const scenarios = asArray(call(['test-scenario', 'list', ...common], '列出场景'));
+const scenarios = asArray(call(['test-scenario', 'list', ...common], 'list scenarios'));
 const candidates = [];
 
 for (const item of scenarios) {
-  const full = call(['test-scenario', 'get', String(item.id), ...common], `读取场景 ${item.id}`);
+  const full = call(['test-scenario', 'get', String(item.id), ...common], `read scenario ${item.id}`);
   let hitCount = 0;
   let selfHit = false;
   walk(full, (node) => {
@@ -99,7 +99,7 @@ const selfHitCount = candidates.filter((item) => item.selfHit).length;
 const warnings = [];
 if (selfHitCount > 1) {
   warnings.push(
-    `同接口已出现在 ${selfHitCount} 个场景：默认向排序第一的场景 append-existing 追加步骤；禁止再新建同接口场景；除非用户明确要求，否则应收敛到单一场景`
+    `The same endpoint appears in ${selfHitCount} scenarios: by default append-existing steps to the first-ranked scenario; do not create another scenario for the same endpoint; unless the user explicitly asks, converge on a single scenario`
   );
 }
 
@@ -113,7 +113,7 @@ const result = {
     oneEndpointOneScenario: true,
     expandByAppendingSteps: true,
     forbidCreateExtraScenarioWhenSelfHit: true,
-    note: '用户说「扩充场景」默认=同场景加步骤，不是 create 多个场景',
+    note: 'When the user says "expand the scenario", the default is to add steps to the same scenario, not to create multiple scenarios',
   },
   warnings,
   recommended: best
@@ -121,17 +121,17 @@ const result = {
         mode: best.selfHit ? 'append-existing' : 'create-in-same-folder',
         scenarioId: best.selfHit ? best.scenarioId : null,
         folderId: best.folderId,
-        scenarioName: best.selfHit ? best.scenarioName : `${endpointName}-自动化补充`,
+        scenarioName: best.selfHit ? best.scenarioName : `${endpointName}-automation-supplement`,
         reason: best.selfHit
-          ? '目标接口已出现在该场景：必须 append-existing 追加差异化步骤；禁止再 create 同接口多场景'
-          : '同接口尚无场景；可在同模块历史目录新建【一个】补充场景，之后扩充继续追加到该场景',
+          ? 'The target endpoint already appears in this scenario: you must append-existing differentiated steps; creating more scenarios for the same endpoint is forbidden'
+          : 'No scenario exists for this endpoint yet; you may create [one] supplementary scenario in the same-module historical folder, and later expansion keeps appending to it',
       }
     : {
         mode: 'need-manual-folder',
         scenarioId: null,
         folderId: null,
-        scenarioName: `${endpointName}-自动化补充`,
-        reason: '未发现同模块历史场景，请人工指定 scenarioTarget.folderId',
+        scenarioName: `${endpointName}-automation-supplement`,
+        reason: 'No same-module historical scenario found; specify scenarioTarget.folderId manually',
       },
   candidates: candidates.slice(0, 20),
 };

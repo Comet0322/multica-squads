@@ -1,123 +1,123 @@
-# Web UI Design-to-Case Mapping（UI设计图转测试点）
+# Web UI Design-to-Case Mapping (turning UI designs into test points)
 
-## ⚠️ UI 检查范围原则（重要）
+## ⚠️ UI check scope principle (important)
 
-**Figma 对照检查只覆盖肉眼可辨的页面元素样式，不检查像素级精确值。** 测试用例关注功能的正确性和明显的 UI 状态缺陷，像素级细节（精确尺寸、色值、圆角大小、间距微调等）留给 UI 走查阶段由设计师验收。
+**The Figma comparison check only covers page element styles discernible to the naked eye; it does not check pixel-level exact values.** Test cases focus on functional correctness and obvious UI state defects; pixel-level details (exact sizes, color values, corner radii, fine spacing tweaks, etc.) are left to the UI walkthrough stage where designers sign off.
 
-- **检查**：元素存在性、布局结构、文案内容、交互状态（默认/悬停/禁用/空态/错误态）、整体视觉风格
-- **跳过**：精确位置/尺寸（px值）、精确色值、圆角/边框粗细/阴影量、响应式断点精确像素、字号行高精确值、跨浏览器渲染差异
+- **Check**: element presence, layout structure, copy text, interaction states (default/hover/disabled/empty/error), overall visual style
+- **Skip**: exact position/size (px values), exact color values, corner radius / border thickness / shadow amount, exact pixels of responsive breakpoints, exact font size and line height, cross-browser rendering differences
 
 ---
 
-## 从 Figma 设计图提取测试点
+## Extracting test points from Figma designs
 
-当用户提供Figma设计图（截图或描述）时，按以下维度提取测试点：
+When the user provides a Figma design (screenshot or description), extract test points along the following dimensions:
 
-### 1. 页面元素清单
+### 1. Page element inventory
 
-对设计图中的每个页面元素，建立如下清单：
+For each page element in the design, build the following inventory:
 
 ```
-□ 输入框（Input）
-  - placeholder文字
-  - 前缀/后缀图标
-  - 边框样式（常态/聚焦/错误）
-  - 输入格式提示
-  - 清空按钮
+□ Input
+  - placeholder text
+  - Prefix/suffix icons
+  - Border style (normal/focus/error)
+  - Input format hint
+  - Clear button
 
-□ 按钮（Button）
-  - 文案
-  - 颜色风格（常态/悬停/点击/禁用 — 定性描述，不定量）
-  - Loading态指示器
+□ Button
+  - Label text
+  - Color style (normal/hover/click/disabled — qualitative, not quantitative)
+  - Loading indicator
 
-□ 下拉选择器（Select/Dropdown）
-  - 选项列表
-  - 多选/单选
-  - 搜索/过滤功能
-  - 空选项展示
+□ Select/Dropdown
+  - Option list
+  - Multi-select/single-select
+  - Search/filter function
+  - Empty-option display
 
-□ 表格/列表（Table/List）
-  - 列定义和顺序
-  - 排序功能
-  - 分页器配置
-  - 行操作按钮
-  - 空数据态
-  - 选中态样式
+□ Table/List
+  - Column definitions and order
+  - Sorting function
+  - Pager configuration
+  - Row action buttons
+  - Empty-data state
+  - Selected-state style
 
-□ 弹窗/对话框（Modal/Dialog）
-  - 触发方式
-  - 遮罩层样式
-  - 关闭方式（点击遮罩/关闭按钮/ESC）
-  - 标题和内容
-  - 按钮布局
+□ Modal/Dialog
+  - Trigger method
+  - Mask layer style
+  - Close methods (click mask / close button / ESC)
+  - Title and content
+  - Button layout
 
-□ 导航/菜单（Navigation/Menu）
-  - 菜单层级
-  - 激活态样式
-  - 面包屑导航
-  - Tab切换
+□ Navigation/Menu
+  - Menu hierarchy
+  - Active-state style
+  - Breadcrumb navigation
+  - Tab switching
 ```
 
-### 2. 交互状态测试维度
+### 2. Interaction-state test dimensions
 
-对每个可交互元素，检查以下状态（定性描述即可）：
+For each interactive element, check the following states (qualitative description is enough):
 
-| 状态 | 检查点 |
+| State | Check point |
 |------|--------|
-| 默认态 | 元素正常显示，无交互时的状态 |
-| Hover态 | 鼠标悬停时有视觉反馈（变色/下划线/阴影） |
-| Focus态 | 键盘/Tab聚焦时有轮廓样式 |
-| Active态 | 点击瞬间有视觉反馈 |
-| Disabled态 | 不可操作时置灰并提示原因 |
-| Loading态 | 等待中有动画或进度指示 |
-| Error态 | 校验失败时红色边框和错误提示可见 |
-| Empty态 | 无数据时占位内容合理 |
-| Selected态 | 选中项有高亮样式 |
+| Default | Element displays normally, the state with no interaction |
+| Hover | Visual feedback on mouse hover (color change / underline / shadow) |
+| Focus | Outline style on keyboard/Tab focus |
+| Active | Visual feedback at the moment of click |
+| Disabled | Grayed out when not operable, with the reason indicated |
+| Loading | Animation or progress indicator while waiting |
+| Error | Red border and error message are visible when validation fails |
+| Empty | Placeholder content is reasonable when there is no data |
+| Selected | The selected item has a highlight style |
 
-### 3. 常见 Web 页面检查清单
+### 3. Common Web page checklists
 
-> **注意**：以下检查项中，定量验证（如"1920分辨率"）仅为指示性参考，测试执行时以肉眼判断为准，无需精确测量。
+> **Note**: In the items below, quantitative checks (such as "1920 resolution") are only indicative references; during execution, judge by eye — no precise measurement is needed.
 
-#### 表单页面
-- [ ] 所有标签（label）关联正确的输入字段
-- [ ] 必填项有标识（* 或 必填文字）
-- [ ] 错误提示出现在正确位置（通常在字段下方）
-- [ ] 提交按钮在表单未填完时禁用
-- [ ] Tab键按正确顺序聚焦字段
-- [ ] 回车键触发提交
-- [ ] 输入框有合适的输入类型
+#### Form pages
+- [ ] All labels are associated with the correct input fields
+- [ ] Required fields are marked (* or "required" text)
+- [ ] Error messages appear in the correct place (usually below the field)
+- [ ] The submit button is disabled while the form is incomplete
+- [ ] Tab key focuses fields in the correct order
+- [ ] Enter key triggers submission
+- [ ] Inputs have an appropriate input type
 
-#### 列表/表格页面
-- [ ] 分页组件显示正确的总页数和当前页
-- [ ] 每页条数切换后重新加载数据
-- [ ] 排序指示器（升序/降序图标）正确
-- [ ] 多选时全选/反选功能正常
-- [ ] 批量操作按钮在未选择时禁用
-- [ ] 列宽调整不影响布局
+#### List/table pages
+- [ ] The pagination component shows the correct total pages and current page
+- [ ] Data reloads after switching the page size
+- [ ] Sort indicators (ascending/descending icons) are correct
+- [ ] Select-all / invert-selection works during multi-select
+- [ ] Bulk action buttons are disabled when nothing is selected
+- [ ] Adjusting column widths does not break the layout
 
-#### 搜索/筛选页面
-- [ ] 搜索框有关键词输入提示
-- [ ] 筛选条件支持组合查询
-- [ ] 筛选后结果数正确
-- [ ] 空搜索结果有提示和建议
-- [ ] 清除筛选恢复全部数据
+#### Search/filter pages
+- [ ] The search box shows a keyword input hint
+- [ ] Filter conditions support combined queries
+- [ ] The result count after filtering is correct
+- [ ] An empty search result shows a message and suggestions
+- [ ] Clearing the filters restores all data
 
-#### 详情/展示页面
-- [ ] 所有信息字段完整展示
-- [ ] 长文本有展开/收起功能
-- [ ] 图片/文件预览功能正常
-- [ ] 相关推荐/导航链接正确
-- [ ] 加载顺序（骨架屏/loading动画）
+#### Detail/display pages
+- [ ] All information fields are displayed completely
+- [ ] Long text has expand/collapse
+- [ ] Image/file preview works
+- [ ] Related recommendations / navigation links are correct
+- [ ] Loading order (skeleton screen / loading animation)
 
-#### 响应式/跨浏览器
-- [ ] 桌面端布局完整无错乱
-- [ ] 小屏幕布局无错乱
-- [ ] 关键交互在主流浏览器正常
+#### Responsive/cross-browser
+- [ ] Desktop layout is complete with no breakage
+- [ ] Small-screen layout has no breakage
+- [ ] Key interactions work in mainstream browsers
 
-### 4. 预期结果表述规范
+### 4. Expected-result wording conventions
 
-- 使用**定性描述**而非定量描述
-- 正确示例：「保存按钮文案正确、颜色醒目、悬停有反馈」
-- 正确示例：「错误提示在输入框下方以红色文字展示」
-- 错误示例：「按钮尺寸 120x40px、圆角 4px、颜色 #1890FF」
-- 错误示例：「输入框宽度 320px、高度 36px」
+- Use **qualitative descriptions** rather than quantitative ones
+- Correct example: "The Save button text is correct, its color is prominent, and it gives feedback on hover"
+- Correct example: "The error message is shown in red text below the input box"
+- Wrong example: "Button size 120x40px, corner radius 4px, color #1890FF"
+- Wrong example: "Input width 320px, height 36px"

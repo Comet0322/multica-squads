@@ -1,16 +1,16 @@
 /**
- * 将单接口测试用例导入到场景用例（历史自动化落盘位置）。
+ * Import single-endpoint test cases into a scenario (the historical location for automation).
  *
- * 默认 dry-run；显式 --apply 才写入。
- * 只允许 ai/ 分支。
+ * Dry-run by default; only an explicit --apply writes.
+ * Only ai/ branches are allowed.
  *
- * 用法：
+ * Usage:
  *   node append-to-scenario.js --branch ai/xxx --endpoint-id 3506053 --case-ids 1,2,3
  *   node append-to-scenario.js --branch ai/xxx --endpoint-id 3506053 --manifest <dir>/manifest.json --apply
  *
- * 场景目标（优先 config / 环境变量）：
- *   APIFOX_SCENARIO_ID  或  scenarioTarget.scenarioId  → 追加到已有场景
- *   APIFOX_SCENARIO_FOLDER_ID + 场景名                → 同目录下找同名，没有则新建
+ * Scenario target (config / environment variables take priority):
+ *   APIFOX_SCENARIO_ID  or  scenarioTarget.scenarioId  -> append to an existing scenario
+ *   APIFOX_SCENARIO_FOLDER_ID + scenario name         -> look for the same name in that folder; create it if absent
  */
 const fs = require('fs');
 const path = require('path');
@@ -45,9 +45,9 @@ const folderIdArg = arg('--folder-id', process.env.APIFOX_SCENARIO_FOLDER_ID || 
 const scenarioNameArg = arg('--scenario-name', process.env.APIFOX_SCENARIO_NAME || '');
 const configPath = arg('--config', path.join(__dirname, 'config.json'));
 
-if (!branch) die('缺少 --branch');
-if (!branch.startsWith('ai/')) die(`拒绝分支 "${branch}"：只允许 ai/ 分支`);
-if (!endpointId) die('缺少 --endpoint-id');
+if (!branch) die('Missing --branch');
+if (!branch.startsWith('ai/')) die(`Branch "${branch}" refused: only ai/ branches are allowed`);
+if (!endpointId) die('Missing --endpoint-id');
 
 let config = {};
 if (fs.existsSync(configPath)) {
@@ -61,7 +61,7 @@ const common = ['--project', project, '--branch', branch, '--api-base-url', BASE
 function call(args, operation) {
   const result = apifoxJson(args);
   if (!result.success) {
-    die(`${operation} 失败: ${result.error?.message || JSON.stringify(result.error)}`);
+    die(`${operation} failed: ${result.error?.message || JSON.stringify(result.error)}`);
   }
   return result.data;
 }
@@ -77,10 +77,10 @@ function parseCaseIds() {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     const created = Array.isArray(manifest.created) ? manifest.created : [];
     const ids = created.map((item) => String(item.id || item)).filter(Boolean);
-    if (!ids.length) die(`manifest 未包含 created 用例: ${manifestPath}`);
+    if (!ids.length) die(`manifest contains no created cases: ${manifestPath}`);
     return ids;
   }
-  die('请提供 --case-ids 或 --manifest');
+  die('Provide --case-ids or --manifest');
 }
 
 function resolveScenarioMeta() {
@@ -89,27 +89,27 @@ function resolveScenarioMeta() {
   const scenarioName =
     scenarioNameArg ||
     scenarioTarget.scenarioName ||
-    `${config.namePrefix || '接口'}-自动化补充`;
+    `${config.namePrefix || 'endpoint'}-automation-supplement`;
 
   if (scenarioId) {
     return { mode: 'append', scenarioId: String(scenarioId), folderId: folderId || null, scenarioName };
   }
   if (!folderId) {
     die(
-      '缺少场景目标：请设置 scenarioTarget.scenarioId，或 scenarioTarget.folderId + scenarioName。\n' +
-        'folderId 应取自同模块历史场景目录，保证与历史用例在同一目录树下。'
+      'Missing scenario target: set scenarioTarget.scenarioId, or scenarioTarget.folderId + scenarioName.\n' +
+        'folderId should come from the folder of historical scenarios in the same module, so new cases sit in the same directory tree as the historical cases.'
     );
   }
   return { mode: 'find-or-create', scenarioId: null, folderId: String(folderId), scenarioName };
 }
 
 function listScenariosInFolder(folderId) {
-  const all = call(['test-scenario', 'list', ...common], '列出场景') || [];
+  const all = call(['test-scenario', 'list', ...common], 'list scenarios') || [];
   return (Array.isArray(all) ? all : []).filter((item) => String(item.folderId) === String(folderId));
 }
 
 function getScenario(id) {
-  return call(['test-scenario', 'get', String(id), ...common], `读取场景 ${id}`);
+  return call(['test-scenario', 'get', String(id), ...common], `read scenario ${id}`);
 }
 
 function existingBoundCaseIds(scenario) {
@@ -156,7 +156,7 @@ if (!scenarioId) {
         '--priority',
         String(scenarioTarget.priority ?? 2),
       ],
-      '创建场景'
+      'create scenario'
     );
     scenarioId = String(created.id || created.scenarioId || created);
     createdScenario = true;
@@ -204,12 +204,12 @@ console.log(
 );
 
 if (!apply) {
-  console.log('DRY-RUN 完成；确认后追加 --apply');
+  console.log('DRY-RUN complete; after confirming, re-run with --apply');
   process.exit(0);
 }
 
 if (!toImport.length) {
-  console.log('无可导入用例（均已绑定到该场景）');
+  console.log('No cases to import (all are already bound to this scenario)');
   process.exit(0);
 }
 
@@ -228,7 +228,7 @@ const imported = call(
     '--sync',
     'manual',
   ],
-  '导入用例到场景'
+  'import cases into scenario'
 );
 
 const outPath =

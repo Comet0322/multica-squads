@@ -1,6 +1,6 @@
 /**
- * Apifox 补充用例 JSON 生成器。
- * 条数完全由 caseSpecs 决定；无固定清单；证据、实测和预期均强校验。
+ * Apifox supplementary test case JSON generator.
+ * The number of cases is determined entirely by caseSpecs; there is no fixed list; evidence, probe results and expectations are all strictly validated.
  */
 const fs = require('fs');
 const path = require('path');
@@ -15,8 +15,8 @@ const userConfigPath =
 function loadConfig() {
   if (!fs.existsSync(userConfigPath)) {
     console.error(
-      `未找到 ${userConfigPath}\n` +
-        '请复制 config.example.json 为 config.json，按当前接口改写 caseSpecs（条数随接口而定，勿照搬示例）。'
+      `Not found: ${userConfigPath}\n` +
+        'Copy config.example.json to config.json and rewrite caseSpecs for the current endpoint (the count depends on the endpoint; do not copy the example).'
     );
     process.exit(1);
   }
@@ -40,7 +40,7 @@ function loadConfig() {
     defaultSuccessResponseId: successResponseId,
     caseSpecs: fileConfig.caseSpecs,
     targetEnvironment: fileConfig.targetEnvironment,
-    namePrefix: process.env.APIFOX_CASE_NAME_PREFIX || fileConfig.namePrefix || '接口',
+    namePrefix: process.env.APIFOX_CASE_NAME_PREFIX || fileConfig.namePrefix || 'endpoint',
     outputDir:
       process.env.APIFOX_CASE_OUTPUT_DIR ||
       path.join(process.env.TEMP || '/tmp', `apifox-cases-${process.env.APIFOX_ENDPOINT_ID || 'custom'}`),
@@ -50,7 +50,7 @@ function loadConfig() {
 const cfg = loadConfig();
 
 function die(message) {
-  console.error(`配置错误: ${message}`);
+  console.error(`Config error: ${message}`);
   process.exit(1);
 }
 
@@ -71,74 +71,74 @@ function findSecret(value, trail = '') {
 }
 
 const secretPath = findSecret(JSON.parse(fs.readFileSync(userConfigPath, 'utf8')));
-if (secretPath) die(`${secretPath} 疑似包含 Token；Token 只能通过 APIFOX_ACCESS_TOKEN 环境变量提供`);
+if (secretPath) die(`${secretPath} appears to contain a token; the token must only be provided via the APIFOX_ACCESS_TOKEN environment variable`);
 const projectIdRaw = String(cfg.fileConfig.APIFOX_PROJECT_ID || process.env.APIFOX_PROJECT_ID || '');
 if (!projectIdRaw || /REPLACE_/i.test(projectIdRaw)) {
-  die('APIFOX_PROJECT_ID 未设置或仍为占位符；禁止照搬 config.example.json');
+  die('APIFOX_PROJECT_ID is not set or is still a placeholder; do not copy config.example.json as-is');
 }
-if (!cfg.apiDetailId || !cfg.apiPath) die('缺少 APIFOX_ENDPOINT_ID 或 endpoint.path');
+if (!cfg.apiDetailId || !cfg.apiPath) die('Missing APIFOX_ENDPOINT_ID or endpoint.path');
 if (/REPLACE_/i.test(String(cfg.apiPath)) || /REPLACE_/i.test(String(cfg.apiDetailId))) {
-  die('endpoint 仍为占位符；请按当前任务填写真实 method/path/ID');
+  die('endpoint is still a placeholder; fill in the real method/path/ID for the current task');
 }
 if (/REPLACE_/i.test(String(cfg.targetEnvironment.id || '')) || /REPLACE_/i.test(String(cfg.targetEnvironment.name || ''))) {
-  die('targetEnvironment 仍为占位符；环境 ID/名称须属于当前已确认项目');
+  die('targetEnvironment is still a placeholder; the environment ID/name must belong to the currently confirmed project');
 }
-if (!/^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)$/i.test(cfg.method)) die(`不支持的 method: ${cfg.method}`);
+if (!/^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)$/i.test(cfg.method)) die(`Unsupported method: ${cfg.method}`);
 if (!cfg.targetEnvironment || cfg.targetEnvironment.type !== 'non-production') {
-  die('targetEnvironment.type 必须明确为 non-production；默认禁止生产环境实测');
+  die('targetEnvironment.type must be explicitly non-production; probing against production is forbidden by default');
 }
-if (!nonEmpty(String(cfg.targetEnvironment.id || ''))) die('targetEnvironment.id 必填');
+if (!nonEmpty(String(cfg.targetEnvironment.id || ''))) die('targetEnvironment.id is required');
 if (!Array.isArray(cfg.caseSpecs) || cfg.caseSpecs.length === 0) {
-  die('caseSpecs 必须为非空数组；条数由场景证据决定，勿照搬示例');
+  die('caseSpecs must be a non-empty array; the count is decided by scenario evidence, do not copy the example');
 }
 if (!Array.isArray(cfg.authPreProcessors) || !cfg.authPreProcessors.length) {
-  die('authPreProcessors 不能为空；请先运行 discover-auth.js 并人工确认发现结果');
+  die('authPreProcessors must not be empty; run discover-auth.js first and manually confirm the discovery result');
 }
 if (!cfg.authDiscovery || !nonEmpty(cfg.authDiscovery.source) || !nonEmpty(cfg.authDiscovery.confidence)) {
-  die('authDiscovery.source/confidence 必填，用于追溯鉴权来源');
+  die('authDiscovery.source/confidence are required, to trace the auth origin');
 }
 if (!nonEmpty(String(cfg.authDiscovery.moduleId || '')) || !nonEmpty(String(cfg.authDiscovery.projectId || ''))) {
-  die('authDiscovery.moduleId/projectId 必填：鉴权必须标注来自哪个项目+模块，禁止跨模块套用');
+  die('authDiscovery.moduleId/projectId are required: auth must state which project + module it comes from; cross-module reuse is forbidden');
 }
 if (String(cfg.authDiscovery.projectId) !== String(cfg.fileConfig?.APIFOX_PROJECT_ID || process.env.APIFOX_PROJECT_ID || '')) {
-  die('authDiscovery.projectId 必须与当前 APIFOX_PROJECT_ID 一致');
+  die('authDiscovery.projectId must match the current APIFOX_PROJECT_ID');
 }
 if (!['high', 'medium', 'low'].includes(cfg.authDiscovery.confidence)) {
-  die('authDiscovery.confidence 必须为 high | medium | low');
+  die('authDiscovery.confidence must be high | medium | low');
 }
 if (cfg.authDiscovery.confidence !== 'high' && cfg.authDiscovery.confirmed !== true) {
-  die('非 high 置信度鉴权结果必须设置 authDiscovery.confirmed=true，表示已人工确认');
+  die('A non-high confidence auth result must set authDiscovery.confirmed=true, meaning it was manually confirmed');
 }
 if (!Array.isArray(cfg.authDiscovery.validatedScripts) || !cfg.authDiscovery.validatedScripts.length) {
-  die('authDiscovery.validatedScripts 必填：须列出已在当前项目 common-script 校验通过的脚本 id/name');
+  die('authDiscovery.validatedScripts is required: list the script id/name already validated against common-script in the current project');
 }
 for (const script of cfg.authDiscovery.validatedScripts) {
   if (!nonEmpty(String(script.id || '')) || /REPLACE_/i.test(String(script.id))) {
-    die('validatedScripts 含占位符或空 id：请先对当前模块运行 discover-auth.js，禁止照搬示例');
+    die('validatedScripts contains a placeholder or empty id: run discover-auth.js for the current module first; do not copy the example');
   }
   if (!nonEmpty(String(script.name || '')) || /REPLACE_/i.test(String(script.name))) {
-    die('validatedScripts.name 不能为空或占位符');
+    die('validatedScripts.name must not be empty or a placeholder');
   }
 }
 for (const processor of cfg.authPreProcessors) {
   if (processor?.type !== 'commonScript' || !Array.isArray(processor.data)) continue;
   for (const id of processor.data) {
     if (/REPLACE_/i.test(String(id))) {
-      die('authPreProcessors 含占位符脚本 ID：必须从同模块历史步骤原样拷贝');
+      die('authPreProcessors contains a placeholder script ID: it must be copied verbatim from a historical step in the same module');
     }
     const hit = cfg.authDiscovery.validatedScripts.find(
       (script) => String(script.id) === String(id) && nonEmpty(String(script.name || ''))
     );
     if (!hit) {
       die(
-        `authPreProcessors 含未校验/未知脚本 ID ${id}。禁止跨项目/跨模块套用；请从同模块兄弟步骤 with-case-detail 原样拷贝`
+        `authPreProcessors contains unvalidated or unknown script ID ${id}. Cross-project/cross-module reuse is forbidden; copy verbatim from a sibling step in the same module via with-case-detail`
       );
     }
   }
 }
 
 function assertion(name, subject, comparison, value, jsonPath = '') {
-  // Apifox UI 回显 JSONPath 依赖 extractSettings.expression；需与 path 同值（对照手工用例）
+  // The Apifox UI echoes the JSONPath from extractSettings.expression; it must equal path (compare with a hand-written case)
   const extractSettings = {
     expression: jsonPath || '',
     continueExtractorSettings: { isContinueExtractValue: false },
@@ -174,7 +174,7 @@ function splitPath(dotPath) {
 
 function setByPath(obj, dotPath, value) {
   const parts = splitPath(dotPath);
-  if (!parts.length) die(`无效 override 路径: ${dotPath}`);
+  if (!parts.length) die(`Invalid override path: ${dotPath}`);
   let cur = obj;
   for (let i = 0; i < parts.length - 1; i += 1) {
     if (!cur[parts[i]] || typeof cur[parts[i]] !== 'object') cur[parts[i]] = {};
@@ -198,7 +198,7 @@ function normalizeRequest(spec) {
   if (spec.bodyTransform) {
     const body = deepClone(req.requestBody?.data);
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
-      die(`${spec.nameSuffix}: bodyTransform 仅适用于对象型 JSON requestBody.data`);
+      die(`${spec.nameSuffix}: bodyTransform only applies to object-type JSON requestBody.data`);
     }
     for (const key of spec.bodyTransform.omit || []) deleteByPath(body, key);
     for (const [key, value] of Object.entries(spec.bodyTransform.override || {})) setByPath(body, key, value);
@@ -215,26 +215,26 @@ function normalizeRequest(spec) {
 
 function validateEvidence(spec, index) {
   const evidence = spec.evidence;
-  if (!evidence || typeof evidence !== 'object') die(`caseSpecs[${index}].evidence 必须为对象`);
+  if (!evidence || typeof evidence !== 'object') die(`caseSpecs[${index}].evidence must be an object`);
   if (!evidence.scenario || typeof evidence.scenario !== 'object') {
-    die(`${spec.nameSuffix}: evidence.scenario 必填`);
+    die(`${spec.nameSuffix}: evidence.scenario is required`);
   }
   const allowed = ['api-definition', 'requirement', 'existing-case', 'probe', 'combined'];
   if (!allowed.includes(evidence.scenario.type)) {
-    die(`${spec.nameSuffix}: evidence.scenario.type 必须为 ${allowed.join(' | ')}`);
+    die(`${spec.nameSuffix}: evidence.scenario.type must be ${allowed.join(' | ')}`);
   }
   if (!nonEmpty(evidence.scenario.source) || !nonEmpty(evidence.scenario.summary)) {
-    die(`${spec.nameSuffix}: evidence.scenario.source/summary 必填且不可为空`);
+    die(`${spec.nameSuffix}: evidence.scenario.source/summary are required and must not be empty`);
   }
   const probe = evidence.probe;
-  if (!probe || typeof probe !== 'object') die(`${spec.nameSuffix}: evidence.probe 必填`);
+  if (!probe || typeof probe !== 'object') die(`${spec.nameSuffix}: evidence.probe is required`);
   for (const field of ['environmentId', 'observedAt', 'responseSummary']) {
-    if (!nonEmpty(String(probe[field] || ''))) die(`${spec.nameSuffix}: evidence.probe.${field} 必填`);
+    if (!nonEmpty(String(probe[field] || ''))) die(`${spec.nameSuffix}: evidence.probe.${field} is required`);
   }
   if (String(probe.environmentId) !== String(cfg.targetEnvironment.id)) {
-    die(`${spec.nameSuffix}: probe.environmentId 必须与 targetEnvironment.id 一致`);
+    die(`${spec.nameSuffix}: probe.environmentId must match targetEnvironment.id`);
   }
-  if (!Number.isInteger(Number(probe.statusCode))) die(`${spec.nameSuffix}: probe.statusCode 必须为整数`);
+  if (!Number.isInteger(Number(probe.statusCode))) die(`${spec.nameSuffix}: probe.statusCode must be an integer`);
 }
 
 function resolveCategoryId(spec) {
@@ -243,7 +243,7 @@ function resolveCategoryId(spec) {
   const key = String(spec.category || 'positive');
   const id = cfg.categories[key];
   if (!id) {
-    die(`未知 category: ${key}，请配置 categoryIds.${key} 或直接写 categoryId`);
+    die(`Unknown category: ${key}; configure categoryIds.${key} or set categoryId directly`);
   }
   return id;
 }
@@ -251,37 +251,37 @@ function resolveCategoryId(spec) {
 function buildAssertions(spec) {
   const expected = spec.expected;
   const status = String(expected.statusCode);
-  const list = [assertion(`HTTP状态码${status}`, 'httpCode', 'equal', status)];
+  const list = [assertion(`HTTP status ${status}`, 'httpCode', 'equal', status)];
   for (const [jsonPath, value] of Object.entries(expected.hardEquals || {})) {
     list.push(assertion(`${jsonPath}=${value}`, 'responseJson', 'equal', value, jsonPath));
   }
   for (const jsonPath of expected.exists || []) {
-    list.push(assertion(`${jsonPath}存在`, 'responseJson', 'exists', '', jsonPath));
+    list.push(assertion(`${jsonPath} exists`, 'responseJson', 'exists', '', jsonPath));
   }
   for (const [jsonPath, value] of Object.entries(expected.includes || {})) {
-    list.push(assertion(`${jsonPath}包含${value}`, 'responseJson', 'include', value, jsonPath));
+    list.push(assertion(`${jsonPath} includes ${value}`, 'responseJson', 'include', value, jsonPath));
   }
   for (const jsonPath of expected.notExists || []) {
-    list.push(assertion(`${jsonPath}不存在`, 'responseJson', 'notExist', '', jsonPath));
+    list.push(assertion(`${jsonPath} does not exist`, 'responseJson', 'notExist', '', jsonPath));
   }
   return list;
 }
 
 function validateExpected(spec) {
   const expected = spec.expected;
-  if (!expected || typeof expected !== 'object') die(`${spec.nameSuffix}: expected 必填`);
-  if (!Number.isInteger(Number(expected.statusCode))) die(`${spec.nameSuffix}: expected.statusCode 必须为整数`);
+  if (!expected || typeof expected !== 'object') die(`${spec.nameSuffix}: expected is required`);
+  if (!Number.isInteger(Number(expected.statusCode))) die(`${spec.nameSuffix}: expected.statusCode must be an integer`);
   if (Number(expected.statusCode) !== Number(spec.evidence.probe.statusCode)) {
-    die(`${spec.nameSuffix}: expected.statusCode 与实测 probe.statusCode 不一致`);
+    die(`${spec.nameSuffix}: expected.statusCode does not match the probed probe.statusCode (mismatch)`);
   }
   if (typeof expected.responseValidate !== 'boolean') {
-    die(`${spec.nameSuffix}: expected.responseValidate 必须显式为 true/false`);
+    die(`${spec.nameSuffix}: expected.responseValidate must be explicitly true/false`);
   }
   if (expected.responseValidate && !(expected.responseId || cfg.defaultSuccessResponseId)) {
-    die(`${spec.nameSuffix}: 开启响应校验时必须提供 expected.responseId 或 successResponseId`);
+    die(`${spec.nameSuffix}: when response validation is enabled, expected.responseId or successResponseId must be provided`);
   }
   if (!expected.responseValidate && expected.responseId && Number(expected.responseId) !== 0) {
-    die(`${spec.nameSuffix}: 关闭响应校验时 responseId 必须为 0 或省略`);
+    die(`${spec.nameSuffix}: when response validation is disabled, responseId must be 0 or omitted`);
   }
   const jsonPaths = [
     ...Object.keys(expected.hardEquals || {}),
@@ -291,19 +291,19 @@ function validateExpected(spec) {
   ];
   for (const jsonPath of jsonPaths) {
     if (!nonEmpty(jsonPath) || !jsonPath.startsWith('$')) {
-      die(`${spec.nameSuffix}: 响应断言路径必须是 JSONPath（以 $ 开头）: ${jsonPath}`);
+      die(`${spec.nameSuffix}: response assertion path must be a JSONPath (starting with $): ${jsonPath}`);
     }
   }
 }
 
 function validateSideEffect(spec) {
   const sideEffect = spec.sideEffect;
-  if (!sideEffect || typeof sideEffect !== 'object') die(`${spec.nameSuffix}: sideEffect 必填`);
+  if (!sideEffect || typeof sideEffect !== 'object') die(`${spec.nameSuffix}: sideEffect is required`);
   if (!['none', 'read', 'write', 'destructive'].includes(sideEffect.level)) {
-    die(`${spec.nameSuffix}: sideEffect.level 必须为 none | read | write | destructive`);
+    die(`${spec.nameSuffix}: sideEffect.level must be none | read | write | destructive`);
   }
   if (!nonEmpty(sideEffect.testData) || !nonEmpty(sideEffect.cleanup)) {
-    die(`${spec.nameSuffix}: sideEffect.testData/cleanup 必填`);
+    die(`${spec.nameSuffix}: sideEffect.testData/cleanup are required`);
   }
 }
 
@@ -339,19 +339,19 @@ const names = new Set();
 const files = new Set();
 const prepared = [];
 for (const [index, spec] of cfg.caseSpecs.entries()) {
-  if (!nonEmpty(spec.nameSuffix)) die(`caseSpecs[${index}].nameSuffix 必填`);
-  if (/未鉴权|未登录|unauth|no[-_ ]?auth/i.test(`${spec.nameSuffix} ${JSON.stringify(spec.evidence || {})}`)) {
-    die(`${spec.nameSuffix}: 本 Skill 禁止生成未鉴权场景`);
+  if (!nonEmpty(spec.nameSuffix)) die(`caseSpecs[${index}].nameSuffix is required`);
+  if (/\u672a\u9274\u6743|\u672a\u767b\u5f55|unauth|no[-_ ]?auth/i /* \u672a\u9274\u6743 = "unauthenticated", \u672a\u767b\u5f55 = "not logged in" (Chinese spec text is still matched) */.test(`${spec.nameSuffix} ${JSON.stringify(spec.evidence || {})}`)) {
+    die(`${spec.nameSuffix}: this skill must not generate unauthenticated scenarios`);
   }
   validateEvidence(spec, index);
   validateExpected(spec);
   validateSideEffect(spec);
   const fullName = `${cfg.namePrefix}-${spec.nameSuffix}`;
-  if (names.has(fullName)) die(`重复用例名: ${fullName}`);
+  if (names.has(fullName)) die(`Duplicate case name: ${fullName}`);
   names.add(fullName);
   const file = spec.file || `${String(index + 1).padStart(2, '0')}-${spec.nameSuffix.replace(/[^\w\u4e00-\u9fff-]+/g, '_')}.json`;
-  if (path.basename(file) !== file || !file.toLowerCase().endsWith('.json')) die(`${spec.nameSuffix}: file 必须是当前目录下的 .json 文件名`);
-  if (files.has(file.toLowerCase())) die(`重复文件名: ${file}`);
+  if (path.basename(file) !== file || !file.toLowerCase().endsWith('.json')) die(`${spec.nameSuffix}: file must be a .json file name in the current directory`);
+  if (files.has(file.toLowerCase())) die(`Duplicate file name: ${file}`);
   files.add(file.toLowerCase());
   prepared.push({ file, caseObject: mkCase(spec) });
   evidenceLines.push(
@@ -372,14 +372,14 @@ for (const item of prepared) {
 
 fs.writeFileSync(
   path.join(cfg.outputDir, 'checklist.md'),
-  `# 合并前自检\n\n` +
-    `- [x] 条数=${cfg.caseSpecs.length}，均来自 caseSpecs（非固定模板）\n` +
-    `- [x] 每条 evidence 和 probe 均通过结构化校验\n` +
-    `- [ ] path 非空；鉴权来自同模块发现\n` +
-    `- [ ] 负向 responseId=0 + responseValidate=false\n` +
-    `- [ ] 正向绑定成功响应；断言已按实测校准\n` +
-    `- [ ] 未生成未鉴权用例\n\n` +
-    `## 本批用例与证据\n\n${evidenceLines.join('\n')}\n`
+  `# Pre-merge self-check\n\n` +
+    `- [x] Count=${cfg.caseSpecs.length}, all from caseSpecs (not a fixed template)\n` +
+    `- [x] Every evidence and probe passed structural validation\n` +
+    `- [ ] path is non-empty; auth comes from same-module discovery\n` +
+    `- [ ] Negative cases: responseId=0 + responseValidate=false\n` +
+    `- [ ] Positive cases bind the success response; assertions calibrated against probe results\n` +
+    `- [ ] No unauthenticated cases generated\n\n` +
+    `## Cases and evidence in this batch\n\n${evidenceLines.join('\n')}\n`
 );
 
 console.log(`written ${cfg.caseSpecs.length} cases to ${cfg.outputDir}`);

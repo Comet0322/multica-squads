@@ -1,38 +1,38 @@
-# AC ↔ 设计追溯（T1 Step 1）
+# AC <-> Design Traceability (T1 Step 1)
 
-> 整合自 `ac-design-trace-squad`（原独立 skill）。写用例**之前**完成；追溯表写入 T1 生成报告的「设计追溯」节。
+> Consolidated from `ac-design-trace-squad` (formerly a standalone skill). Complete this **before** writing cases; the traceability table goes into the "Design traceability" section of the T1 generation report.
 
-## 输入
+## Inputs
 
-- Issue / Jira 验收标准（优先带编号 AC-）
-- Architect 设计：`docs/design/{KEY}/design.md` 或 Confluence 链接（经 `multica-platform-jira` + `multica-platform-confluence` 拉取）
+- Issue / Jira acceptance criteria (prefer numbered AC-)
+- Architect design: `docs/design/{KEY}/design.md` or a Confluence link (fetched via `multica-platform-jira` + `multica-platform-confluence`)
 
-缺设计：在报告标明「无设计，仅按 AC 生成」，不编造设计点。  
-缺 AC 原文：BLOCKED 追溯口径，列出 Issue 仅有的一句话范围，仍可把设计 §验证方式列为「关注点（非 AC）」。
+Design missing: state "no design, generated from AC only" in the report; do not invent design points.  
+AC original text missing: BLOCKED on the traceability baseline; list the one-sentence scope the Issue has, and you may still list the design's §verification approach as "focus points (not AC)".
 
-## 规则
+## Rules
 
-- 验收分母只认当前 Issue/PRD AC；设计有、AC 无 → **只进关注点，不进验收**
-- 冲突：Jira AC > 关联 PRD > 设计 > 知识库
-- 操作信息（入口、权限名）可提供给用例步骤；规则不得扩写成新 AC
+- The acceptance denominator only counts the current Issue/PRD AC; in design but not in AC -> **focus points only, not acceptance**
+- Conflict: Jira AC > linked PRD > design > knowledge base
+- Operational information (entry points, permission names) may be given to case steps; rules must not be expanded into new AC
 
-## 输出模板
+## Output template
 
 ```markdown
-# 设计研读摘要 — {JIRA_KEY}
+# Design Study Summary — {JIRA_KEY}
 
-## 追溯表
-| AC- | 设计章节 | 测试关注点 | 是否进入 T1 验收 |
-|-----|----------|------------|------------------|
-| AC-xx | §n | … | 是/否（否=仅关注） |
+## Traceability table
+| AC- | Design section | Test focus | Enters T1 acceptance |
+|-----|----------------|------------|----------------------|
+| AC-xx | §n | … | Yes/No (No = focus only) |
 
-## 设计有但 AC 无（禁止写成验收点）
+## In design but not in AC (must not be written as acceptance points)
 - …
 
-## 风险/边界（供 T1/T2，非自动扩用例）
+## Risks/boundaries (for T1/T2, not an automatic case expansion)
 - …
 ```
 
-## 为什么单独成节
+## Why it is its own section
 
-用例生成前先锁定 AC 分母，避免把设计文档或知识库历史扩成额外验收点。
+Lock the AC denominator before generating cases, so design documents or knowledge-base history are not expanded into extra acceptance points.

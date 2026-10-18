@@ -1,0 +1,24 @@
+# multica-artifact-cicd-sync — orchestration config (no credentials)
+version: "1.1"
+
+defaults:
+  environment: sit       # dev | sit
+  append_jira: true
+
+# Issue prefix -> which services to trigger by default (see multica-platform-jenkins/jobs-catalog.yaml)
+issue_service_map:
+  acme:
+    dev: [acme]
+    sit: [acme]
+  MSD:
+    dev: [mes2, mes-ui-v2]
+    sit: [mes2, mes-ui-v2]
+  ERP:
+    dev: [erp]
+    sit: [erp]
+  IAM:
+    dev: [apisix-v3]
+    sit: [apisix-v3]
+
+jira:
+  cicd_heading: "h3. CI/CD Deployment (Build / Deploy)"

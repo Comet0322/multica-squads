@@ -1,45 +1,45 @@
-# OpenAPI 同步 · AI 分支工作流
+# OpenAPI Sync · AI Branch Workflow
 
-**适用**：`sync_openapi.js`（@BackendDev 经 `multica-artifact-backend` 调用）。  
-**与场景补充区分**：接口**定义**同步每次新建分支；场景**用例**补充见 `reference.md` § AI 分支策略（可复用同 Issue 分支）。
+**Applies to**: `sync_openapi.js` (called by @BackendDev via `multica-artifact-backend`).  
+**Difference from scenario supplement**: endpoint **definition** sync creates a new branch every time; scenario **case** supplements (see `reference.md` § AI branch policy) may reuse the branch of the same Issue.
 
 ---
 
-## 强制规则
+## Mandatory rules
 
-| 规则 | 说明 |
+| Rule | Description |
 | --- | --- |
-| **禁止直写 main** | OpenAPI 导入、打标、删 orphan 必须在 AI 分支执行 |
-| **每次同步新建分支** | 同一 Issue 每次发布/变更 `openapi.json` 并同步 Apifox 时，**必须** `branch create` 新 AI 分支，不得复用上轮已 merge 的分支 |
-| **分支命名** | `ai/<ISSUE-KEY>-openapi-<YYYYMMDD>`；同日多次同步递增 `-r2`、`-r3` |
-| **合并** | 默认由人类在 Apifox 客户端 review 后 `branch merge`；Agent 不得自行 merge 到 main（除非 Leader 书面授权） |
+| **Never write directly to main** | OpenAPI import, tagging and orphan deletion must run on an AI branch |
+| **New branch for every sync** | Every time `openapi.json` is published/changed for the same Issue and synced to Apifox, you **must** `branch create` a new AI branch; do not reuse a branch that was already merged in a previous round |
+| **Branch naming** | `ai/<ISSUE-KEY>-openapi-<YYYYMMDD>`; for several syncs on the same day, increment `-r2`, `-r3` |
+| **Merge** | By default a human merges (`branch merge`) after review in the Apifox client; the Agent must not merge into main on its own (unless the Leader authorizes it in writing) |
 
 ---
 
-## 标准步骤（每次 Backend 契约同步）
+## Standard steps (every Backend contract sync)
 
-### 1. 解析项目
+### 1. Resolve the project
 
 ```bash
-node scripts/systems-registry.js lookup --name "<系统名>"
-# 或用户给出 APIFOX_PROJECT_ID
+node scripts/systems-registry.js lookup --name "<system-name>"
+# or the user provides APIFOX_PROJECT_ID
 ```
 
-### 2. 创建 AI 分支
+### 2. Create the AI branch
 
 ```bash
 export APIFOX_PROJECT_ID=<id>
 export APIFOX_ACCESS_TOKEN=<token>
 
-# 分支名示例：ai/CDS2-1813-openapi-20260902
+# Example branch name: ai/CDS2-1813-openapi-20260902
 BRANCH="ai/<ISSUE-KEY>-openapi-$(date +%Y%m%d)"
 apifox branch create --project $APIFOX_PROJECT_ID --name "$BRANCH" \
   --from main --type ai --api-base-url https://apifox.example.com
 ```
 
-若同名已存在（同日重复同步），改用 `ai/<ISSUE-KEY>-openapi-<YYYYMMDD>-r2`。
+If the same name already exists (repeated sync on the same day), use `ai/<ISSUE-KEY>-openapi-<YYYYMMDD>-r2` instead.
 
-### 3. 在分支上同步 OpenAPI
+### 3. Sync OpenAPI on the branch
 
 ```bash
 node scripts/sync_openapi.js \
@@ -50,15 +50,15 @@ node scripts/sync_openapi.js \
   --json
 ```
 
-### 4. 回传证据
+### 4. Report evidence
 
-写入 API 契约修订记录 / Leader 评论：
+Write into the API contract revision record / Leader comment:
 
-- AI 分支名
-- `sync_openapi.js` JSON 摘要（imported / tagged / deleted）
-- 未 merge 时注明「待人类 review 后 merge」
+- AI branch name
+- JSON summary of `sync_openapi.js` (imported / tagged / deleted)
+- If not merged, note "pending merge after human review"
 
-### 5. （可选）合并到 main
+### 5. (Optional) Merge into main
 
 ```bash
 apifox branch merge --project $APIFOX_PROJECT_ID --type ai \
@@ -66,33 +66,33 @@ apifox branch merge --project $APIFOX_PROJECT_ID --type ai \
   --api-base-url https://apifox.example.com
 ```
 
-merge 422001（main 未开 AI 写）→ 在 Apifox **客户端**合并，见 `reference.md`。
+On merge 422001 (AI write not enabled on main) -> merge in the Apifox **client**, see `reference.md`.
 
 ---
 
-## Tester 并行场景补充
+## Tester parallel scenario supplement
 
-T1 写接口场景时：
+When T1 writes endpoint scenarios:
 
-1. 优先 **pick-to** 本 Issue 的 OpenAPI 分支（`ai/<ISSUE-KEY>-openapi-*`）上已同步的 endpoint  
-2. 若 Backend 尚未同步，Tester 可在同命名规则下自建 `ai/<ISSUE-KEY>-scenarios-<YYYYMMDD>`，但 **不得** 在 main 上 create 用例  
-3. OpenAPI 变更后 Backend 新建 openapi 分支 → Tester 在新分支上 `pick-to` 再补场景
+1. Prefer to **pick-to** the endpoints already synced on this Issue's OpenAPI branch (`ai/<ISSUE-KEY>-openapi-*`)  
+2. If Backend has not synced yet, the Tester may create `ai/<ISSUE-KEY>-scenarios-<YYYYMMDD>` under the same naming rule, but **must not** create cases on main  
+3. After an OpenAPI change, Backend creates a new openapi branch -> the Tester `pick-to` the new branch and then supplements scenarios
 
 ---
 
-## 环境变量
+## Environment variables
 
-| 变量 | 用途 |
+| Variable | Purpose |
 | --- | --- |
-| `APIFOX_SOURCE_BRANCH` | 仅作 **create --from** 源分支，默认 `main`；**不是** sync 目标分支 |
-| `--branch` / `APIFOX_BRANCH` | 本次 sync **目标** AI 分支（必填，禁止省略走 main） |
+| `APIFOX_SOURCE_BRANCH` | Only the **create --from** source branch, default `main`; **not** the sync target branch |
+| `--branch` / `APIFOX_BRANCH` | The **target** AI branch of this sync (required; omitting it and falling back to main is forbidden) |
 
 ---
 
-## 常见错误
+## Common mistakes
 
-| 现象 | 处理 |
+| Symptom | Action |
 | --- | --- |
-| 省略 `--branch` 写到 main | 停止；create 新 AI 分支后重跑 sync |
-| 复用已 merge 的旧分支做第二次 OpenAPI 变更 | 违规；必须 create 新分支 |
-| create 后 list 看不到 endpoint | 确认 sync 与 create 使用同一 `--branch` |
+| Omitted `--branch`, wrote to main | Stop; create a new AI branch and rerun the sync |
+| Reused an already-merged old branch for a second OpenAPI change | Violation; a new branch must be created |
+| Endpoint not visible in list after create | Confirm that sync and create use the same `--branch` |

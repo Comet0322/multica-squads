@@ -1,66 +1,66 @@
-# 覆盖维度与规模判断
+# Coverage Dimensions and Scale Judgment
 
-> 整合自 `test-case-generator-squad` Step 1–2。与 [`coverage-checklist.md`](coverage-checklist.md) 配合。
+> Consolidated from `test-case-generator-squad` Step 1–2. Works together with [`coverage-checklist.md`](coverage-checklist.md).
 
-## 维度选择（每个模块）
+## Dimension selection (per module)
 
-| 维度 | 何时必选 | 何时可跳过 |
+| Dimension | When required | When it can be skipped |
 | --- | --- | --- |
-| **全量场景** | 有业务功能路径 | 无 |
-| **边界场景** | 有输入/筛选/数值/上传 | 纯展示无输入限制 |
-| **页面检查** | 有新页面/弹窗/UI 组件 | 纯后端、无 UI 变更 |
+| **Full scenario** | There are business function paths | Never |
+| **Boundary scenario** | There is input/filter/numeric/upload | Display-only with no input restrictions |
+| **Page check** | There is a new page/dialog/UI component | Pure backend, no UI change |
 
-## 按需求规模缩放
+## Scaling by requirement size
 
-| 规模 | 特征 | 覆盖策略 |
+| Size | Characteristics | Coverage strategy |
 | --- | --- | --- |
-| **小** | 1–2 功能点 / 单页改动 | 核心正常 + 关键异常；可跳过非必要边界/UI |
-| **中** | 3–5 功能点 / 含表单 | 全量 + 必要边界；UI 按需 |
-| **大** | 5+ 功能点 / 多模块 / 复杂状态 | 全量 + 边界 + UI，不得遗漏 |
+| **Small** | 1–2 function points / single-page change | Core normal flow + key exceptions; non-essential boundary/UI may be skipped |
+| **Medium** | 3–5 function points / includes forms | Full + necessary boundaries; UI as needed |
+| **Large** | 5+ function points / multiple modules / complex states | Full + boundary + UI, nothing missed |
 
-**不限制条数**——以完全覆盖当前需求为准，小需求不发散，大需求不全漏。
+**No limit on case count** — the standard is full coverage of the current requirement: small requirements do not sprawl, large requirements do not leave gaps.
 
-**生成时自动去重：** 相同模块、相同场景、相同操作路径只生成一次。
+**Auto-dedup during generation:** the same module, same scenario and same operation path is generated only once.
 
-**合并与拆分：** 等价负向可合并（预期内编号列样本）；关键边界或 PRD 单独风险项应独立。详见 [`generation-workflow.md`](generation-workflow.md)。
+**Merge and split:** equivalent negative cases may be merged (list numbered samples in the expected result); key boundaries or standalone PRD risk items should stand alone. See [`generation-workflow.md`](generation-workflow.md).
 
-## 全量场景检查表
+## Full-scenario checklist
 
-正常 / 分支 / 异常 / 状态流转 / 权限 / 数据联动 / 组合 / 并发 — 需求提到的功能点至少一正一反。
+Normal / branch / exception / state transition / permission / data linkage / combination / concurrency — every function point mentioned in the requirement needs at least one positive and one negative case.
 
-## 边界场景检查表
+## Boundary-scenario checklist
 
-数值 / 字符串 / 列表 / 枚举 / 时间 / 格式 / 必填 / 唯一性 / 文件 / 分页 — 每个输入控件需边界值（上/下/超边界）。
+Numeric / string / list / enum / time / format / required / uniqueness / file / pagination — each input control needs boundary values (upper/lower/beyond boundary).
 
-## 页面检查（定性，非像素）
+## Page check (qualitative, not pixel-level)
 
-元素完整、布局一致、样式风格、交互状态、响应式、文案、空/加载/错误态。**跳过**精确 px、HEX、圆角等（留 UI 走查）。
+Element completeness, layout consistency, style, interaction states, responsiveness, copy text, empty/loading/error states. **Skip** exact px, HEX, corner radius, etc. (left to UI walkthrough).
 
-## 模块覆盖矩阵（生成前必列）
+## Module coverage matrix (must be listed before generation)
 
 ```text
 ========================================
-模块: {模块名}
+Module: {module name}
 ========================================
-[覆盖矩阵]
-  ┌ 全量场景: …
-  ┌ 边界场景: …（或「本模块跳过」）
-  ┌ 页面检查: …（或「本模块跳过」）
+[Coverage matrix]
+  ┌ Full scenario: …
+  ┌ Boundary scenario: … (or "skipped for this module")
+  ┌ Page check: … (or "skipped for this module")
 
---- 用例 ---
-（随后输出用例详情）
+--- Cases ---
+(case details are output afterwards)
 ```
 
-矩阵写入覆盖报告「模块覆盖」节。
+The matrix is written into the "Module coverage" section of the coverage report.
 
-## 接口用例（本地）
+## API cases (local)
 
-- JSON 含 `"api"` 与 `"functional"` 并列
-- 另存 `test_cases_api.json`（仅 api 数组）
-- **禁止** import JIRA / XMind / 测试管理平台
-- 可执行场景 → `multica-platform-apifox`
+- JSON contains `"api"` alongside `"functional"`
+- Also save `test_cases_api.json` (api array only)
+- **Do not** import into JIRA / XMind / test-management platform
+- Executable scenarios -> `multica-platform-apifox`
 
-## XMind 规则
+## XMind rules
 
 ```bash
 python scripts/generate_xmind.py \
@@ -69,6 +69,6 @@ python scripts/generate_xmind.py \
   --project {PREFIX}
 ```
 
-- 文件名必须 `test_cases_{JIRA_KEY}.xmind`
-- **禁止**删除其他 Key 的 xmind
-- 仅功能用例；不含 api
+- File name must be `test_cases_{JIRA_KEY}.xmind`
+- **Do not** delete xmind files of other Keys
+- Functional cases only; api is excluded

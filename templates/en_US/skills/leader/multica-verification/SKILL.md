@@ -1,6 +1,6 @@
 ---
 name: multica-verification
-description: Gatekeeping function: objectively check whether an artifact satisfies the acceptance criteria. Triggered by the Leader to rerun at gate points (G1/G2/G3); members can also use it for self-check. Used for design review / implementation acceptance / test-report review.
+description: "Gatekeeping function: objectively check whether an artifact satisfies the acceptance criteria. Triggered by the Leader to rerun at gate points (G1/G2/G3); members can also use it for self-check. Used for design review / implementation acceptance / test-report review."
 ---
 
 # Verification (gatekeeping)

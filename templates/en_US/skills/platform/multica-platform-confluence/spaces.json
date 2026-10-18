@@ -1,0 +1,9 @@
+{
+  "_description": "Example Confluence space registry — replace the spaces list to match your team (all key/name values below are placeholders; change them to your real spaces before publishing)",
+  "spaces": [
+    {"key": "TEAM",    "name": "Team Space",   "description": "Team collaboration docs"},
+    {"key": "PRODUCT", "name": "Product Docs",   "description": "Requirements and specs"},
+    {"key": "DEV",     "name": "Engineering Space",   "description": "Engineering process docs"},
+    {"key": "OPS",     "name": "Operations Space",   "description": "Runbooks and release records"}
+  ]
+}

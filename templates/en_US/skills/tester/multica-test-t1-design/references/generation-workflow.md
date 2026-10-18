@@ -1,69 +1,69 @@
-# T1 生成工作流（强制规则）
+# T1 Generation Workflow (mandatory rules)
 
-> 整合自 `test-case-generator-squad` SKILL v3.5。与 [`design-trace.md`](design-trace.md)、[`test-case-template.md`](test-case-template.md)、[`coverage-checklist.md`](coverage-checklist.md) 配合使用。
+> Consolidated from `test-case-generator-squad` SKILL v3.5. Use together with [`design-trace.md`](design-trace.md), [`test-case-template.md`](test-case-template.md) and [`coverage-checklist.md`](coverage-checklist.md).
 
-## 三阶段交付（Confluence 主副本 → 人工审核 → XMind/JIRA）
+## Three-phase delivery (Confluence master copy -> human review -> XMind/JIRA)
 
-### 阶段 A：Confluence 维护（T1/T2 默认到此结束）
+### Phase A: Confluence maintenance (T1/T2 end here by default)
 
-1. 生成功能用例 JSON（工作文件，可选保留 `docs/test/<KEY>/test_cases.json`）
-2. 接口用例仅本地 `test_cases_api.json`（不 import JIRA）
-3. 编写 **完整用例正文** 到 `t1-cases.md`（非摘要），发布 Confluence Issue Hub 子页
-4. T2 同理：`t2-coverage.md` 增量发布 Confluence
-5. 并行：API 契约就绪 → `multica-platform-apifox` 补场景（AI 分支）
-6. **不生成 XMind**；输出覆盖报告 + **待审说明**，**停止**
+1. Generate the functional-case JSON (working file; optionally keep `docs/test/<KEY>/test_cases.json`)
+2. API cases only as local `test_cases_api.json` (not imported to JIRA)
+3. Write the **full case body** into `t1-cases.md` (not a summary) and publish it as a child page of the Confluence Issue Hub
+4. T2 likewise: `t2-coverage.md` is published to Confluence incrementally
+5. In parallel: once the API contract is ready -> `multica-platform-apifox` supplements scenarios (AI branch)
+6. **Do not generate XMind**; output the coverage report + **pending-review note**, then **stop**
 
-**阶段 A 结束语（强制）**：
-
-```text
-状态：待人工审核（Confluence 已更新，未生成 XMind / 未导入 JIRA）
-Confluence: <t1-cases 或 t2-coverage URL>
-确认导入示例口令：「审核通过，导入 JIRA」
-```
-
-### 阶段 B：人工审核
-
-- `multica-review-test`：Block / Revise / Pass（审 Confluence 正文，非 XMind）
-- 人类在 Confluence 改稿 → Tester 更新本地 md → republish
-- Review Pass **≠** 导入授权
-
-### 阶段 C：XMind + JIRA（仅 👤 明确口令后）
-
-用户审核通过并明确下达导入指令后，**必须**依次：
-
-1. 从最新 Confluence/JSON 同步 → `generate_xmind.py` → `test_cases_{JIRA_KEY}.xmind`
-2. `import_to_tracker.py`（仅功能用例；唯一 `--suite-name`）
-3. Story ↔ 用例集 Task：**JIRA Relates**（禁止 Include 铺开用例）
-4. 更新 Confluence 状态为「已导入 JIRA」+ 用例集链接
+**Phase A closing statement (mandatory):**
 
 ```text
-需求(Story)  --[JIRA Relates]-->  测试用例集(Task)
-测试用例     --[测试管理平台用例树]--> 测试用例集
-测试用例     --[测试管理平台需求面板]--> 测试用例集(Task)   ← 不是 Story
+Status: pending human review (Confluence updated, XMind not generated / not imported to JIRA)
+Confluence: <t1-cases or t2-coverage URL>
+Example passphrase to confirm import: "Review approved, import to JIRA"
 ```
 
-| 禁止 | 原因 |
+### Phase B: Human review
+
+- `multica-review-test`: Block / Revise / Pass (reviews the Confluence body, not XMind)
+- Humans edit on Confluence -> Tester updates the local md -> republish
+- Review Pass **is not** import authorization
+
+### Phase C: XMind + JIRA (only after an explicit 👤 passphrase)
+
+After the user approves the review and explicitly gives the import instruction, you **must**, in order:
+
+1. Sync from the latest Confluence/JSON -> `generate_xmind.py` -> `test_cases_{JIRA_KEY}.xmind`
+2. `import_to_tracker.py` (functional cases only; unique `--suite-name`)
+3. Story <-> case-set Task: **JIRA Relates** (no Include fan-out of cases)
+4. Update the Confluence status to "Imported to JIRA" + case-set link
+
+```text
+Requirement (Story)  --[JIRA Relates]-->  Test case set (Task)
+Test case            --[test-management platform case tree]--> Test case set
+Test case            --[test-management platform requirement panel]--> Test case set (Task)   <- not the Story
+```
+
+| Prohibited | Reason |
 | --- | --- |
-| T1/T2 阶段 A 生成 XMind | 主副本在 Confluence，避免双源 |
-| 未经审核就 import | 用例未确认 |
-| 用例集→用例建 Include | 问题链接铺开全部用例 |
-| 用例需求面板挂 Story | Story 页测试面板铺开 |
-| 接口用例 import | 接口走 Apifox + manifest |
+| Generating XMind in T1/T2 Phase A | The master copy is on Confluence; avoid dual sources |
+| Importing without review | Cases not confirmed |
+| Creating Include from case set -> cases | Issue links fan out all cases |
+| Attaching cases to the Story in the requirement panel | The Story page's test panel fans out |
+| Importing API cases | API cases go through Apifox + manifest |
 
-### 明确导入口令（满足其一才可阶段 C）
+### Explicit import passphrase (any one is required for Phase C)
 
-- 「审核通过，导入 JIRA」
-- 「导入到 JIRA」/「导入 jira」
-- 「继续导入」/「确认导入」/「可以导入」
-- 「按 XX 测试集名称导入」
+- "Review approved, import to JIRA"
+- "Import to JIRA" / "import jira"
+- "Continue import" / "Confirm import" / "OK to import"
+- "Import under test-suite name XX"
 
-含糊表述（「看起来可以」「再看看」）→ **不得**导入，应追问。
+Vague phrasing ("looks fine", "let me look again") -> **do not** import; ask a follow-up.
 
-> 即使用户在任务卡片写「生成并导入」，仍须先完成阶段 A 发布 Confluence，**不得**同轮跳过审核或生成 XMind。
+> Even if the user writes "generate and import" in the task card, Phase A (publish to Confluence) must still be completed first; **do not** skip review or generate XMind in the same turn.
 
-### 阶段 C CLI（XMind → JIRA）
+### Phase C CLI (XMind -> JIRA)
 
-**先生成 XMind**（仅功能用例）：
+**Generate XMind first** (functional cases only):
 
 ```bash
 python scripts/generate_xmind.py \
@@ -71,277 +71,277 @@ python scripts/generate_xmind.py \
   --output ./data/test_cases_{JIRA_KEY}.xmind
 ```
 
-**文件名**：`test_cases_{JIRA_KEY}.xmind`；**禁止删除其他 Key 的 xmind**。
+**File name**: `test_cases_{JIRA_KEY}.xmind`; **do not delete xmind files of other Keys**.
 
-### 导入 CLI（正确参数）
+### Import CLI (correct parameters)
 
 ```bash
 python scripts/import_to_tracker.py \
   --jira-url "https://your-domain.atlassian.net/browse/PROJ-123" \
   --input ./data/test_cases.json \
-  --suite-name "订单状态标签及筛选"
+  --suite-name "Order Status Tags and Filters"
 ```
 
-可选：`--dry-run` 预览、`--manual` 逐条确认、`--update-existing` 更新已有用例描述。
+Optional: `--dry-run` to preview, `--manual` to confirm one by one, `--update-existing` to update descriptions of existing cases.
 
-### 高危：禁止重复导入
+### High risk: no duplicate imports
 
-每批用例 **只导入一次**、只归入 **一个** 测试管理平台 用例集。
+Each batch of cases is **imported only once** and filed into **one** test-management-platform case set.
 
-禁止：
+Prohibited:
 
-- 同一批导入到多个 测试管理平台用例集
-- 重复执行导入脚本（如 dry-run 后再实际导入两次）
-- 先手动导入再脚本二次关联（重复关联）
+- Importing the same batch into multiple test-management-platform case sets
+- Running the import script repeatedly (e.g. dry-run and then two real imports)
+- Importing manually first and then re-linking by script (duplicate linking)
 
-**导入前前置校验（必做）：**
+**Pre-import validation (required):**
 
-1. 确认本次 JIRA Key（如 PROJ-123）为关联目标
-2. 确认该需求下测试用例尚未导入（JIRA 查看是否已有测试子任务）
-3. 确认 `--suite-name` **唯一**
-4. 确认测试集名称与当前需求严格对应，不与已有测试集重复或相似
+1. Confirm this JIRA Key (e.g. PROJ-123) is the link target
+2. Confirm test cases under this requirement have not been imported yet (check in JIRA whether test sub-tasks already exist)
+3. Confirm `--suite-name` is **unique**
+4. Confirm the suite name strictly corresponds to the current requirement and does not duplicate or resemble an existing suite
 
-**若已导入过：** 不要再次导入，直接报告已有用例信息。
+**If already imported:** do not import again; report the existing case info directly.
 
-### 测试用例集命名规则
+### Test case set naming rules
 
-**必须手动指定 `--suite-name`，禁止依赖自动推导。**
+**`--suite-name` must be specified manually; do not rely on auto-derivation.**
 
-1. **读取需求标题** — JIRA summary
-2. **去除无意义前缀** — `【后端】`、`【模块B】`、`【优化】`、`【Bug】` 等
-3. **提取核心业务语义** — 简洁专业（5–15 字）
-4. **不胡编乱造** — 严格基于需求内容
-5. **显式传递** — 作为 `--suite-name` 传入
-6. **校验唯一性** — 在 测试管理平台用例集列表中不存在，或确认为同需求旧集
+1. **Read the requirement title** — the JIRA summary
+2. **Strip meaningless prefixes** — `[Backend]`, `[Module B]`, `[Optimization]`, `[Bug]`, etc.
+3. **Extract the core business meaning** — concise and professional (a short phrase)
+4. **Do not make things up** — strictly based on the requirement content
+5. **Pass explicitly** — as `--suite-name`
+6. **Check uniqueness** — it does not exist in the test-management-platform case-set list, or it is confirmed to be the old set for the same requirement
 
-| JIRA 需求标题 | 提炼后的测试集名称 |
+| JIRA requirement title | Distilled suite name |
 | --- | --- |
-| 【后端】订单导出-收货记录快捷下载 | 订单导出收货记录快捷下载 |
-| 【模块B】订单详情页-新增数据展示 | 订单详情页新增数据展示 |
-| 登录页UI重构 | 登录页UI重构 |
-| 【优化】用户管理-批量导入功能优化 | 用户管理-批量导入 |
-| 【Bug】订单列表查询慢 | 订单列表查询性能 |
+| [Backend] Order export - quick download of receiving records | Order export receiving records quick download |
+| [Module B] Order detail page - new data display | Order detail page new data display |
+| Login page UI refactor | Login page UI refactor |
+| [Optimization] User management - bulk import optimization | User management - bulk import |
+| [Bug] Order list query is slow | Order list query performance |
 
-**回退规则：** 标题不足以提炼时 → `{系统前缀}-功能用例`。
+**Fallback rule:** when the title is not enough to distill -> `{system prefix}-functional cases`.
 
-### 导入后关联校验（必做）
+### Post-import link validation (required)
 
-导入完成后按现网样例自检（参考 PROJ-124 / PROJ-125）：
+After import, self-check against live examples (see PROJ-124 / PROJ-125):
 
-1. **Story 问题链接**：仅 Relates 到测试用例集 Task，不直接列出全部用例
-2. **测试用例集问题链接**：仅 Relates 到 Story；**不得**大量 Include 指向各用例
-3. **单条用例**：已在 测试管理平台用例树；测试管理平台「需求」面板指向**用例集 Task**，不是 Story
-4. 若 Include 或需求面板挂了 Story：按规则修正，确认 `import_to_tracker.py` 未回退旧逻辑
+1. **Story issue links**: only Relates to the test case set Task; do not list all cases directly
+2. **Test case set issue links**: only Relates to the Story; **must not** Include each case in bulk
+3. **Single case**: already in the test-management-platform case tree; the platform's "Requirement" panel points to the **case set Task**, not the Story
+4. If Include links exist or the requirement panel points to the Story: fix per the rules, and confirm `import_to_tracker.py` has not regressed to the old logic
 
 ---
 
-## Step 0.5 历史上下文（Confluence + 知识库）
+## Step 0.5 Historical context (Confluence + knowledge base)
 
-### Step 0.5a — Confluence 历史检索
+### Step 0.5a — Confluence history search
 
-用需求关键词在 Confluence 搜索历史需求/设计/接口文档，作**背景参考**（仍以当前 JIRA 为准）。命中结果写入覆盖报告「历史上下文参考」节。
+Search Confluence with requirement keywords for past requirements/designs/API docs as **background reference** (the current JIRA still governs). Write hits into the "Historical context reference" section of the coverage report.
 
-### Step 0.5b — 团队知识库（用法二分）
+### Step 0.5b — Team knowledge base (two-way usage split)
 
-调用团队知识库问答脚本（可选，禁止 SSH/curl）。规则见团队知识库接入文档。
+Call the team knowledge-base Q&A script (optional; no SSH/curl). See the team knowledge-base onboarding doc for rules.
 
-| 信息类型 | 能否进用例 | 写哪里 |
+| Information type | May enter cases | Where to write |
 | --- | --- | --- |
-| 菜单路径、页面入口、权限名、文案别名 | **应当使用** | `preconditions` / `steps` / `module` |
-| 历史规则、他系统口径、当前需求未写的字段 | **禁止当验收点** | 仅背景；`expected_results` 仍以当前 AC 为准 |
+| Menu paths, page entry points, permission names, text aliases | **Should be used** | `preconditions` / `steps` / `module` |
+| Historical rules, other systems' conventions, fields the current requirement does not mention | **Must not be treated as acceptance points** | Background only; `expected_results` still follow the current AC |
 
-**知识库三问（追问至少覆盖，不要只问规则关键词）：**
+**Three knowledge-base questions (follow-ups must cover at least these; do not only ask for rule keywords):**
 
-1. 模块**入口/菜单路径**是什么？
-2. 相关页面**操作流**（Tab、按钮、等待点）？
-3. **权限口径**（角色/能力名）？
+1. What is the module's **entry/menu path**?
+2. What is the **operation flow** of the related pages (tabs, buttons, wait points)?
+3. What is the **permission convention** (role/capability names)?
 
-可按 JIRA 前缀传系统代码缩小范围（如 `CRM`、`MES` 等业务系统代码）。
+You may pass the system code by JIRA prefix to narrow scope (business-system codes such as `CRM`, `MES`).
 
 ```bash
-python scripts/kb_ask.py（团队知识库问答脚本，可选） --health
-python scripts/kb_ask.py（团队知识库问答脚本，可选） "【模块名】入口与操作路径" <系统代码>
-python scripts/kb_ask.py（团队知识库问答脚本，可选） "【模块名】权限与角色要求" <系统代码>
+python scripts/kb_ask.py (team KB Q&A script, optional) --health
+python scripts/kb_ask.py (team KB Q&A script, optional) "[Module name] entry and operation path" <system-code>
+python scripts/kb_ask.py (team KB Q&A script, optional) "[Module name] permissions and role requirements" <system-code>
 ```
 
-### Step 0.5 执行流程
+### Step 0.5 execution flow
 
-1. **提取关键词** — 从 JIRA 标题/描述/AC 提取 2–5 个核心业务词（系统代码、模块名、功能名、实体、操作类型）
-2. **Confluence 历史** — 用关键词搜历史需求/设计/接口/测试文档
-3. **团队知识库** — 同批关键词 + 三问；`--health` 通过后提问
-4. **分两桶落盘** — **操作桶**（路径/权限/文案）写进步骤；**规则桶**（历史规则/旧字段）仅理解
-5. **记录信息源** — 覆盖报告「历史上下文参考」：Confluence 标题/链接 + 知识库摘要与引用（以脚本返回为准，禁止编造）
+1. **Extract keywords** — pull 2–5 core business terms from the JIRA title/description/AC (system code, module name, feature name, entity, operation type)
+2. **Confluence history** — search past requirements/designs/APIs/test docs with the keywords
+3. **Team knowledge base** — same keywords + the three questions; ask after `--health` passes
+4. **Persist in two buckets** — the **operation bucket** (path/permission/text) goes into steps; the **rule bucket** (historical rules/old fields) is for understanding only
+5. **Record information sources** — in the "Historical context reference" of the coverage report: Confluence titles/links + knowledge-base summary and citations (as returned by the script; never fabricate)
 
-### Step 0.5 强制约束（Confluence 与 知识库 共用）
+### Step 0.5 mandatory constraints (shared by Confluence and the knowledge base)
 
-- **规则不当验收，操作须进步骤** — 历史/知识库规则不得当 AC；入口/权限/文案在当前需求范围内**必须**写进步骤
-- **严格限于当前需求范围** — 不得生成当前 JIRA 未写的测试点
-- **禁止臆测** — 参考源未写且当前需求未写 → 不得当测试依据；菜单路径以参考源+现状为准，禁止凭空编菜单
-- **禁止发散** — 不得把历史整模块范围扩进本批用例
-- **冲突优先级** — JIRA AC > 当前 Confluence PRD > API > Figma > 历史/知识库
+- **Rules are not acceptance; operations must go into steps** — historical/KB rules must not be treated as AC; entry/permission/text within the current requirement scope **must** be written into steps
+- **Strictly limited to the current requirement scope** — do not generate test points the current JIRA does not mention
+- **No speculation** — if neither the reference source nor the current requirement says it -> it must not be a test basis; menu paths follow reference source + current state; never invent menus
+- **No divergence** — do not extend the whole historical module scope into this batch of cases
+- **Conflict priority** — JIRA AC > current Confluence PRD > API > Figma > history/knowledge base
 
-### Step 0.5 场景示例
+### Step 0.5 scenario examples
 
-| 场景 | 正确做法 | 错误做法 |
+| Scenario | Correct approach | Wrong approach |
 | --- | --- | --- |
-| 新增「批量导入」 | 查 Confluence+知识库 了解模板格式，辅助设计**当前需求范围内**的边界用例 | 把历史「导入字段 A/B/C」直接当当前测试点 |
-| 修改「审批流程」 | 查历史节点辅助异常场景，步骤/预期仍按**当前需求节点** | 照搬历史审批用例，忽略节点已变更 |
-| 新增查询页 | 查实体字段含义辅助筛选组合思路 | 把历史旧字段直接当当前页字段写用例 |
-| 知识库有完整 CRM 模块说明，当前只改一处文案 | 仅生成文案变更用例；KB 只用来避免误解术语 | 因 KB 丰富而扩大到整个模块 |
+| Add "bulk import" | Check Confluence + KB to learn the template format and help design boundary cases **within the current requirement scope** | Treat historical "import fields A/B/C" directly as current test points |
+| Modify "approval flow" | Use historical nodes to help with exception scenarios; steps/expectations still follow the **current requirement's nodes** | Copy historical approval cases and ignore that nodes have changed |
+| Add a query page | Use entity field meanings to help think about filter combinations | Write cases using historical old fields as the current page's fields |
+| KB has a full CRM module description, but the current change is one text edit | Generate only text-change cases; KB is used just to avoid misreading terms | Expand to the whole module because the KB is rich |
 
-知识库不可用：覆盖报告标注「知识库不可用」，**不阻断**生成；禁止臆造规则。超时停轮见团队知识库接入文档。
+Knowledge base unavailable: mark "knowledge base unavailable" in the coverage report, **do not block** generation; never invent rules. For timeout stop-the-round handling see the team knowledge-base onboarding doc.
 
 ---
 
-## 步骤与预期（5 原则）
+## Steps and expected results (5 principles)
 
-1. **原子合并**：操作+即时验证可合并为一步（如「点击 Tab，确认列表刷新」）
-2. **完整预期集合**：同一步骤内用 `1）` `2）` 编号，全角 `）`，编号间空行
-3. **验证点数量不限**：同一步骤内用编号列多个验证点；但 JSON 数组层面 `steps`/`expected_results` 仍须 **1:1 等长**（见 [`output-format.md`](output-format.md)）
-4. **同类模板一致**：同类型操作（如图表检查）预期结构一致
-5. **禁止空预期**：无预期则重新审视步骤必要性
+1. **Atomic merge**: an action plus its immediate verification may be merged into one step (e.g. "click the tab and confirm the list refreshes")
+2. **Complete expectation set**: within one step, number with `1)` `2)`, with a blank line between numbers
+3. **Unlimited verification points**: within one step, list multiple verification points by number; but at the JSON array level `steps`/`expected_results` must still be **1:1 and equal length** (see [`output-format.md`](output-format.md))
+4. **Consistent templates for the same kind**: same-type operations (e.g. chart checks) have the same expectation structure
+5. **No empty expectations**: if there is no expectation, re-examine whether the step is needed
 
-**预期结果质量（不可协商）：**
+**Expected-result quality (non-negotiable):**
 
-- 逐步骤对应；禁止脚本自动填充缺失预期
-- 精准匹配步骤的**即时反馈**，禁止跳跃到最终状态
-- 语言简洁，禁止「应该」「可能」等模糊词
-- 禁止未解析 wiki 标记进入用例正文
+- Map step by step; scripts must not auto-fill missing expectations
+- Precisely match the step's **immediate feedback**; do not jump to the final state
+- Concise language; no vague words such as "should" or "may"
+- Unparsed wiki markup must not enter case bodies
 
-**禁止**：`{LQ}` `{RQ}` `[待补充]` `[TBD]` `[缺少Figma]`、字面 `XXX` 权限占位、写死账号密码。
+**Prohibited**: `{LQ}` `{RQ}` `[TBD]` `[Figma missing]`, literal `XXX` permission placeholders, hard-coded accounts/passwords.
 
 ---
 
-## 模块层级与 priority
+## Module hierarchy and priority
 
-**module 路径**：`/` 分隔；JSON `module` 与 XMind/JIRA 树形结构一致。
+**module path**: separated by `/`; the JSON `module` matches the XMind/JIRA tree structure.
 
-### XMind / module 层级规范
+### XMind / module hierarchy spec
 
-| 层级 | 含义 | 规则 |
+| Level | Meaning | Rule |
 | --- | --- | --- |
-| 一级（根） | 系统名称 | Issue Key 前缀：如 `PROJ`；**不得默认其它项目前缀** |
-| 二级 | 需求名称 | 如「订单导出收货记录快捷下载」 |
-| 三级 | 业务域根模块 | 从需求内容提取（如「订单中心」「CRM」）；不可臆测、不可缺失 |
-| 四级 | 模块名 | 多业务域时带前缀（如 `CRM-订单导出`）；单域可直接用模块名 |
-| 五级+ | 子模块 | 按业务逻辑继续拆分；用例挂最后子模块 |
+| Level 1 (root) | System name | Issue Key prefix: e.g. `PROJ`; **do not default to another project's prefix** |
+| Level 2 | Requirement name | e.g. "Order export receiving records quick download" |
+| Level 3 | Business-domain root module | Extracted from the requirement content (e.g. "Order Center", "CRM"); no guessing, no omission |
+| Level 4 | Module name | With a prefix when there are multiple business domains (e.g. `CRM-Order Export`); a single domain may use the module name directly |
+| Level 5+ | Sub-module | Keep splitting by business logic; cases hang under the last sub-module |
 
-**示例层级：**
-
-```text
-多业务域：  CRM > 订单导出二期 > 订单 > 收货记录下载 > 具体用例
-单业务域：  CRM > 订单导出二期 > 收货记录下载 > 具体用例
-含子模块：  CRM > 订单导出二期 > 收货记录下载 > 下载格式配置 > 具体用例
-含业务域根： 订单中心 > 订单详情 > 新增数据展示 > 数据展示配置 > 具体用例
-```
-
-**module JSON 示例：** `订单详情/新增数据展示/数据展示配置`（禁止扁平名如 `新增数据展示-数据展示配置`）
+**Example hierarchies:**
 
 ```text
-{系统前缀} > {需求名} > {业务域根} > {模块} > [子模块…]
+Multiple domains:   CRM > Order Export Phase 2 > Order > Receiving Record Download > concrete case
+Single domain:      CRM > Order Export Phase 2 > Receiving Record Download > concrete case
+With sub-module:    CRM > Order Export Phase 2 > Receiving Record Download > Download Format Config > concrete case
+With domain root:   Order Center > Order Detail > New Data Display > Data Display Config > concrete case
 ```
 
-**priority**（禁止 P0）：
+**module JSON example:** `Order Detail/New Data Display/Data Display Config` (flat names such as `New Data Display-Data Display Config` are prohibited)
 
-| 级别 | 场景 |
+```text
+{system prefix} > {requirement name} > {business-domain root} > {module} > [sub-module…]
+```
+
+**priority** (P0 prohibited):
+
+| Level | Scenario |
 | --- | --- |
-| P1 | 核心主验收路径 |
-| P2 | 正常/辅助/页面检查 |
-| P3 | 异常、边界、权限拒绝 |
+| P1 | Core main acceptance path |
+| P2 | Normal/auxiliary/page checks |
+| P3 | Exceptions, boundaries, permission denial |
 
-判定：异常/边界 → P3；核心主路径 → P1；其余 → P2。
-
----
-
-## 可执行性（全系统强制）
-
-详见 [`executability-and-permissions.md`](executability-and-permissions.md)（双目标、**权限识别顺序**、模块命名、KB 自检、生成后清单）。
-
-摘要：
-
-1. **双目标**：可执行（真实入口路径）+ 可追溯（映射 AC）
-2. **权限模板**：`登录具备 {系统}【{模块/操作}】权限的账号`（填真实权限名，非 XXX）
-3. **步骤可落地**：写清 系统 → 模块 → 功能 等路径；等待加载；造数别名
-4. **知识库操作桶进步骤**，规则桶不进 expected
-
-### 生成时自动去重
-
-生成过程中避免重复用例（相同模块、相同场景、相同操作路径只生成一次），无需与 Jira 已有用例对比。导入阶段 `import_to_tracker.py` 另有 JIRA 侧去重。
-
-### 合并与拆分策略
-
-- **可合并**：同入口、同验证手法的等价负向（如 Count=0 / ≤1mm / =1.0mm）可并成一条，预期内用编号列清各样本
-- **应独立**：合并后失败无法定位根因的关键边界，或 PRD 单独风险项（如详情与筛选一致性），保留独立用例
-
-生成后自检见 [`coverage-checklist.md`](coverage-checklist.md) + 本节质量清单：
-
-- [ ] 无写死账号/密码；无 XXX 占位
-- [ ] 步骤含真实入口或后台触发方式
-- [ ] 核心 AC 可追溯；未覆盖写 uncovered
-- [ ] 优先级 P1/P2/P3 正确；无 P0
-- [ ] module 与产品导航一致
+Rule: exception/boundary -> P3; core main path -> P1; the rest -> P2.
 
 ---
 
-## Figma 与接口文档（缺资源处理）
+## Executability (system-wide mandatory)
 
-生成前从 JIRA 评论/描述/附件扫描 Figma 链接。详见 [`web-ui-checkpoints.md`](web-ui-checkpoints.md)。
+See [`executability-and-permissions.md`](executability-and-permissions.md) (two goals, **permission identification order**, module naming, KB self-check, post-generation checklist).
 
-**缺少 Figma 时（强制）：**
+Summary:
 
-1. 先按规则从 JIRA 查找 Figma 并尝试获取
-2. 找到设计稿 → 基于设计稿写精确预期
-3. 找不到但步骤可推导明确预期（如「取消」→ 弹窗关闭）→ 直接写明确预期
-4. 预期**必须依赖** Figma（颜色/位置/交互细节）→ **生成前**报告阻塞项
+1. **Two goals**: executable (real entry path) + traceable (maps to AC)
+2. **Permission template**: `Log in with an account that has the {system} [{module/operation}] permission` (fill in the real permission name, not XXX)
+3. **Actionable steps**: spell out paths such as System -> Module -> Feature; wait for loading; test-data aliases
+4. **Knowledge-base operation bucket goes into steps**; the rule bucket does not go into expected
 
-**禁止**在用例中使用 `[缺少Figma…]` 等占位符。
+### Auto-dedup during generation
 
-**缺少接口文档时：** 同样禁止占位符；无法确定请求/响应结构 → 生成前报告阻塞项。
+Avoid duplicate cases during generation (same module, same scenario, same operation path generated once); no need to compare against existing Jira cases. The import stage `import_to_tracker.py` additionally dedups on the JIRA side.
+
+### Merge and split strategy
+
+- **Mergeable**: equivalent negative cases with the same entry and same verification technique (e.g. Count=0 / <=1mm / =1.0mm) can be merged into one, listing each sample by number in the expected result
+- **Keep standalone**: key boundaries whose failure cannot be root-caused after merging, or standalone PRD risk items (e.g. consistency between detail and filter) keep their own case
+
+Post-generation self-check: see [`coverage-checklist.md`](coverage-checklist.md) + this section's quality checklist:
+
+- [ ] No hard-coded accounts/passwords; no XXX placeholders
+- [ ] Steps contain a real entry point or backend trigger
+- [ ] Core AC traceable; anything uncovered is written as uncovered
+- [ ] Priority P1/P2/P3 correct; no P0
+- [ ] module matches product navigation
 
 ---
 
-## JSON 与覆盖自查表
+## Figma and API docs (handling missing resources)
 
-完整 JSON schema、Output Delivery 六条、**覆盖自查表**格式见 [`output-format.md`](output-format.md)（阶段 A **强制**）。
+Before generation, scan the JIRA comments/description/attachments for Figma links. See [`web-ui-checkpoints.md`](web-ui-checkpoints.md).
 
-## 覆盖报告模板（阶段 A 必附）
+**When Figma is missing (mandatory):**
+
+1. First look for Figma in JIRA per the rules and try to fetch it
+2. Design found -> write precise expectations based on the design
+3. Not found but the step allows a clear expectation to be derived (e.g. "Cancel" -> dialog closes) -> write the clear expectation directly
+4. Expectation **must depend on** Figma (color/position/interaction details) -> report a blocker **before** generation
+
+**Do not** use placeholders such as `[Figma missing…]` in cases.
+
+**When the API doc is missing:** placeholders are likewise prohibited; if the request/response structure cannot be determined -> report a blocker before generation.
+
+---
+
+## JSON and coverage self-check table
+
+For the full JSON schema, the six Output Delivery rules, and the **coverage self-check table** format, see [`output-format.md`](output-format.md) (**mandatory** in Phase A).
+
+## Coverage report template (must be attached in Phase A)
 
 ```markdown
-# 测试用例覆盖报告 — {JIRA_KEY}
+# Test Case Coverage Report — {JIRA_KEY}
 
-## 状态
-待人工审核（未导入 JIRA）
+## Status
+Pending human review (not imported to JIRA)
 
-## 设计追溯
-（见 design-trace 表摘要）
+## Design traceability
+(see the design-trace table summary)
 
-## 模块覆盖矩阵
-| 模块 | 全量 | 边界 | 页面检查 | 用例数 |
+## Module coverage matrix
+| Module | Full | Boundary | Page check | Case count |
 | --- | --- | --- | --- | --- |
 
-## AC 覆盖
-| AC-/规则 | 对应用例 | 状态 |
+## AC coverage
+| AC-/rule | Corresponding cases | Status |
 | --- | --- | --- |
 
-## 知识库/历史
-- 知识库：可用/不可用；操作桶是否写入步骤
-- Confluence 历史：引用标题
+## Knowledge base / history
+- Knowledge base: available/unavailable; whether the operation bucket was written into steps
+- Confluence history: cited titles
 
-## 产物
+## Artifacts
 - JSON: {path}
 - XMind: test_cases_{KEY}.xmind
-- API JSON（若有）: test_cases_api.json（不导入 JIRA）
+- API JSON (if any): test_cases_api.json (not imported to JIRA)
 
-## 阻塞/未覆盖
+## Blockers / uncovered
 - …
 ```
 
 ---
 
-## 接口用例（本地 only）
+## API cases (local only)
 
-- 输出 `test_cases_api.json`；**永不** import JIRA / XMind / 测试管理平台
-- 可执行场景 → `multica-platform-apifox`
+- Output `test_cases_api.json`; **never** import into JIRA / XMind / test-management platform
+- Executable scenarios -> `multica-platform-apifox`
 
-维度选择与覆盖矩阵详见 [`coverage-dimensions.md`](coverage-dimensions.md)。（T1 并行）
-- 详见 [`api-testing-guide.md`](api-testing-guide.md)
+For dimension selection and coverage matrix see [`coverage-dimensions.md`](coverage-dimensions.md). (T1 in parallel)
+- See [`api-testing-guide.md`](api-testing-guide.md)

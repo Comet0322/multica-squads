@@ -29,7 +29,7 @@ function run(config, args = ['--validate-only'], env = {}) {
 test('example config rejects placeholder auth script ids', () => {
   const result = run(example);
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /占位符/);
+  assert.match(result.stderr, /placeholder/);
 });
 
 test('valid module fixture passes strict validation', () => {
@@ -59,7 +59,7 @@ test('token in config is rejected', () => {
   config.APIFOX_ACCESS_TOKEN = 'afpp_should_not_be_here';
   const result = run(config);
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /Token/);
+  assert.match(result.stderr, /token/i);
 });
 
 test('expected status must match observed status', () => {
@@ -67,7 +67,7 @@ test('expected status must match observed status', () => {
   config.caseSpecs[0].expected.statusCode = 201;
   const result = run(config);
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /不一致/);
+  assert.match(result.stderr, /mismatch/);
 });
 
 test('non-high auth discovery requires explicit confirmation', () => {
@@ -76,7 +76,7 @@ test('non-high auth discovery requires explicit confirmation', () => {
   config.authDiscovery.confirmed = false;
   const result = run(config);
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /人工确认/);
+  assert.match(result.stderr, /manually confirmed/);
 });
 
 test('unknown auth script id is rejected', () => {
@@ -91,7 +91,7 @@ test('unknown auth script id is rejected', () => {
   ];
   const result = run(config);
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /未知脚本|未校验/);
+  assert.match(result.stderr, /unknown script|unvalidated/);
 });
 
 test('auth discovery projectId must match current project', () => {
@@ -115,7 +115,7 @@ test('duplicate names are rejected before generation', () => {
   config.caseSpecs[1].nameSuffix = config.caseSpecs[0].nameSuffix;
   const result = run(config);
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /重复用例名/);
+  assert.match(result.stderr, /Duplicate case name/);
 });
 
 test('generated files contain generalized request and assertions', () => {

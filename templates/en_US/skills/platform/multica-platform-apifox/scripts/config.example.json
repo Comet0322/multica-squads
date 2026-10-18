@@ -1,5 +1,5 @@
 {
-  "_comment": "结构示例 ONLY。所有 REPLACE_* 必须按当前任务替换；Token 只能放环境变量；caseSpecs 必须按当前接口证据重写，条数与内容禁止照搬。",
+  "_comment": "Structure example ONLY. Every REPLACE_* must be replaced per the current task; tokens may only live in environment variables; caseSpecs must be rewritten from the current endpoint's evidence, and neither the count nor the content may be copied.",
   "APIFOX_PROJECT_ID": "REPLACE_WITH_PROJECT_ID",
   "APIFOX_SOURCE_BRANCH": "main",
   "aiBranch": "REPLACE_WITH_AI_BRANCH_OR_RESOLVE",
@@ -29,7 +29,7 @@
       "executionTiming": "prerequest"
     }
   ],
-  "_authNote": "禁止照搬任何示例脚本 ID。必须对当前 APIFOX_PROJECT_ID + 目标接口 moduleId 运行 discover-auth.js，从同模块场景/用例 with-case-detail 原样拷贝 authPreProcessors，并填写 validatedScripts。",
+  "_authNote": "Do not copy any example script ID. Run discover-auth.js against the current APIFOX_PROJECT_ID + the target endpoint's moduleId, copy authPreProcessors verbatim from same-module scenarios/cases via with-case-detail, and fill in validatedScripts.",
   "authDiscovery": {
     "source": "REPLACE: target-scenario step from same module",
     "moduleId": "REPLACE_WITH_ENDPOINT_MODULE_ID",
@@ -49,7 +49,7 @@
     "scenarioId": "REPLACE_WITH_SCENARIO_ID_IF_APPEND",
     "scenarioName": "REPLACE_WITH_SCENARIO_NAME",
     "priority": 2,
-    "_comment": "先跑 discover-scenario-target.js。已有同接口场景时必须 append-existing；仅无同接口场景时才 create-in-same-folder 新建一个。folderId 须与历史场景同目录。"
+    "_comment": "Run discover-scenario-target.js first. If a scenario for the same endpoint already exists you must use append-existing; only when none exists may you create one with create-in-same-folder. folderId must be the same folder as the historical scenarios."
   },
   "baseRequest": {
     "parameters": {
@@ -62,14 +62,14 @@
     "requestBody": {
       "type": "application/json",
       "data": {
-        "_comment": "用当前接口非生产实测/定义中的字段替换；禁止照搬"
+        "_comment": "Replace with fields from the current endpoint's non-production probe/definition; do not copy"
       }
     }
   },
   "caseSpecs": [
     {
       "file": "01-positive-main.json",
-      "nameSuffix": "主流程成功",
+      "nameSuffix": "main-flow-success",
       "category": "positive",
       "request": {},
       "expected": {
@@ -87,13 +87,13 @@
         "scenario": {
           "type": "combined",
           "source": "REPLACE: endpoint definition + non-prod probe",
-          "summary": "REPLACE: 说明证据来源"
+          "summary": "REPLACE: describe the evidence source"
         },
         "probe": {
           "environmentId": "REPLACE_WITH_ENVIRONMENT_ID",
           "observedAt": "REPLACE_ISO8601",
           "statusCode": 200,
-          "responseSummary": "REPLACE: 实测摘要"
+          "responseSummary": "REPLACE: probe summary"
         }
       },
       "sideEffect": {

@@ -15,7 +15,7 @@ Structured professional review framework for **backend implementation artifacts 
 1. **Contract quality**: field naming, status codes, error model, versioning clear & self-consistent.
 2. **Design fit**: implementation aligned with Architect plan, deviations explained.
 3. **Error handling**: exception branches, timeouts, idempotency, boundaries covered.
-4. **Unit-test sufficiency**: key paths, boundaries, exception branches covered; no无效的 tests (mark & block).
+4. **Unit-test sufficiency**: key paths, boundaries, exception branches covered; no ineffective tests (mark & block).
 5. **Acceptance mapping**: implementation truly satisfies every AC-.
 
 ## Output format

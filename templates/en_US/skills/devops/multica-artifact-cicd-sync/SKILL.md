@@ -1,6 +1,6 @@
 ---
 name: multica-artifact-cicd-sync
-description: CI/CD artifact-orchestration skill (placeholder shell): after G2 PASS and code push, call the underlying CI/CD platform skill to trigger dev/sit builds, write back to the Issue, and return the deploy URL. Parameters auto-discovered from the CI API; the orchestration layer never hardcodes parameter names. Concrete platform in the multica-platform-* layer.
+description: "CI/CD artifact-orchestration skill (placeholder shell): after G2 PASS and code push, call the underlying CI/CD platform skill to trigger dev/sit builds, write back to the Issue, and return the deploy URL. Parameters auto-discovered from the CI API; the orchestration layer never hardcodes parameter names. Concrete platform in the multica-platform-* layer."
 metadata:
   layer: orchestration
   orchestrates:

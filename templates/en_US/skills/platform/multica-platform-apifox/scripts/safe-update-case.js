@@ -1,9 +1,9 @@
 /**
- * 安全更新测试用例：get → 合并 patch → validate → update → 复查 path
+ * Safely update a test case: get -> merge patch -> validate -> update -> re-check path
  *
  * node safe-update-case.js --case-id 123 --branch ai/xxx --patch patch.json
- * 环境变量：APIFOX_PROJECT_ID
- * 默认禁止修改 path/method/apiDetailId，且只允许 AI 分支。
+ * Environment variable: APIFOX_PROJECT_ID
+ * By default path/method/apiDetailId must not be modified, and only AI branches are allowed.
  */
 const fs = require('fs');
 const path = require('path');
@@ -29,11 +29,11 @@ const branch = arg('--branch', process.env.APIFOX_BRANCH || process.env.APIFOX_S
 const patchPath = arg('--patch');
 
 if (!caseId || !patchPath) {
-  console.error('用法: node safe-update-case.js --case-id <id> --branch ai/<branch> --patch <patch.json>');
+  console.error('Usage: node safe-update-case.js --case-id <id> --branch ai/<branch> --patch <patch.json>');
   process.exit(1);
 }
 if (!branch.startsWith('ai/')) {
-  console.error(`拒绝更新分支 "${branch}"：本脚本只允许 ai/ 分支`);
+  console.error(`Refusing to update branch "${branch}": this script only allows ai/ branches`);
   process.exit(1);
 }
 
@@ -42,7 +42,7 @@ const patch = JSON.parse(fs.readFileSync(patchPath, 'utf8'));
 const immutableFields = ['path', 'method', 'apiDetailId'];
 const forbidden = immutableFields.filter((key) => Object.prototype.hasOwnProperty.call(patch, key));
 if (forbidden.length) {
-  console.error(`patch 禁止包含不可变字段: ${forbidden.join(', ')}`);
+  console.error(`patch must not contain immutable fields: ${forbidden.join(', ')}`);
   process.exit(1);
 }
 
@@ -62,7 +62,7 @@ const identityBefore = {
   apiDetailId: Number(got.data.apiDetailId),
 };
 if (!identityBefore.path || !identityBefore.method || !identityBefore.apiDetailId) {
-  console.error('原用例缺少 path/method/apiDetailId，已拒绝自动修复；请人工确认资源完整性');
+  console.error('The original case is missing path/method/apiDetailId; automatic repair refused; please verify resource integrity manually');
   process.exit(1);
 }
 const payload = assertPathOk(buildUpdatePayload(got.data, patch));
@@ -92,7 +92,7 @@ try {
     '--api-base-url', 'https://apifox.example.com',
   ]);
   if (!afterResult.success || !afterResult.data) {
-    const error = new Error(`update 后复查失败: ${JSON.stringify(afterResult.error)}`);
+    const error = new Error(`Post-update re-check failed: ${JSON.stringify(afterResult.error)}`);
     error.exitCode = 2;
     throw error;
   }
@@ -105,7 +105,7 @@ try {
   for (const key of immutableFields) {
     if (identityAfter[key] !== identityBefore[key]) {
       const error = new Error(
-        `update 后 ${key} 发生变化: ${identityBefore[key]} -> ${identityAfter[key]}`
+        `${key} changed after update: ${identityBefore[key]} -> ${identityAfter[key]}`
       );
       error.exitCode = 2;
       throw error;

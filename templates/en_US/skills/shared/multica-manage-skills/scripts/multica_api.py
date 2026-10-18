@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-multica_api.py — multica 平台 API 客户端（workspace / agent 统计）
+multica_api.py — multica platform API client (workspace / agent stats)
 
-纯标准库实现（urllib），无第三方依赖，Windows / Linux / macOS 通用。
-用于随时查询已部署 multica 服务的 API 信息（workspace 列表、agent 运行次数、活动明细等）。
+Pure standard-library implementation (urllib), no third-party dependencies; works on Windows / Linux / macOS.
+Use it to query a deployed multica service at any time (workspace list, agent run counts, activity details, etc.).
 
-认证（token）解析，从高到低:
-  1. --token 参数
-  2. 环境变量 MULTICA_API_TOKEN
-  （token 在 UI 的 Settings -> Access Tokens 创建，形如 mul_xxx）
+Authentication (token) resolution, highest priority first:
+  1. --token flag
+  2. env var MULTICA_API_TOKEN
+  (create the token in the UI under Settings -> Access Tokens; looks like mul_xxx)
 
-API 地址解析，从高到低:
-  1. --url 参数
-  2. 环境变量 MULTICA_API_URL
-  3. 默认 <MULTICA_API_URL>
+API address resolution, highest priority first:
+  1. --url flag
+  2. env var MULTICA_API_URL
+  3. default <MULTICA_API_URL>
 
-重要: 本脚本不读取任何本地配置文件（不读 ~/.multica/config.json，
-也不读脚本目录下的 config.json），只接受命令行参数和环境变量，
-避免本地文件干扰。
+Important: this script reads NO local config file (not ~/.multica/config.json,
+nor config.json in the script directory); it accepts only command-line flags and environment variables,
+so local files cannot interfere.
 
-用法示例:
+Usage examples:
   python multica_api.py me
   python multica_api.py workspaces
   python multica_api.py agents --workspace 1
   python multica_api.py run-counts --workspace 1 --json
   python multica_api.py activity --workspace 1
-  python multica_api.py report                        # 所有 workspace 汇总
-  python multica_api.py report --workspace 1          # 单个 workspace 的 agent 明细
+  python multica_api.py report                        # summary across all workspaces
+  python multica_api.py report --workspace 1          # agent details for a single workspace
 """
 
 import argparse
@@ -45,11 +45,11 @@ TIMEOUT = 30
 
 
 class MulticaError(Exception):
-    """API 调用失败（HTTP 错误、网络错误、鉴权失败等）。"""
+    """API call failed (HTTP error, network error, auth failure, etc.)."""
 
 
 def _utf8_stdout():
-    """Windows 控制台默认 gbk，改成 utf-8 避免中文/emoji 乱码。"""
+    """The Windows console defaults to gbk; switch to utf-8 to avoid garbled text/emoji."""
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
@@ -66,10 +66,10 @@ def resolve_token(args_token):
 
 
 class MulticaClient:
-    """多工作区 multica API 客户端。
+    """Multi-workspace multica API client.
 
-    workspace 参数可传 slug（如 "1"、"my-team"）或 workspace UUID，
-    通过 X-Workspace-Slug 请求头传递，服务端两者都能解析。
+    The workspace argument can be a slug (e.g. "1", "my-team") or a workspace UUID,
+    passed via the X-Workspace-Slug request header; the server resolves both.
     """
 
     def __init__(self, base_url, token):
@@ -82,7 +82,7 @@ class MulticaClient:
         }
 
     # ------------------------------------------------------------------
-    # 底层请求
+    # Low-level request
     # ------------------------------------------------------------------
     def _request(self, method, path, workspace=None, params=None):
         url = self.base_url + path
@@ -106,43 +106,43 @@ class MulticaClient:
                 pass
             hint = ""
             if e.code in (401, 403):
-                hint = "（token 无效或权限不足：用 --token 参数或设置环境变量 MULTICA_API_TOKEN）"
+                hint = " (invalid token or insufficient permission: use the --token flag or set the MULTICA_API_TOKEN env var)"
             raise MulticaError(f"HTTP {e.code} {e.reason} — {url}{hint}\n{detail}")
         except urllib.error.URLError as e:
-            raise MulticaError(f"网络错误 — {url}: {e.reason}")
+            raise MulticaError(f"Network error — {url}: {e.reason}")
 
     # ------------------------------------------------------------------
-    # 端点封装
+    # Endpoint wrappers
     # ------------------------------------------------------------------
     def get_me(self):
-        """当前登录用户信息。"""
+        """Current logged-in user info."""
         return self._request("GET", "/api/me")
 
     def list_workspaces(self):
-        """当前用户可见的所有 workspace（id / name / slug / created_at...）。"""
+        """All workspaces visible to the current user (id / name / slug / created_at...)."""
         return self._request("GET", "/api/workspaces")
 
     def list_agents(self, workspace):
-        """workspace 内 agent 列表（id / name / runtime_mode...）。"""
+        """Agent list within the workspace (id / name / runtime_mode...)."""
         return self._request("GET", "/api/agents", workspace=workspace)
 
     def agent_run_counts(self, workspace):
-        """workspace 内每个 agent 的 30 天运行次数: [{agent_id, run_count}]。"""
+        """30-day run count per agent in the workspace: [{agent_id, run_count}]。"""
         return self._request("GET", "/api/agent-run-counts", workspace=workspace)
 
     def agent_activity_30d(self, workspace):
-        """workspace 内每个 agent 的 30 天日活明细:
-        [{agent_id, bucket_at, task_count, failed_count}]（bucket_at 为 UTC 当日 0 点）。"""
+        """30-day daily activity details per agent in the workspace:
+        [{agent_id, bucket_at, task_count, failed_count}](bucket_at is 00:00 UTC of that day)。"""
         return self._request("GET", "/api/agent-activity-30d", workspace=workspace)
 
     # ------------------------------------------------------------------
-    # 汇总
+    # Summary
     # ------------------------------------------------------------------
     def workspace_report(self, workspace):
-        """合并 run-counts + activity + agents，得到每个 agent 的统计明细。
+        """Merge run-counts + activity + agents to get per-agent stats.
 
-        以 agents 列表为基底（保证 0 运行的 agent 也出现在结果里），
-        再叠加 30 天运行次数与日活明细。
+        Uses the agents list as the base (so agents with 0 runs still appear in the result),
+        then overlays the 30-day run counts and daily activity details.
         """
         agents, runs, activity = [], [], []
         for method, target in (
@@ -185,7 +185,7 @@ class MulticaClient:
 
 
 # ----------------------------------------------------------------------
-# 输出
+# Output
 # ----------------------------------------------------------------------
 def _print_table(headers, rows):
     def cell(x):
@@ -208,7 +208,7 @@ def _emit(data, as_json, as_csv, printer=None, csv_headers=None, csv_rows=None):
         print(json.dumps(data, ensure_ascii=False, indent=2))
     elif as_csv:
         if csv_headers is None or csv_rows is None:
-            raise MulticaError("该命令不支持 --csv")
+            raise MulticaError("This command does not support --csv")
         buf = io.StringIO()
         w = csv.writer(buf)
         w.writerow(csv_headers)
@@ -217,15 +217,15 @@ def _emit(data, as_json, as_csv, printer=None, csv_headers=None, csv_rows=None):
     elif printer is not None:
         printer(data)
     else:
-        raise MulticaError("缺少输出方式")
+        raise MulticaError("No output mode given")
 
 
 # ----------------------------------------------------------------------
-# 各子命令的打印逻辑
+# Print logic for each subcommand
 # ----------------------------------------------------------------------
 def _print_workspaces(data):
     if not data:
-        print("（无 workspace）")
+        print("(no workspaces)")
         return
     _print_table(
         ["ID", "NAME", "SLUG", "CREATED_AT"],
@@ -235,7 +235,7 @@ def _print_workspaces(data):
 
 def _print_agents(data):
     if not data:
-        print("（无 agent）")
+        print("(no agents)")
         return
     _print_table(
         ["AGENT_ID", "NAME", "RUNTIME_MODE"],
@@ -245,14 +245,14 @@ def _print_agents(data):
 
 def _print_run_counts(data):
     if not data:
-        print("（30 天内无运行）")
+        print("(no runs in the last 30 days)")
         return
     _print_table(["AGENT_ID", "RUN_COUNT"], [[r["agent_id"], r.get("run_count", 0)] for r in data])
 
 
 def _print_activity(data):
     if not data:
-        print("（30 天内无活动）")
+        print("(no activity in the last 30 days)")
         return
     _print_table(
         ["AGENT_ID", "BUCKET_AT", "TASK_COUNT", "FAILED_COUNT"],
@@ -263,7 +263,7 @@ def _print_activity(data):
 
 def _print_report(rows):
     if not rows:
-        print("（无数据）")
+        print("(no data)")
         return
     _print_table(
         ["AGENT_NAME", "AGENT_ID", "RUN_COUNT_30D", "TASK_COUNT_30D", "FAILED_COUNT", "FAIL_RATE"],
@@ -274,7 +274,7 @@ def _print_report(rows):
 
 def _print_report_summary(rows):
     if not rows:
-        print("（无 workspace）")
+        print("(no workspaces)")
         return
     _print_table(
         ["WORKSPACE", "SLUG", "AGENTS", "RUNS_30D", "TASKS_30D", "FAILED"],
@@ -289,32 +289,32 @@ def _print_report_summary(rows):
 def build_parser():
     p = argparse.ArgumentParser(
         prog="multica_api",
-        description="multica 平台 API 查询工具（workspace / agent 统计）。"
-                    "用法: multica_api <子命令> --workspace <slug|id>",
+        description="multica platform API query tool (workspace / agent stats)."
+                    "Usage: multica_api <subcommand> --workspace <slug|id>",
     )
-    p.add_argument("--url", help="API 地址（默认: env MULTICA_API_URL / ~/.multica/config.json / <MULTICA_API_URL>）")
-    p.add_argument("--token", help="API token（mul_ 开头），优先级高于 env 与 CLI 配置")
-    p.add_argument("--workspace", help="workspace slug 或 UUID（agents / run-counts / activity / report 使用）")
-    p.add_argument("--json", action="store_true", help="JSON 输出")
-    p.add_argument("--csv", action="store_true", help="CSV 输出")
-    sub = p.add_subparsers(dest="cmd", metavar="子命令", required=True)
+    p.add_argument("--url", help="API address (default: env MULTICA_API_URL / ~/.multica/config.json / <MULTICA_API_URL>）")
+    p.add_argument("--token", help="API token (starts with mul_); takes priority over env and CLI config")
+    p.add_argument("--workspace", help="workspace slug or UUID (used by agents / run-counts / activity / report)")
+    p.add_argument("--json", action="store_true", help="JSON output")
+    p.add_argument("--csv", action="store_true", help="CSV output")
+    sub = p.add_subparsers(dest="cmd", metavar="subcommand", required=True)
 
     def add(name, help_text):
         sp = sub.add_parser(name, help=help_text)
-        # dest 与默认值用 SUPPRESS，避免子命令覆盖全局 --workspace/--json/--csv
+        # Use SUPPRESS for dest and default so subcommands do not override the global --workspace/--json/--csv
         sp.add_argument("--workspace", dest="sub_workspace", default=argparse.SUPPRESS,
-                        help="workspace slug 或 UUID（覆盖全局）")
+                        help="workspace slug or UUID (overrides the global one)")
         sp.add_argument("--json", dest="sub_json", action="store_true", default=argparse.SUPPRESS,
-                        help="JSON 输出")
+                        help="JSON output")
         sp.add_argument("--csv", dest="sub_csv", action="store_true", default=argparse.SUPPRESS,
-                        help="CSV 输出")
+                        help="CSV output")
 
-    add("me", "显示当前登录用户信息")
-    add("workspaces", "列出当前用户可见的所有 workspace")
-    add("agents", "列出某 workspace 的 agents")
-    add("run-counts", "某 workspace 每个 agent 的 30 天运行次数")
-    add("activity", "某 workspace 每个 agent 的 30 天日活明细")
-    add("report", "统计汇总（默认所有 workspace；--workspace 指定单个则输出 agent 明细）")
+    add("me", "Show current logged-in user info")
+    add("workspaces", "List all workspaces visible to the current user")
+    add("agents", "List agents of a workspace")
+    add("run-counts", "30-day run count per agent of a workspace")
+    add("activity", "30-day daily activity details per agent of a workspace")
+    add("report", "Stats summary (all workspaces by default; with --workspace, prints agent details for that one)")
     return p
 
 
@@ -343,7 +343,7 @@ def main(argv=None):
 
         elif cmd == "agents":
             if not workspace:
-                raise MulticaError("缺少 --workspace <slug|id>")
+                raise MulticaError("Missing --workspace <slug|id>")
             data = client.list_agents(workspace)
             _emit(data, as_json, as_csv,
                   printer=_print_agents,
@@ -352,7 +352,7 @@ def main(argv=None):
 
         elif cmd == "run-counts":
             if not workspace:
-                raise MulticaError("缺少 --workspace <slug|id>")
+                raise MulticaError("Missing --workspace <slug|id>")
             data = client.agent_run_counts(workspace)
             _emit(data, as_json, as_csv,
                   printer=_print_run_counts,
@@ -361,7 +361,7 @@ def main(argv=None):
 
         elif cmd == "activity":
             if not workspace:
-                raise MulticaError("缺少 --workspace <slug|id>")
+                raise MulticaError("Missing --workspace <slug|id>")
             data = client.agent_activity_30d(workspace)
             _emit(data, as_json, as_csv,
                   printer=_print_activity,
@@ -381,7 +381,7 @@ def main(argv=None):
             else:
                 ws_list = client.list_workspaces()
                 if not ws_list:
-                    print("（无 workspace）")
+                    print("(no workspaces)")
                     return
                 summary = []
                 for w in ws_list:
@@ -402,7 +402,7 @@ def main(argv=None):
                       csv_rows=[[s["workspace_name"], s["workspace_slug"], s["agent_count"], s["run_count_30d"],
                                  s["task_count_30d"], s["failed_count"]] for s in summary])
     except MulticaError as e:
-        print(f"错误: {e}", file=sys.stderr)
+        print(f"Error: {e}", file=sys.stderr)
         return 1
     return 0
 

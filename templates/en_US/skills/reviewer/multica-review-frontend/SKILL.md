@@ -15,7 +15,7 @@ Structured professional review framework for **frontend implementation artifacts
 1. **UI fit**: layout, interaction, states, edge states aligned with Designer output.
 2. **API-contract fit**: call params, response handling, error branches aligned with BackendDev contract.
 3. **Component quality**: reusability, single responsibility, no obvious smells.
-4. **Unit-test sufficiency**: key paths, boundaries, async/error branches covered; no无效的 tests padded for coverage (mark & block).
+4. **Unit-test sufficiency**: key paths, boundaries, async/error branches covered; no ineffective tests padded for coverage (mark & block).
 5. **Acceptance mapping**: implementation truly satisfies every AC-.
 
 ## Output format
@@ -30,6 +30,16 @@ Previous fix-list check (re-review): resolved X / unresolved Y
 Round: N / 3
 ```
 Conclusion + fix list **reported to Leader**; don't modify code or notify FrontendDev yourself.
+
+## Issue severity
+
+| Level | Maps to | Description |
+| --- | --- | --- |
+| **Must Fix** | FAIL blocking item | Functional defect, permission error, contract deviation, severe type/performance problem, broken user flow; ineffective tests (empty or always-true assertions that do not actually verify the AC) |
+| **Suggest** | Suggestion | Maintainability, safer boundaries, writing that fits project patterns better |
+| **Nit** | Non-blocking | Naming, formatting, minor style; the Reviewer may mark it "ignorable" |
+
+Where possible each item includes: **Problem** / **Impact** / **Suggested fix** / **File or location**. Without clear evidence, mark it as a **risk or question**; do not assert it is definitely wrong.
 
 ## Boundaries
 - Review only frontend implementation & unit tests, not architecture, requirements, UI design, backend, or test cases.

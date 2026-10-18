@@ -12,7 +12,7 @@ _LIB = SKILL_DIR.parent.parent / "_lib"
 if str(_LIB) not in sys.path:
     sys.path.insert(0, str(_LIB))
 
-from 按 skill 名 import resolve_skill_dir  # noqa: E402
+from skill_resolver import resolve_skill_dir  # noqa: E402
 
 for rel in ["SKILL.md", "config.yaml"]:
     assert (SKILL_DIR / rel).is_file(), rel

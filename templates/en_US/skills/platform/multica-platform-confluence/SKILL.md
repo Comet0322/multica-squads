@@ -1,6 +1,6 @@
 ---
 name: multica-platform-confluence
-description: Platform-layer skill (placeholder shell): read/write capability for Confluence / Wiki-class systems — pull existing pages for Agents to consume, land PRD / design artifacts and return a stable page link. Decoupled from the Issue system; called by artifact-orchestration skills. Concrete platform URLs / spaces / parent pages live in config.yaml, never in role prompts.
+description: "Platform-layer skill (placeholder shell): read/write capability for Confluence / Wiki-class systems — pull existing pages for Agents to consume, land PRD / design artifacts and return a stable page link. Decoupled from the Issue system; called by artifact-orchestration skills. Concrete platform URLs / spaces / parent pages live in config.yaml, never in role prompts."
 metadata:
   layer: platform
   replaces: any Wiki / knowledge-base platform (Confluence / Yuque / Feishu Docs / Lanhua Docs / etc.)
@@ -34,20 +34,26 @@ multica-platform-confluence/
 ├── SKILL.md
 ├── config.yaml
 ├── .env.example
+├── README.md
+├── spaces.json
 └── scripts/
     ├── credentials.sh
-    ├── wiki.sh            # Read/Write CLI
+    ├── confluence.sh      # Read/Write CLI
     ├── fetch_page.py      # Wiki → local Markdown
+    ├── fetch_page_by_url.py
     ├── publish_design.py  # Markdown design upsert
+    ├── requirements.txt
+    ├── validate.sh
+    ├── templates/         # PRD / design / API / frontend / T1 / T2 page templates
     └── lib/
 ```
 
 ## Read (downstream / Leader pulls upstream artifact)
 
 ```bash
-bash scripts/wiki.sh fetch-page <page_id> [output_dir] [issue_key]
-bash scripts/wiki.sh get-page <page_id>
-bash scripts/wiki.sh find-page "<title>" [space_key]
+bash scripts/confluence.sh fetch-page <page_id> [output_dir] [issue_key]
+bash scripts/confluence.sh get-page <page_id>
+bash scripts/confluence.sh find-page "<title>" [space_key]
 ```
 
 ## Write (artifact landing)
@@ -55,7 +61,7 @@ bash scripts/wiki.sh find-page "<title>" [space_key]
 ### PRD page
 
 ```bash
-bash scripts/wiki.sh create-page "<title>" "<parent_page_id>" "<html_or_md>" "<space_key>"
+bash scripts/confluence.sh create-page "<title>" "<parent_page_id>" "<html_or_md>" "<space_key>"
 ```
 
 Called by `multica-pm-artifact-publish`.

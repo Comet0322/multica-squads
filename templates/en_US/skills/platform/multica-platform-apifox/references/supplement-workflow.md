@@ -1,245 +1,245 @@
-# Apifox 接口场景补充工作流
+# Apifox Endpoint Scenario Supplement Workflow
 
-> 整合自 `apifox-test-case-supplement-squad`。与 [`reference.md`](reference.md)、[`agent-instructions.md`](agent-instructions.md) 配合。
+> Consolidated from `apifox-test-case-supplement-squad`. Use together with [`reference.md`](reference.md) and [`agent-instructions.md`](agent-instructions.md).
 
-## 适用阶段
+## Applicable stages
 
-- **T1 并行**（与 API 契约、功能用例生成同时进行）
-- **T2** 对照契约 diff 补充接口场景
-- **不负责 T3 跑批**（T3 → `scripts/run_apifox.py` / `multica-test-t3-api-automation`）
+- **T1 in parallel** (alongside the API contract and functional case generation)
+- **T2**: supplement endpoint scenarios against the contract diff
+- **Does not own T3 batch runs** (T3 -> `scripts/run_apifox.py` / `multica-test-t3-api-automation`)
 
-## 任务卡片（缺项则停止）
+## Task card (stop if anything is missing)
 
 ```text
-系统名:
-projectId:            # 数字；无则 registry lookup，否则停并索要
-environmentId/名称:
-接口:                 # ID 或 METHOD + path
-写入意图:             # 直接补充 | 先审再写
-操作者:               # APIFOX_OPERATOR
+System name:
+projectId:            # numeric; if absent, registry lookup, otherwise stop and ask
+environmentId/name:
+Endpoint:             # ID or METHOD + path
+Write intent:         # supplement directly | review first, then write
+Operator:             # APIFOX_OPERATOR
 ```
 
-## 项目登记
+## Project registry
 
 ```bash
 node scripts/systems-registry.js path
-node scripts/systems-registry.js lookup --name "<系统名>"
-node scripts/systems-registry.js upsert --name "<系统名>" --project-id <ID> ...
+node scripts/systems-registry.js lookup --name "<system-name>"
+node scripts/systems-registry.js upsert --name "<system-name>" --project-id <ID> ...
 ```
 
-登记文件：`.apifox/systems-registry.example.json` → 复制为 operator 隔离的 `systems-registry.json`（勿提交 token）。
+Registry file: `.apifox/systems-registry.example.json` -> copy it to an operator-isolated `systems-registry.json` (never commit a token).
 
-**登记表路径解析（优先序）：**
+**Registry path resolution (in priority order):**
 
-1. `APIFOX_SYSTEMS_REGISTRY`（完整文件路径）
+1. `APIFOX_SYSTEMS_REGISTRY` (full file path)
 2. `APIFOX_SKILL_STATE_DIR/systems-registry[.operator].json`
 3. `<skill>/.apifox/systems-registry[.operator].json`
 
-`operator` 来自 `APIFOX_OPERATOR` 或 `APIFOX_USER_EMAIL`。
+`operator` comes from `APIFOX_OPERATOR` or `APIFOX_USER_EMAIL`.
 
-## 自定义输入
+## Custom inputs
 
-| 输入项 | 环境变量 | 必填 | 说明 |
+| Input | Environment variable | Required | Description |
 | --- | --- | --- | --- |
-| Access Token | `APIFOX_ACCESS_TOKEN` | 是 | 仅环境变量/Secret，禁止写入 config |
-| 操作者 | `APIFOX_OPERATOR` / `APIFOX_USER_EMAIL` | 多人建议 | 隔离登记表；AI 分支命名后缀 |
-| 登记表路径 | `APIFOX_SYSTEMS_REGISTRY` / `APIFOX_SKILL_STATE_DIR` | 否 | 工作区级状态目录 |
-| 项目 ID | `APIFOX_PROJECT_ID` | 是 | 数字 ID；须与用户所说项目一致 |
-| 目标接口 | `APIFOX_ENDPOINT_ID` / 名 / 路径 | 是 | 须在**当前项目**内唯一定位 |
-| 环境 ID | `APIFOX_ENVIRONMENT_ID` | 实测必填 | 须属于当前项目且非生产；**禁止默认套 SIT** |
-| 源分支 | `APIFOX_SOURCE_BRANCH` | 否 | 默认 `main` |
-| AI 分支 | `APIFOX_AI_BRANCH` / config `aiBranch` | 建议 | 同操作者复用；跨人先问 |
-| 用例名前缀 | `APIFOX_CASE_NAME_PREFIX` | 否 | 默认取接口名 |
-| 基础请求 | config `baseRequest` | 生成时 | path/query/header/body；非生产测试数据 |
-| 用例清单 | config `caseSpecs` | 生成时 | **审查设计得出**，非固定模板 |
-| 目标环境性质 | config `targetEnvironment` | 实测必填 | `non-production`；生产默认禁止实测 |
-| 场景挂载 | config `scenarioTarget` | 交付时 | 同模块历史场景目录/ID |
+| Access Token | `APIFOX_ACCESS_TOKEN` | Yes | Environment variable / Secret only; never write it into config |
+| Operator | `APIFOX_OPERATOR` / `APIFOX_USER_EMAIL` | Recommended for teams | Isolates the registry; suffix of AI branch names |
+| Registry path | `APIFOX_SYSTEMS_REGISTRY` / `APIFOX_SKILL_STATE_DIR` | No | Workspace-level state directory |
+| Project ID | `APIFOX_PROJECT_ID` | Yes | Numeric ID; must match the project the user means |
+| Target endpoint | `APIFOX_ENDPOINT_ID` / name / path | Yes | Must be uniquely located within the **current project** |
+| Environment ID | `APIFOX_ENVIRONMENT_ID` | Required for probing | Must belong to the current project and be non-production; **never default to SIT** |
+| Source branch | `APIFOX_SOURCE_BRANCH` | No | Defaults to `main` |
+| AI branch | `APIFOX_AI_BRANCH` / config `aiBranch` | Recommended | Reuse for the same operator; ask first across people |
+| Case name prefix | `APIFOX_CASE_NAME_PREFIX` | No | Defaults to the endpoint name |
+| Base request | config `baseRequest` | At generation | path/query/header/body; non-production test data |
+| Case list | config `caseSpecs` | At generation | **Derived from the review/design**, not a fixed template |
+| Target environment nature | config `targetEnvironment` | Required for probing | `non-production`; probing production is forbidden by default |
+| Scenario mount | config `scenarioTarget` | At delivery | Folder/ID of historical scenarios in the same module |
 
-鉴权前置**不是**自定义输入，必须「鉴权发现」流程。TLS 优先企业 CA；自签证书无法验证时设 `APIFOX_INSECURE_TLS=1`。
+Auth pre-processors are **not** a custom input; they must go through the "auth discovery" flow. For TLS prefer the enterprise CA; if a self-signed certificate cannot be verified, set `APIFOX_INSECURE_TLS=1`.
 
-**勿全局写死**（多人会串项目）：`APIFOX_PROJECT_ID`、`APIFOX_ENVIRONMENT_ID`、`APIFOX_ENDPOINT_ID`、`APIFOX_AI_BRANCH` — 由任务输入或登记表解析。
+**Do not hard-code globally** (people would cross projects): `APIFOX_PROJECT_ID`, `APIFOX_ENVIRONMENT_ID`, `APIFOX_ENDPOINT_ID`, `APIFOX_AI_BRANCH` — resolve them from task input or the registry.
 
-## 项目 / 接口 / 环境定位（强制）
+## Project / endpoint / environment binding (mandatory)
 
-开始审查或写入前必须完成绑定校验：
+Binding validation must be complete before any review or write:
 
-0. **项目 ID** — 用户显式 → 登记 lookup → 唯一按名 → 否则停并索要；403 时**禁止**换别的项目
-1. **项目** — `project get` 复核名称与用户/登记一致
-2. **接口** — 在当前项目内 ID/精确 path/精确名定位；0 条或多条 → 引导用户选定
-3. **环境** — `environment list/get` 确认属于当前项目；名称因项目而异，禁止默认 SIT
-4. 任一步失败 → **只输出引导问题与候选**，不创建 AI 分支、不写 caseSpecs、不 Apply
+0. **Project ID** — explicit from the user -> registry lookup -> unique by name -> otherwise stop and ask; on 403 **never** switch to another project
+1. **Project** — `project get` to re-check the name against what the user/registry says
+2. **Endpoint** — locate by ID / exact path / exact name within the current project; 0 or several matches -> guide the user to pick one
+3. **Environment** — confirm with `environment list/get` that it belongs to the current project; names differ per project, never default to SIT
+4. If any step fails -> **output only guiding questions and candidates**; do not create an AI branch, write caseSpecs or Apply
 
-### 引导提问（短而具体）
+### Guiding questions (short and concrete)
 
-项目未确定时：
-
-```text
-未能唯一确定目标项目（系统名：「xxx」）。登记表未命中 / 按名查找有 0 或多条候选。
-请提供数字项目 ID（Apifox 项目设置里可见）。
-提供后我将 project get 校验并写入 systems-registry，下次同系统可直接复用。
-```
-
-接口未找到时：
+When the project is undetermined:
 
 ```text
-未在已确认项目「<项目名>」(<projectId>) 中找到接口「xxx」。请任选一种补齐：
-1) 接口 ID（数字）
-2) 方法 + 完整 path（如 POST /api/...）
-3) 所属模块/目录名称
-若目标项目不对，请给出正确项目名或项目 ID。
+Could not uniquely determine the target project (system name: "xxx"). Registry miss / lookup by name returned 0 or several candidates.
+Please provide the numeric project ID (visible in the Apifox project settings).
+Once provided I will validate it with project get and write it to systems-registry, so the same system can be reused next time.
 ```
 
-## 交付物原则
+When the endpoint is not found:
 
-| 层级 | 作用 | 合并到 main 时 |
+```text
+Endpoint "xxx" was not found in the confirmed project "<project-name>" (<projectId>). Please fill in any one of:
+1) Endpoint ID (numeric)
+2) Method + full path (e.g. POST /api/...)
+3) Name of the module/folder it belongs to
+If the target project is wrong, give the correct project name or project ID.
+```
+
+## Deliverable principles
+
+| Layer | Role | When merging to main |
 | --- | --- | --- |
-| 场景用例 `test-scenario` | **主交付物**；与历史同目录树 | **必须勾选** `--test-scenario-ids` |
-| 单接口用例 `test-case` | 步骤来源，经 `import-steps` 导入场景 | 建议勾选 `--test-case-ids` |
-| 接口定义 endpoint | 只 pick，不修改 | **不要勾** |
+| Scenario `test-scenario` | **Main deliverable**; in the same directory tree as historical scenarios | **Must be ticked** via `--test-scenario-ids` |
+| Single-endpoint case `test-case` | Source of steps, imported into the scenario via `import-steps` | Recommended to tick via `--test-case-ids` |
+| Endpoint definition | Only pick, never modify | **Do not tick** |
 
-缺场景挂载 = **未完成**。
+A missing scenario mount = **not done**.
 
-## 同一接口 ↔ 单一场景（WS-40）
+## One endpoint <-> one scenario (WS-40)
 
-**默认模型：** 一个 endpoint（同 projectId + apiDetailId）只挂**一个**场景用例；扩充覆盖 = 在该场景内追加差异化步骤。
+**Default model:** one endpoint (same projectId + apiDetailId) belongs to **one** scenario; expanding coverage = appending differentiated steps inside that scenario.
 
-| 用户说法 | 正确理解 | 错误理解 |
+| What the user says | Correct understanding | Wrong understanding |
 | --- | --- | --- |
-| 扩充/补充测试场景 | 在**已有同接口场景**里加步骤 | 再 `test-scenario create` 多个同接口场景 |
-| 合并重复接口 | 去掉同场景内重复/失效步骤，收敛到必要差异化步骤 | 拆成多个场景「假装」覆盖全 |
-| 补充用例 | 单接口 `test-case` 只作步骤来源，最终须出现在**那一个**场景里 | 只堆单接口用例，或为每个断言维度各建一个场景 |
+| Expand/supplement test scenarios | Add steps to the **existing scenario of the same endpoint** | `test-scenario create` several more scenarios for the same endpoint |
+| Merge duplicate endpoints | Remove duplicate/stale steps inside the scenario and converge on the necessary differentiated steps | Split into several scenarios to "pretend" full coverage |
+| Supplement cases | A single-endpoint `test-case` is only a step source and must ultimately appear in **that one** scenario | Piling up single-endpoint cases, or creating one scenario per assertion dimension |
 
-**硬规则：**
+**Hard rules:**
 
-1. 目标接口**已在某场景** → `scenarioTarget.mode` **必须** `append-existing`；禁止为「经典产品/多语言/主流程」等维度各建场景
-2. 同模块历史中**尚无**绑定该接口的场景 → 才允许在同 `folderId` 下**新建一个**（如 `<接口名>-自动化补充`）；之后扩充继续追加到它
-3. 用户明确「另开场景/拆成多个场景」才可多场景；口语「扩充场景」仍按**加步骤**执行
-4. 同接口已挂多个场景 → 默认向**首选场景**追加；除非用户要求保留多场景，否则收拢误建场景
-5. 同场景内步骤须**差异化**（不同断言维度或不同已证实入参）；禁止 append 断言几乎相同或整包 body equal 快照
-6. 单接口 `test-case` 允许一步一案作来源；禁止残留无关重复/失效用例
+1. If the target endpoint is **already in a scenario** -> `scenarioTarget.mode` **must** be `append-existing`; do not create separate scenarios for dimensions such as "classic product / multi-language / main flow"
+2. If the same module's history has **no** scenario bound to the endpoint -> only then may you **create one** under the same `folderId` (e.g. `<endpoint-name>-automation-supplement`); later expansion keeps appending to it
+3. Multiple scenarios are allowed only if the user explicitly says "open another scenario / split into several scenarios"; the colloquial "expand the scenario" is still executed as **adding steps**
+4. If the endpoint is already in several scenarios -> by default append to the **preferred scenario**; unless the user asks to keep several, converge the mistakenly created ones
+5. Steps within one scenario must be **differentiated** (different assertion dimensions or different verified inputs); appending steps with nearly identical assertions or whole-body equality snapshots is forbidden
+6. A single-endpoint `test-case` may be one step per case as a source; leaving unrelated duplicate/stale cases behind is forbidden
 
-**断言质量（与场景结构配套）：**
+**Assertion quality (companion to the scenario structure):**
 
-- 断言基于非生产实测；交付前 `apifox run -t <scenarioId>` 复跑
-- **禁止**整包 `responseJson equal` 全量 body 快照
-- **禁止**对 `responseJson` 根路径 `$.` 做 `include` 且值为纯数字串
-- JSONPath 过滤返回数组时勿直接 `equal` 标量；改用 `include`/下标/改写路径
+- Assertions are based on non-production probes; re-run with `apifox run -t <scenarioId>` before delivery
+- **Forbidden**: whole-body `responseJson equal` snapshots
+- **Forbidden**: `include` on the `responseJson` root path `$.` with a purely numeric string value
+- When a JSONPath filter returns an array, do not `equal` a scalar directly; use `include` / an index / rewrite the path
 
-## 用例规模与场景原则
+## Case count and scenario principles
 
-**条数不强制限制** — 不强求固定 N 条，不为「看起来够多」而凑数。
+**The number of cases is not limited** — no fixed N, and no padding just to "look like enough".
 
-| 原则 | 说明 |
+| Principle | Description |
 | --- | --- |
-| 随接口而定 | 参数少、规则简单 → 用例少；参数多、分支多 → 用例多 |
-| 场景要全 | 相对该接口**已证实**的能力做覆盖；落在**同一场景多步骤**，非多场景 |
-| 禁止胡编 | 每条须指出来源：接口定义、需求、错误码、同模块历史断言、实测 |
-| 有怀疑就实测 | 文档未写清 → 先采样；与假设不符则改用例 |
-| 不做未鉴权 | 不覆盖「未鉴权/未登录」场景 |
-| 跳过已覆盖 | 目标场景已有等价步骤/同名 → skip；禁止开新场景绕开 skip |
+| Depends on the endpoint | Few parameters, simple rules -> few cases; many parameters, many branches -> many cases |
+| Scenarios must be complete | Cover the capabilities of the endpoint that are **verified**; land them as **multiple steps in one scenario**, not multiple scenarios |
+| No fabrication | Every case must cite a source: endpoint definition, requirement, error code, same-module historical assertion, or probe |
+| Probe when in doubt | If the docs are unclear, sample first; if the result contradicts the assumption, change the case |
+| No unauthenticated cases | Do not cover "unauthenticated / not logged in" scenarios |
+| Skip what is covered | If the target scenario already has an equivalent step / same name -> skip; do not open a new scenario to get around skip |
 
-## 主链路
+## Main flow
 
 ```
-输入 → 任务卡片对齐 → 系统登记 path/lookup（新系统+项目ID则 upsert）
-  → 校验项目/接口/环境对齐（失败则引导补齐并停止）
-  → 连通 → 审查(证据表) → 鉴权发现 → 场景挂载目标发现
-  → 实测采样 → 设计 caseSpecs → 生成 JSON
-  → 解析/复用 AI 分支（跨人冲突先问）→ pick(接口+场景)
-  → 创建单接口用例(幂等) → 场景 get 并发检查 → import-steps → 自检 → 汇报
+Input -> align task card -> system registry path/lookup (upsert if new system + project ID)
+  -> validate project/endpoint/environment alignment (on failure guide and stop)
+  -> connectivity -> review (evidence table) -> auth discovery -> scenario mount target discovery
+  -> probe sampling -> design caseSpecs -> generate JSON
+  -> resolve/reuse the AI branch (ask first on cross-person conflicts) -> pick (endpoint + scenario)
+  -> create single-endpoint cases (idempotent) -> scenario get concurrency check -> import-steps -> self-check -> report
 ```
 
-1. **鉴权发现** — `node scripts/discover-auth.js` → `auth-discovery.json`
-2. **场景发现** — `node scripts/discover-scenario-target.js` → 优先 `append-existing`
-3. **生成用例** — `node scripts/generate-cases.js`（config 见 `scripts/config.example.json`）
-4. **写入场景** — `node scripts/append-to-scenario.js` 或 `batch-create.ps1`
-5. **安全更新** — `node scripts/safe-update-case.js`（禁止改 path/method/apiDetailId）
+1. **Auth discovery** — `node scripts/discover-auth.js` -> `auth-discovery.json`
+2. **Scenario discovery** — `node scripts/discover-scenario-target.js` -> prefer `append-existing`
+3. **Generate cases** — `node scripts/generate-cases.js` (config: see `scripts/config.example.json`)
+4. **Write into the scenario** — `node scripts/append-to-scenario.js` or `batch-create.ps1`
+5. **Safe update** — `node scripts/safe-update-case.js` (never change path/method/apiDetailId)
 
-## 场景证据表（审查阶段必产出）
+## Scenario evidence table (mandatory output of the review stage)
 
-**无证据不得写入。** 同一接口下「场景名」应指向**同一个** `scenarioId`（除非用户明确要求拆场景）。
+**No evidence, no write.** Under one endpoint the "scenario name" should point to the **same** `scenarioId` (unless the user explicitly asks to split scenarios).
 
-| 场景名 | 维度 | 证据类型 | 来源定位 | 实测环境/时间 | 是否已有 | 是否补充 |
+| Scenario name | Dimension | Evidence type | Source locator | Probe environment/time | Already exists | Supplement or not |
 | --- | --- | --- | --- | --- | --- | --- |
-| … | 正向/负向/边界 | 接口定义/需求/实测/同模块历史 | … | … | 是/否 | 是/否/skip |
+| ... | positive/negative/boundary | endpoint definition/requirement/probe/same-module history | ... | ... | yes/no | yes/no/skip |
 
-## 强制约束（16 条）
+## Mandatory constraints (16)
 
-1. **只新增测试资源**；不新增或修改接口 path/method/参数/响应定义/schema
-2. 不修改已有步骤/用例，除非用户明确要求
-3. **一律 AI 分支写入**；**禁止自动合并 main**
-4. **默认复用同一个 AI 分支**；禁止每次生成都新建（用户明确要求「另开分支」除外）
-5. 鉴权前置：按**当前项目 + 目标 moduleId** 从历史步骤发现；禁止跨项目/跨模块套用
-6. **断言必须基于实测响应**，禁止只按 OpenAPI 臆造
-7. create/update 前 `cli-schema validate`；单接口 update 用 `safe-update-case.js`；场景 update 须 get 完整结构后再写回
-8. 非 200 负向：`responseId: 0` + `options.responseValidate: false`；正向绑定成功 `responseId`
-9. 同名策略：目标场景已有等价步骤/同名 → **skip**
-10. **禁止**套用某一接口的固定清单到其他接口
-11. 写操作只允许 `ai/` 分支；批量创建与场景导入须 dry-run 通过后再 Apply
-12. **写入确认策略**：用户意图为「直接补充 / 生成并写入用例」且审查+实测+dry-run 均已通过时，**同一轮内直接 Apply 并 import-steps**，不得停在「等确认」上空交付。仅当用户明确要求「先审再写 / 先 dry-run 给我看 / 不要写入」时才停下等待
-13. 实测仅限非生产；有副作用须说明测试数据与清理；无法安全清理时须先请用户确认
-14. `caseSpecs.evidence`、预期状态码与断言依据必填
-15. 新系统 + 用户提供项目 ID：校验通过后 `systems-registry.js upsert`；项目 ID 只许来自用户/登记表/唯一按名匹配，**禁止胡编**
-16. **必须**将用例导入场景后才能汇报完成；合并指引须含场景 ID；项目/接口/环境须对齐用户目标
+1. **Only add test resources**; never add or modify endpoint path/method/parameters/response definitions/schema
+2. Do not modify existing steps/cases unless the user explicitly asks
+3. **Always write on an AI branch**; **never auto-merge main**
+4. **Reuse the same AI branch by default**; do not create a new one on every generation (except when the user explicitly asks to "open another branch")
+5. Auth pre-processors: discover from historical steps by **current project + target moduleId**; never reuse across projects/modules
+6. **Assertions must be based on probed responses**; never invent them from OpenAPI alone
+7. Run `cli-schema validate` before create/update; use `safe-update-case.js` for single-endpoint updates; for scenario updates, get the full structure before writing back
+8. Non-200 negative cases: `responseId: 0` + `options.responseValidate: false`; positive cases bind the success `responseId`
+9. Same-name policy: if the target scenario already has an equivalent step / same name -> **skip**
+10. **Never** apply one endpoint's fixed list to other endpoints
+11. Writes are allowed only on `ai/` branches; batch creation and scenario import must pass dry-run before Apply
+12. **Write confirmation policy**: when the user's intent is "supplement directly / generate and write cases" and review + probe + dry-run have all passed, **Apply and import-steps directly in the same turn**; do not stop at "awaiting confirmation" and deliver nothing. Stop and wait only when the user explicitly asks for "review first, write later / show me the dry-run first / do not write"
+13. Probing is limited to non-production; for side effects, state the test data and cleanup; if cleanup cannot be done safely, ask the user to confirm first
+14. `caseSpecs.evidence`, the expected status code and the assertion basis are required
+15. New system + user-provided project ID: after validation passes, `systems-registry.js upsert`; a project ID may only come from the user / registry / unique match by name, **never invented**
+16. Cases **must** be imported into a scenario before reporting completion; merge guidance must include the scenario ID; project/endpoint/environment must align with the user's target
 
-## AI 分支策略
+## AI branch policy
 
-- 默认：同一操作者 + 同一项目会话内复用同一 AI 分支
-- 命名（仅首次创建）：`ai/YYYYMMDD-from-<源分支>-<模块简称>[-<操作者>]`
-- 发现他人活跃分支 → **询问**复用或新建；禁止默默挤入
-- 新接口写入前在同一 AI 分支上 `pick-to` 即可，不必新建分支
+- Default: the same operator reuses the same AI branch within the same project session
+- Naming (first creation only): `ai/YYYYMMDD-from-<source-branch>-<module-short-name>[-<operator>]`
+- If another person's active branch is found -> **ask** whether to reuse or create a new one; never silently squeeze in
+- Before writing a new endpoint, `pick-to` on the same AI branch is enough; no new branch is needed
 
-## 场景并发（多人）
+## Scenario concurrency (multiple people)
 
-`import-steps` / 场景 update **之前**再执行一次 `test-scenario get`：
+Run `test-scenario get` once more **before** `import-steps` / scenario update:
 
-- 步骤数/关键步骤相对审查时已被他人明显改动 → **停止写入**，汇报差异，请用户确认后再续
-- 同接口已有他人新建的重复场景 → 默认挂首选场景并提示收敛，勿再堆第三个
+- If the step count / key steps have been clearly changed by someone else since the review -> **stop writing**, report the differences, and continue only after the user confirms
+- If someone else already created a duplicate scenario for the same endpoint -> by default attach to the preferred scenario and suggest converging; do not stack a third one
 
-## 硬约束（速查）
+## Hard constraints (quick reference)
 
-- 企业私有化基址：`config.yaml` → `api_base_url`（非公网 app.apifox.com）
-- **禁止** patch 修改 endpoint 定义（path/method/apiDetailId）
-- 同一 endpoint 只挂**一个**场景；扩充 = 追加步骤，不重复建场景
-- Token 仅环境变量；禁止写入 config/Git
-- **禁止**生成未鉴权场景
+- Enterprise private base URL: `config.yaml` -> `api_base_url` (not the public app.apifox.com)
+- **Never** patch the endpoint definition (path/method/apiDetailId)
+- One endpoint belongs to **one** scenario; expansion = appending steps, never creating duplicate scenarios
+- Token via environment variables only; never write it into config/Git
+- **Never** generate unauthenticated scenarios
 
-## 合并前自检清单
+## Pre-merge self-check checklist
 
 ```
-- [ ] 任务卡片齐：系统名/projectId/env/接口/写入意图/操作者
-- [ ] 项目 ID 来自用户/登记表精确 lookup；已 project get 复核
-- [ ] 403/无权限时未擅自换项目
-- [ ] 场景证据表已产出；无证据项未写入
-- [ ] dry-run 已通过；用户意图直接补充则同轮 Apply + import-steps（未无故停在等确认）
-- [ ] 同一接口未建多个场景；扩充 = 同场景追加步骤
-- [ ] import 前 scenario get 并发检查（见「场景并发」）
-- [ ] 鉴权来自同模块历史步骤；非 high 置信度已人工确认
-- [ ] 正向/负向 responseId 设置正确；apifox run 复跑断言
-- [ ] 未自动 merge main；未改接口定义
-- [ ] 未生成未鉴权场景
-- [ ] 汇报含场景 ID 与合并指引
+- [ ] Task card complete: system name/projectId/env/endpoint/write intent/operator
+- [ ] Project ID comes from the user / exact registry lookup; re-checked with project get
+- [ ] On 403/no permission, did not switch projects on my own
+- [ ] Scenario evidence table produced; items without evidence were not written
+- [ ] dry-run passed; if the intent was direct supplement, Apply + import-steps in the same turn (did not stop awaiting confirmation without reason)
+- [ ] No multiple scenarios for one endpoint; expansion = appending steps in the same scenario
+- [ ] scenario get concurrency check before import (see "Scenario concurrency")
+- [ ] Auth comes from same-module historical steps; non-high confidence was manually confirmed
+- [ ] Positive/negative responseId set correctly; assertions re-run with apifox run
+- [ ] main not auto-merged; endpoint definition not changed
+- [ ] No unauthenticated scenarios generated
+- [ ] Report contains the scenario ID and merge guidance
 ```
 
-断言质量、用例规模原则详见 [`reference.md`](reference.md)。
+For assertion quality and case-count principles see [`reference.md`](reference.md).
 
-## 汇报必须含
+## The report must include
 
-- 系统名、projectId、environmentId 及**来源**（用户/登记/按名）
-- 操作者；AI 分支名
-- 唯一 scenarioId / 目录 / 场景名
-- 导入的 case/步骤 ID
-- 鉴权来源（projectId + moduleId + step/case）
-- 证据表摘要与实测要点
-- 合并勾选指引（**必须勾场景**，建议勾对应 test-case）
-- 若 upsert 登记表，说明已登记映射
+- System name, projectId, environmentId and their **sources** (user / registry / by name)
+- Operator; AI branch name
+- The single scenarioId / folder / scenario name
+- IDs of the imported cases/steps
+- Auth source (projectId + moduleId + step/case)
+- Evidence table summary and key probe findings
+- Merge tick guidance (**the scenario must be ticked**, the corresponding test-case is recommended)
+- If the registry was upserted, state that the mapping was registered
 
-自检失败（错项目、臆造 ID、缺场景挂载、硬编码鉴权、未实测断言等）**不得**宣称完成。
+If a self-check fails (wrong project, invented IDs, missing scenario mount, hard-coded auth, un-probed assertions, etc.), **do not** claim completion.
 
-## 版本历史
+## Version history
 
-见 [`CHANGELOG.md`](CHANGELOG.md)（整合自 apifox-test-case-supplement-squad）。
+See [`CHANGELOG.md`](CHANGELOG.md) (consolidated from apifox-test-case-supplement-squad).
 
-## OpenAPI 同步（Backend 专用）
+## OpenAPI sync (Backend only)
 
-接口定义增/改/删 + 打 Issue tag → `scripts/sync_openapi.js`（与场景补充分轨）。
+Endpoint definition add/change/delete + Issue tagging -> `scripts/sync_openapi.js` (a separate track from scenario supplementing).

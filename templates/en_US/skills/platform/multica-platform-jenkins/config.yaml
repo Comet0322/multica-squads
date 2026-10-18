@@ -1,0 +1,38 @@
+# multica-platform-jenkins — Jenkins platform config (no credentials)
+version: "1.1"
+
+jenkins:
+  base_url: "http://<JENKINS_URL>"
+  curl_resolve: ""  # e.g. "<JENKINS_URL>:<JENKINS_INTERNAL_IP>" (if you need to pin internal DNS resolution)
+  timeout_seconds: 1800
+  poll_interval_seconds: 5
+
+# Default parameters for dev / sit environments (see jobs-catalog.yaml for the job list)
+environments:
+  dev:
+    default_branch: master
+    # default_params is only used with --no-auto-params; in the normal flow parameters are discovered via the Jenkins API
+    default_params: {}
+    deploy_base_url: ""
+
+  sit:
+    default_branch: master
+    default_params: {}
+    deploy_base_url: ""
+
+defaults:
+  environment: sit
+  branch: master
+
+# Legacy projectmanagement preset (other teams may keep it; this repo defaults to jobs-catalog + trigger_env.py)
+legacy_profiles:
+  sit:
+    job_path: "/view/QA/job/qa-sit-projectmanagement"
+    default_params:
+      env: sit
+      token: QA
+    projects:
+      - projectmanagement-be
+      - projectmanagement-fe
+      - projectmanagement-scheduler
+

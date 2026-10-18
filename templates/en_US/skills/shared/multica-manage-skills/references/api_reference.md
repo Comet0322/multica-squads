@@ -1,33 +1,33 @@
-# multica API 参考
+# multica API reference
 
-来源：multica 服务端路由与 handler 实现（见 multica 源码仓库）。
-线上地址：`<MULTICA_API_URL>`（内网部署时通过 `MULTICA_API_URL` 覆盖）。
+Source: multica server routes and handler implementations (see the multica source repo).
+Online address: `<MULTICA_API_URL>` (override via `MULTICA_API_URL` for intranet deployments).
 
-## 通用约定
+## General conventions
 
-- 认证：`Authorization: Bearer <token>`，token 为 Personal Access Token（`mul_` 前缀），在 UI Settings → Access Tokens 创建。注意：本 skill 的脚本不读本地配置文件，token/地址仅来自 `--token`/`--url` 参数或环境变量 `MULTICA_API_TOKEN`/`MULTICA_API_URL`。
-- workspace 作用域：请求头 `X-Workspace-Slug: <slug 或 UUID>`，服务端两种都能解析（见 `middleware/auth.go` 的 `resolveWorkspaceID`）。
-- CSRF：仅 cookie 会话方式的“状态变更”请求需要 `X-CSRF-Token`；Bearer token 调 GET 无需 CSRF。
-- 客户端头（可选，前端会带）：`X-Client-OS: windows`、`X-Client-Platform: web`、`X-Client-Version: dev`、`X-Request-ID: <uuid>`。
+- Authentication: `Authorization: Bearer <token>`; the token is a Personal Access Token (`mul_` prefix), created in UI Settings → Access Tokens. Note: this skill's scripts do not read local config files; token/address come only from the `--token`/`--url` flags or the environment variables `MULTICA_API_TOKEN`/`MULTICA_API_URL`.
+- Workspace scope: request header `X-Workspace-Slug: <slug or UUID>`; the server resolves both (see `resolveWorkspaceID` in `middleware/auth.go`).
+- CSRF: only state-changing requests made via cookie sessions need `X-CSRF-Token`; GET with a Bearer token needs no CSRF.
+- Client headers (optional, sent by the frontend): `X-Client-OS: windows`, `X-Client-Platform: web`, `X-Client-Version: dev`, `X-Request-ID: <uuid>`.
 
-## 端点
+## Endpoints
 
-### 用户级（无需 workspace 头）
+### User level (no workspace header needed)
 
-| 方法 | 路径 | 说明 |
+| Method | Path | Description |
 | --- | --- | --- |
-| GET | `/api/me` | 当前用户信息（id、email、name 等） |
+| GET | `/api/me` | Current user info (id, email, name, etc.) |
 
-### 需要 `X-Workspace-Slug` 头
+### Requires the `X-Workspace-Slug` header
 
-| 方法 | 路径 | 说明 |
+| Method | Path | Description |
 | --- | --- | --- |
-| GET | `/api/workspaces` | 当前用户可见的所有 workspace（注意：此接口为全局列表，无需 slug 头） |
-| GET | `/api/agents` | workspace 内 agent 列表 |
-| GET | `/api/agent-run-counts` | 每个 agent 的 30 天运行次数（Agents 列表 RUNS 列） |
-| GET | `/api/agent-activity-30d` | 每个 agent 的 30 天日活（Agents 列表 ACTIVITY 迷你图数据源） |
+| GET | `/api/workspaces` | All workspaces visible to the current user (note: this is a global list and needs no slug header) |
+| GET | `/api/agents` | Agent list within the workspace |
+| GET | `/api/agent-run-counts` | 30-day run count per agent (RUNS column of the Agents list) |
+| GET | `/api/agent-activity-30d` | 30-day daily activity per agent (data source of the ACTIVITY sparkline in the Agents list) |
 
-## 响应结构（源码确认）
+## Response structure (confirmed from source)
 
 ### `GET /api/workspaces` → `WorkspaceResponse[]`
 
@@ -77,14 +77,14 @@
 [{"agent_id": "uuid", "bucket_at": "2026-08-23T00:00:00Z", "task_count": 5, "failed_count": 1}]
 ```
 
-`bucket_at` 为 UTC 当日 0 点，按天聚合。
+`bucket_at` is 00:00 UTC of that day; aggregated by day.
 
-## 常见错误
+## Common errors
 
-| 状态码 | 含义 | 处理 |
+| Status | Meaning | Action |
 | --- | --- | --- |
-| 401 | 未认证/token 无效 | 换 token（`--token` 参数或 `MULTICA_API_TOKEN` 环境变量） |
-| 403 | 权限不足 / 非 workspace 成员 | 确认 token 所属用户在该 workspace |
-| 404 | workspace 不存在 | 用 `workspaces` 子命令确认 slug |
-| 502/504 | 服务未就绪 | 检查服务状态（nginx 反代 80 → 后端） |
+| 401 | Unauthenticated / invalid token | Replace the token (`--token` flag or `MULTICA_API_TOKEN` env var) |
+| 403 | Insufficient permission / not a workspace member | Confirm the token owner belongs to that workspace |
+| 404 | Workspace does not exist | Use the `workspaces` subcommand to confirm the slug |
+| 502/504 | Service not ready | Check service status (nginx reverse proxy 80 → backend) |
 

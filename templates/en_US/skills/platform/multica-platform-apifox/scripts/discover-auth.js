@@ -1,12 +1,12 @@
 /**
- * 鉴权前置发现（只读，严格按「当前项目 + 目标模块」）。
+ * Auth pre-processor discovery (read-only, strictly scoped to the "current project + target module").
  *
- * 硬规则：
- * - 禁止硬编码脚本 ID（不同项目/模块可能完全不同）
- * - 禁止跨模块自动采用
- * - 必须从同 moduleId 历史用例/场景 with-case-detail 原样拷贝
- * - commonScript ID 必须能在当前项目 common-script list 解析到
- * - 脚本库关键词仅作候选列表，永不自动写入
+ * Hard rules:
+ * - Never hard-code script IDs (different projects/modules may differ completely)
+ * - Never auto-adopt across modules
+ * - Must copy verbatim from historical cases/scenarios of the same moduleId via with-case-detail
+ * - commonScript IDs must be resolvable in the current project's common-script list
+ * - Script-library keywords only produce a candidate list and are never written automatically
  */
 const path = require('path');
 const {
@@ -22,18 +22,20 @@ ensureTls();
 const endpointId = process.env.APIFOX_ENDPOINT_ID;
 const preferredScenarioId = process.env.APIFOX_SCENARIO_ID || '';
 if (!endpointId) {
-  console.error('请设置 APIFOX_ENDPOINT_ID');
+  console.error('Please set APIFOX_ENDPOINT_ID');
   process.exit(1);
 }
 
 const branch = branchName();
 const project = projectId();
-const AUTH_STEP_NAME = /登录|鉴权|认证|cookie|ticket|session|getCookie/i;
+// Matches auth step names. \u767b\u5f55 / \u9274\u6743 / \u8ba4\u8bc1 are the Chinese words for "login" / "authentication" / "authorization"
+// (kept as escapes because real Apifox step names in Chinese projects use them).
+const AUTH_STEP_NAME = /\u767b\u5f55|\u9274\u6743|\u8ba4\u8bc1|login|authenticat|cookie|ticket|session|getCookie/i;
 
 function call(args, operation) {
   const result = apifoxJson(args);
   if (!result.success) {
-    throw new Error(`${operation} 失败: ${result.error?.message || JSON.stringify(result.error)}`);
+    throw new Error(`${operation} failed: ${result.error?.message || JSON.stringify(result.error)}`);
   }
   return result.data;
 }
@@ -58,18 +60,18 @@ const endpoint = call(
     '--api-base-url',
     'https://apifox.example.com',
   ],
-  '读取目标接口'
+  'read target endpoint'
 );
 
 const moduleId = endpoint.moduleId;
 const folderId = endpoint.folderId;
 if (!moduleId) {
-  console.error('目标接口缺少 moduleId，无法做模块级鉴权发现');
+  console.error('The target endpoint has no moduleId; module-level auth discovery is impossible');
   process.exit(1);
 }
 
 const scripts = asArray(
-  call(['common-script', 'list', '--project', project, '--api-base-url', 'https://apifox.example.com'], '读取当前项目脚本库')
+  call(['common-script', 'list', '--project', project, '--api-base-url', 'https://apifox.example.com'], 'read current project script library')
 );
 const scriptById = new Map(scripts.map((script) => [String(script.id), script]));
 
@@ -87,7 +89,7 @@ const moduleEndpoints = asArray(
       '--api-base-url',
       'https://apifox.example.com',
     ],
-    `列出同模块接口 moduleId=${moduleId}`
+    `list same-module endpoints moduleId=${moduleId}`
   )
 );
 const moduleEndpointIds = new Set(moduleEndpoints.map((item) => String(item.id)));
@@ -109,8 +111,8 @@ function validateCommonScriptIds(preProcessors) {
 }
 
 /**
- * 同模块历史前置即证据：不要求脚本名称含「登录」关键词。
- * 只要 preProcessors 非空且脚本 ID 在本项目可解析，即可作为候选。
+ * A same-module historical pre-processor is itself the evidence: the script name need not contain a "login" keyword.
+ * As long as preProcessors is non-empty and the script ID resolves in this project, it can be a candidate.
  */
 function analyzePreProcessors(preProcessors) {
   const cleaned = asArray(preProcessors)
@@ -157,7 +159,7 @@ const result = {
   requiresConfirmation: true,
   validatedScripts: [],
   candidates: [],
-  // 仅展示，永不自动采用
+  // Display only; never adopted automatically
   scriptLibraryCandidates: scripts.map((script) => ({ scriptId: script.id, scriptName: script.name })),
   warnings: [],
   policy: {
@@ -170,7 +172,7 @@ const result = {
 
 function addCandidate(item) {
   if (!moduleEndpointIds.has(String(item.endpointId || endpointId)) && item.source !== 'target-scenario') {
-    // 非本模块接口来源一律丢弃
+    // Discard any source that is not an endpoint of this module
     if (item.endpointId && !moduleEndpointIds.has(String(item.endpointId))) return;
   }
 
@@ -187,7 +189,7 @@ function addCandidate(item) {
               ? 'medium'
               : 'low';
 
-  // 跨模块不应进入；若误入，强制 low + 必须确认且默认不推荐
+  // Cross-module items should never get here; if one does, force low confidence + require confirmation and do not recommend by default
   if (item.crossModule) return;
 
   result.candidates.push({ ...item, confidence });
@@ -210,7 +212,7 @@ function casesOnEndpoint(sourceEndpointId, source) {
         '--api-base-url',
         'https://apifox.example.com',
       ],
-      `列出同模块接口 ${sourceEndpointId} 用例`
+      `list cases of same-module endpoint ${sourceEndpointId}`
     )
   );
 
@@ -227,7 +229,7 @@ function casesOnEndpoint(sourceEndpointId, source) {
         '--api-base-url',
         'https://apifox.example.com',
       ],
-      `读取用例 ${item.id}`
+      `read case ${item.id}`
     );
     const analyzed = analyzePreProcessors(full.preProcessors);
     if (!analyzed) continue;
@@ -266,7 +268,7 @@ function collectFromScenario(scenarioId, sourceHint) {
       '--api-base-url',
       'https://apifox.example.com',
     ],
-    `读取场景 ${scenarioId}（with-case-detail）`
+    `read scenario ${scenarioId} (with-case-detail)`
   );
 
   let referencesTarget = false;
@@ -288,7 +290,7 @@ function collectFromScenario(scenarioId, sourceHint) {
       });
     }
 
-    // 跳过「鉴权接口」这类步骤自身（通常无业务脚本）；取其兄弟业务步骤的前置
+    // Skip auth-endpoint-type steps themselves (they usually have no business script); take the pre-processors of their sibling business steps
     if (AUTH_STEP_NAME.test(step.name || '') && !(caseObj.preProcessors || []).some((p) => p?.type === 'commonScript')) {
       continue;
     }
@@ -309,7 +311,7 @@ function collectFromScenario(scenarioId, sourceHint) {
     if (apiId && String(apiId) === String(endpointId)) source = 'target-scenario-same-endpoint';
     else if (sourceHint === 'target-scenario') source = 'target-scenario';
     else if (apiId && moduleEndpointIds.has(String(apiId))) source = 'module-scenario';
-    else continue; // 场景步骤不属于本模块接口 → 丢弃
+    else continue; // The scenario step does not belong to an endpoint of this module -> discard
 
     addCandidate({
       source,
@@ -328,33 +330,33 @@ function collectFromScenario(scenarioId, sourceHint) {
       scenarioId: full.id,
       scenarioName: full.name,
       steps: authHttpSteps,
-      note: '同模块场景含独立鉴权 HTTP 步骤；补充业务步骤须保留该模式，并复制同模块兄弟业务步骤的 preProcessors',
+      note: 'The same-module scenario contains a standalone auth HTTP step; supplementary business steps must keep this pattern and copy the preProcessors of sibling business steps in the same module',
     });
   }
 
   return { referencesTarget, referencesModule, full };
 }
 
-// 1) 本接口用例
+// 1) Cases of this endpoint
 casesOnEndpoint(Number(endpointId), 'same-endpoint');
 
-// 2) 同模块其他接口用例（同 folder 优先标记）
+// 2) Cases of other endpoints in the same module (same-folder ones are flagged first)
 for (const item of moduleEndpoints) {
   if (String(item.id) === String(endpointId)) continue;
   const source = String(item.folderId) === String(folderId) ? 'same-folder' : 'same-module';
   casesOnEndpoint(item.id, source);
 }
 
-// 3) 指定挂载场景优先
+// 3) The designated target scenario takes priority
 if (preferredScenarioId) {
   collectFromScenario(preferredScenarioId, 'target-scenario');
 }
 
-// 4) 扫描场景，但只保留引用了本模块接口的场景
+// 4) Scan scenarios, but keep only those that reference endpoints of this module
 const scenarios = asArray(
   call(
     ['test-scenario', 'list', '--project', project, '--branch', branch, '--api-base-url', 'https://apifox.example.com'],
-    '列出测试场景'
+    'list test scenarios'
   )
 );
 for (const item of scenarios) {
@@ -390,7 +392,7 @@ if (ranked.length) {
   if (unknown.length) {
     result.warnings.push({
       fatal: true,
-      message: `推荐鉴权含当前项目不存在的脚本 ID: ${unknown.join(',')}`,
+      message: `The recommended auth contains script IDs that do not exist in the current project: ${unknown.join(',')}`,
     });
   } else {
     result.authPreProcessors = best.preProcessors;
@@ -408,14 +410,14 @@ if (ranked.length) {
       projectId: Number(project),
     };
     result.confidence = best.confidence;
-    // 同模块同接口/目标场景可高置信；其余同模块仍建议确认
+    // Same module + same endpoint / target scenario can be high confidence; other same-module sources should still be confirmed
     result.requiresConfirmation = !['high'].includes(best.confidence);
   }
 } else {
   result.warnings.push({
     fatal: true,
     message:
-      '当前项目+模块未发现可校验的鉴权前置。禁止用脚本库关键词或其它项目/模块的脚本 ID 凑合写入。请人工指定同模块历史步骤。',
+      'No verifiable auth pre-processor found for the current project + module. Do not patch one together from script-library keywords or script IDs of other projects/modules. Specify a same-module historical step manually.',
   });
 }
 
@@ -445,6 +447,6 @@ console.log(
 );
 
 if (!result.authPreProcessors) {
-  console.warn('未发现「当前项目+同模块」可验证鉴权前置；禁止跨模块/硬编码脚本 ID。');
+  console.warn('No verifiable auth pre-processor found for "current project + same module"; cross-module or hard-coded script IDs are forbidden.');
   process.exitCode = 2;
 }

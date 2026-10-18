@@ -1,22 +1,22 @@
 /**
- * 系统 ↔ 项目登记表（本地/工作区持久化，不含 Token）。
+ * System <-> project registry (persisted locally / in the workspace; contains no token).
  *
- * 路径解析（优先序）：
- *   1) APIFOX_SYSTEMS_REGISTRY —— 完整文件路径（Multica 可指向工作区级文件）
+ * Path resolution (in priority order):
+ *   1) APIFOX_SYSTEMS_REGISTRY —— full file path (Multica can point it at a workspace-level file)
  *   2) APIFOX_SKILL_STATE_DIR/systems-registry[.operator].json
  *   3) <skill>/.apifox/systems-registry[.operator].json
- * operator 取自 APIFOX_OPERATOR 或 APIFOX_USER_EMAIL（多人共用同一 Skill 目录时隔离登记表）
+ * operator comes from APIFOX_OPERATOR or APIFOX_USER_EMAIL (isolates the registry when several people share one Skill directory)
  *
- * 用法：
+ * Usage:
  *   node systems-registry.js path
  *   node systems-registry.js list
- *   node systems-registry.js lookup --name "某系统"
- *   node systems-registry.js upsert --name "新系统" --project-id 123 --project-name "新系统" [--env-id 456 --env-name 测试 --ai-branch ai/...]
+ *   node systems-registry.js lookup --name "SomeSystem"
+ *   node systems-registry.js upsert --name "NewSystem" --project-id 123 --project-name "NewSystem" [--env-id 456 --env-name test --ai-branch ai/...]
  *
- * 规则：
- * - 用户提供 projectId 并经 project get 校验后必须 upsert
- * - lookup 仅精确匹配（normalize 后全等），禁止模糊命中
- * - 仍须 project get / environment get 做存活校验
+ * Rules:
+ * - After the user supplies a projectId and it passes project get validation, it must be upserted
+ * - lookup uses exact matching only (equal after normalize); fuzzy hits are forbidden
+ * - A liveness check via project get / environment get is still required
  */
 const fs = require('fs');
 const path = require('path');
@@ -29,8 +29,9 @@ function normalize(name) {
     .trim()
     .toLowerCase()
     .replace(/[\s_\-]+/g, '')
-    .replace(/（/g, '(')
-    .replace(/）/g, ')');
+    // full-width parentheses are normalized to ASCII
+    .replace(/\uff08/g, '(')
+    .replace(/\uff09/g, ')');
 }
 
 function operatorSuffix() {
@@ -54,7 +55,7 @@ function emptyRegistry() {
     version: 1,
     updatedAt: new Date().toISOString(),
     systems: {},
-    _comment: '动态登记；不含 Token。勿把个人登记表打进共享 Skill 分发。',
+    _comment: 'Dynamic registry; contains no token. Do not ship a personal registry in the shared Skill distribution.',
   };
 }
 
@@ -132,7 +133,7 @@ function cmdList() {
 function cmdLookup() {
   const name = arg('--name');
   if (!name) {
-    console.error('用法: node systems-registry.js lookup --name <系统名>');
+    console.error('Usage: node systems-registry.js lookup --name <system-name>');
     process.exit(1);
   }
   const registryPath = resolveRegistryPath();
@@ -158,12 +159,12 @@ function cmdUpsert() {
 
   if (!name || !projectId) {
     console.error(
-      '用法: node systems-registry.js upsert --name <系统名> --project-id <id> [--project-name <名>] [--env-id <id>] [--env-name <名>] [--ai-branch <分支>] [--aliases a,b]'
+      'Usage: node systems-registry.js upsert --name <system-name> --project-id <id> [--project-name <name>] [--env-id <id>] [--env-name <name>] [--ai-branch <branch>] [--aliases a,b]'
     );
     process.exit(1);
   }
   if (!/^\d+$/.test(String(projectId))) {
-    console.error('project-id 必须是数字');
+    console.error('project-id must be a number');
     process.exit(1);
   }
 
@@ -211,6 +212,6 @@ else if (cmd === 'list') cmdList();
 else if (cmd === 'lookup') cmdLookup();
 else if (cmd === 'upsert') cmdUpsert();
 else {
-  console.error('用法: node systems-registry.js <path|list|lookup|upsert> ...');
+  console.error('Usage: node systems-registry.js <path|list|lookup|upsert> ...');
   process.exit(1);
 }
