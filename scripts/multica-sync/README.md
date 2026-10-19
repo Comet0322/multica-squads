@@ -142,3 +142,17 @@ $env:MULTICA_TEMPLATES_DIR = "templates/en_US"  # or point at a directory explic
 
 `instructions_file` in the config accepts three forms: an absolute path, `templates/...`, or a path relative to the templates root
 (e.g. `squad/software-development/squad.md`).
+
+## Checking a software-development-gateway run
+
+`check_sdg_run.py` checks one finished Issue of the `software-development-gateway` squad against its 14 acceptance criteria (handoff never stalls, members post their own comments, verbatim delivery templates, one artifact per review, review rounds, step order, every push through the git gateway by the owning role, spec-branch contents, one MR whose tests pass when re-run, final Gate, document headings). It prints `PASS` / `FAIL` / `SKIP` per criterion and exits non-zero on any `FAIL`.
+
+```bash
+cd scripts/multica-sync
+export MULTICA_API_TOKEN=mul_xxx MULTICA_API_URL=https://your-multica.example.com
+python check_sdg_run.py <ISSUE-KEY> --workspace <workspace-slug> --ui yes \
+  --repo-url <clone URL of the product repo> \
+  --backend-container <multica backend container> --gateway-container <git gateway container>
+```
+
+`--ui no` for a task without a user interface (UI and FRONTEND must then be skipped). Without `--backend-container` / `--gateway-container` the criteria that read those logs print `SKIP`. `--path-prefix` puts a directory (for example a venv's `bin` with pytest) first on `PATH` when the script re-runs the Test command.
