@@ -32,7 +32,8 @@
       "role": "PM",
       "model": "claude-sonnet-5-5",
       "skills": [
-        "sdg-member-rules"
+        "sdg-member-rules",
+        "sdg-review-prd"
       ],
       "mcp_config": {
         "mcpServers": {
@@ -49,7 +50,8 @@
       "role": "Architect",
       "model": "claude-sonnet-5-5",
       "skills": [
-        "sdg-member-rules"
+        "sdg-member-rules",
+        "sdg-review-design"
       ],
       "mcp_config": {
         "mcpServers": {
@@ -66,7 +68,8 @@
       "role": "Designer",
       "model": "claude-sonnet-5-5",
       "skills": [
-        "sdg-member-rules"
+        "sdg-member-rules",
+        "sdg-review-ui"
       ],
       "mcp_config": {
         "mcpServers": {
@@ -83,7 +86,8 @@
       "role": "Backend",
       "model": "claude-sonnet-5-5",
       "skills": [
-        "sdg-member-rules"
+        "sdg-member-rules",
+        "sdg-review-code"
       ],
       "mcp_config": {
         "mcpServers": {
@@ -100,7 +104,8 @@
       "role": "Frontend",
       "model": "claude-sonnet-5-5",
       "skills": [
-        "sdg-member-rules"
+        "sdg-member-rules",
+        "sdg-review-code"
       ],
       "mcp_config": {
         "mcpServers": {
@@ -117,7 +122,8 @@
       "role": "Tester",
       "model": "claude-sonnet-5-5",
       "skills": [
-        "sdg-member-rules"
+        "sdg-member-rules",
+        "sdg-review-test"
       ],
       "mcp_config": {
         "mcpServers": {

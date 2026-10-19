@@ -47,8 +47,8 @@ AC coverage: AC-1 -> <test>, AC-2 -> <test>, ...
 Summary: <at most 3 lines>
 Open: <each failing test as FAIL AC-n: <what happens>, or none>
 
-REVIEW:
-REVIEW <TYPE> <path>@<full commit SHA>: PASS|FAIL
+REVIEW (fill in from the delivery under review: its `Artifact:` value, its Branch, its Commit):
+REVIEW <ARTIFACT> <Branch>@<Commit>: PASS|FAIL
 REV-n: <item> - <what is wrong> - <fix direction>   (one line per problem; on PASS the single line `none`)
 
 When you paste DESIGN, UI, FRONTEND, paste the full expanded template, not the "same as" sentence.
