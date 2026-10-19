@@ -1,0 +1,154 @@
+{
+  "squad": {
+    "name": "software-development-gateway",
+    "description": "PRD -> design -> UI -> code -> tests -> one MR; single Reviewer; git only through the MCP git gateway",
+    "instructions_file": "squad/software-development-gateway/squad.md",
+    "leader": "sdg-leader"
+  },
+  "defaults": {
+    "visibility": "workspace",
+    "description": "",
+    "model": "claude-sonnet-5-5"
+  },
+  "agents": [
+    {
+      "stem": "sdg-leader",
+      "name": "SdgLeader",
+      "role": "Leader",
+      "model": "claude-sonnet-5-5",
+      "skills": [],
+      "mcp_config": {
+        "mcpServers": {
+          "git": {
+            "type": "http",
+            "url": "http://127.0.0.1:8930/mcp"
+          }
+        }
+      }
+    },
+    {
+      "stem": "sdg-pm",
+      "name": "SdgPM",
+      "role": "PM",
+      "model": "claude-sonnet-5-5",
+      "skills": [
+        "sdg-member-rules"
+      ],
+      "mcp_config": {
+        "mcpServers": {
+          "git": {
+            "type": "http",
+            "url": "http://127.0.0.1:8930/mcp"
+          }
+        }
+      }
+    },
+    {
+      "stem": "sdg-architect",
+      "name": "SdgArchitect",
+      "role": "Architect",
+      "model": "claude-sonnet-5-5",
+      "skills": [
+        "sdg-member-rules"
+      ],
+      "mcp_config": {
+        "mcpServers": {
+          "git": {
+            "type": "http",
+            "url": "http://127.0.0.1:8930/mcp"
+          }
+        }
+      }
+    },
+    {
+      "stem": "sdg-designer",
+      "name": "SdgDesigner",
+      "role": "Designer",
+      "model": "claude-sonnet-5-5",
+      "skills": [
+        "sdg-member-rules"
+      ],
+      "mcp_config": {
+        "mcpServers": {
+          "git": {
+            "type": "http",
+            "url": "http://127.0.0.1:8930/mcp"
+          }
+        }
+      }
+    },
+    {
+      "stem": "sdg-backend",
+      "name": "SdgBackend",
+      "role": "Backend",
+      "model": "claude-sonnet-5-5",
+      "skills": [
+        "sdg-member-rules"
+      ],
+      "mcp_config": {
+        "mcpServers": {
+          "git": {
+            "type": "http",
+            "url": "http://127.0.0.1:8930/mcp"
+          }
+        }
+      }
+    },
+    {
+      "stem": "sdg-frontend",
+      "name": "SdgFrontend",
+      "role": "Frontend",
+      "model": "claude-sonnet-5-5",
+      "skills": [
+        "sdg-member-rules"
+      ],
+      "mcp_config": {
+        "mcpServers": {
+          "git": {
+            "type": "http",
+            "url": "http://127.0.0.1:8930/mcp"
+          }
+        }
+      }
+    },
+    {
+      "stem": "sdg-tester",
+      "name": "SdgTester",
+      "role": "Tester",
+      "model": "claude-sonnet-5-5",
+      "skills": [
+        "sdg-member-rules"
+      ],
+      "mcp_config": {
+        "mcpServers": {
+          "git": {
+            "type": "http",
+            "url": "http://127.0.0.1:8930/mcp"
+          }
+        }
+      }
+    },
+    {
+      "stem": "sdg-reviewer",
+      "name": "SdgReviewer",
+      "role": "Reviewer",
+      "model": "claude-sonnet-5-5",
+      "skills": [
+        "sdg-member-rules",
+        "sdg-review-prd",
+        "sdg-review-design",
+        "sdg-review-ui",
+        "sdg-review-code",
+        "sdg-review-test"
+      ],
+      "mcp_config": {
+        "mcpServers": {
+          "git": {
+            "type": "http",
+            "url": "http://127.0.0.1:8930/mcp"
+          }
+        }
+      }
+    }
+  ]
+}

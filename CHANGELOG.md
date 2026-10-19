@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- **Git gateway sidecar** (`scripts/git-gateway/`): an MCP server that holds the git host token so agent runtimes never do. Tools: `git_clone`, `git_push`, `open_mr`, `mr_status`, `list_branches`, `read_file`, `list_files`; repo aliases instead of URLs, a branch prefix, no default-branch or force pushes, and `git_push` only accepts directories made by `git_clone`. Includes Docker / compose files and a Kubernetes deployment note.
+- **`software-development-gateway` squad (work in progress)**: PRD -> design -> UI -> backend/frontend -> tests -> one merge request, with a single Reviewer that reviews one artifact per dispatch using one review skill, and every git operation going through the gateway. Handoff logic lives only in the squad instructions; members share `sdg-member-rules`; review checklists are `sdg-review-prd|design|ui|code|test`; bootstrap config `scripts/multica-sync/software-development-gateway.json`.
+
+### Changed
+
+- **`bootstrap_squad.py`**: sets `mcp_config`, `model` and `runtime_id` on every run, updates member roles in place and prunes squad members not in the config (unless `--only` is used); `--bind-mode replace` can now clear an agent's skills.
+
 ## 0.2.0 - 2026-10-19
 
 Verified end to end on a test repo with the reviewed starter and the bug-fix starter: backend, frontend, fullstack, epic with slices, concurrent Issues, UI design, bug fix. Highlights: PR opening and close-after-merge, epic and slices, fresh-against-main re-gating, UI design requestable from the Issue, agents stop the servers they start.
