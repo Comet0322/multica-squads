@@ -261,6 +261,9 @@ def ensure_agents(
                 "visibility": spec.get("visibility", defaults.get("visibility", "workspace")),
                 "skill_ids": desired,
             }
+            model = spec.get("model") or defaults.get("model")
+            if model:
+                body["model"] = model
             if dry_run:
                 print(
                     f"[DRY-RUN] agent {name}: create "
@@ -278,6 +281,22 @@ def ensure_agents(
                 except MulticaError as e:
                     print(f"[FAIL] agent {name}: {e}")
                     continue
+        # Force the non-instruction settings on every run (create or update).
+        extra = {}
+        if spec.get("mcp_config") is not None:
+            extra["mcp_config"] = spec["mcp_config"]
+        if name in existing and (spec.get("model") or defaults.get("model")):
+            extra["model"] = spec.get("model") or defaults.get("model")
+        if name in existing and (spec.get("runtime_id") or defaults.get("runtime_id")):
+            extra["runtime_id"] = spec.get("runtime_id") or defaults.get("runtime_id")
+        if extra and agent_id and agent_id != "dry-run":
+            try:
+                client.update_agent(workspace, agent_id, extra)
+                print(f"[SET] agent {name}: {', '.join(sorted(extra))}")
+            except MulticaError as e:
+                print(f"[FAIL] agent {name} settings: {e}")
+        elif extra and dry_run:
+            print(f"[DRY-RUN] agent {name}: set {', '.join(sorted(extra))}")
         if agent_id:
             resolved[stem] = agent_id
     return resolved
@@ -359,24 +378,30 @@ def ensure_members(
     config: dict,
     agent_ids: dict[str, str],
     dry_run: bool,
+    prune: bool,
 ) -> None:
-    """Add every agent to the squad with its declared role."""
+    """Force the squad's agent members to mirror the config: add, fix roles, prune extras."""
     current = {m.get("member_id"): m for m in as_list(client.list_squad_members(workspace, squad_id))}
+    desired_ids: set[str] = set()
     for spec in config["agents"]:
         stem = spec["stem"]
         agent_id = agent_ids.get(stem)
         if not agent_id:
             continue
+        desired_ids.add(agent_id)
         role = spec.get("role", "")
         if agent_id in current:
             existing_role = current[agent_id].get("role") or ""
-            if existing_role == role:
+            if roles_match(existing_role, role):
                 continue
             if dry_run:
                 print(f"[DRY-RUN] member {stem}: role {existing_role!r} -> {role!r}")
-            else:
-                print(f"[INFO] member {stem} already present with role {existing_role!r}; "
-                      f"re-add skipped (change role in the UI or delete the member first)")
+                continue
+            try:
+                client.update_squad_member_role(workspace, squad_id, agent_id, role)
+                print(f"[SET] member {stem}: role {existing_role!r} -> {role!r}")
+            except MulticaError as e:
+                print(f"[FAIL] member {stem}: {e}")
             continue
         if dry_run:
             print(f"[DRY-RUN] member {stem}: add as {role or '(no role)'}")
@@ -386,6 +411,21 @@ def ensure_members(
             print(f"[ADD] member {stem} -> {agent_id} ({role or 'no role'})")
         except MulticaError as e:
             print(f"[FAIL] member {stem}: {e}")
+
+    if not prune:
+        return
+    for member_id, m in current.items():
+        if m.get("member_type", "agent") != "agent" or member_id in desired_ids:
+            continue
+        label = m.get("name") or member_id
+        if dry_run:
+            print(f"[DRY-RUN] member {label}: remove (not in config)")
+            continue
+        try:
+            client.remove_squad_member(workspace, squad_id, member_id)
+            print(f"[REMOVE] member {label} ({member_id}): not in config")
+        except MulticaError as e:
+            print(f"[FAIL] remove member {label}: {e}")
 
 
 def ensure_bindings(
@@ -404,7 +444,7 @@ def ensure_bindings(
         if not agent_id:
             continue
         desired = [skill_ids[s] for s in spec.get("skills", []) if s in skill_ids]
-        if not desired:
+        if not desired and not (mode == "replace" and "skills" in spec):
             continue
 
         if dry_run:
@@ -536,7 +576,7 @@ def main() -> int:
 
     # 5. Members + bindings
     if squad_id and squad_id != "dry-run":
-        ensure_members(client, workspace, squad_id, config, agent_ids, args.dry_run)
+        ensure_members(client, workspace, squad_id, config, agent_ids, args.dry_run, prune=not only)
     ensure_bindings(client, workspace, config, agent_ids, skill_ids, args.bind_mode, args.dry_run)
 
     if args.write_mapping and not args.dry_run:

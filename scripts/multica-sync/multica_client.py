@@ -198,6 +198,16 @@ class MulticaClient:
         data, _ = self._request("POST", f"/api/squads/{squad_id}/members", workspace=workspace, body=body)
         return data
 
+    def update_squad_member_role(self, workspace: str, squad_id: str, member_id: str, role: str, member_type: str = "agent"):
+        body = {"member_type": member_type, "member_id": member_id, "role": role}
+        data, _ = self._request("PATCH", f"/api/squads/{squad_id}/members/role", workspace=workspace, body=body)
+        return data
+
+    def remove_squad_member(self, workspace: str, squad_id: str, member_id: str, member_type: str = "agent"):
+        body = {"member_type": member_type, "member_id": member_id}
+        data, _ = self._request("DELETE", f"/api/squads/{squad_id}/members", workspace=workspace, body=body)
+        return data
+
     # --- Runtimes (an agent cannot be created without one) ---
     def list_runtimes(self, workspace: str, owner: str = "me"):
         params = {"owner": owner} if owner else None
@@ -207,6 +217,10 @@ class MulticaClient:
     # --- Agents (create) ---
     def create_agent(self, workspace: str, payload: dict):
         data, _ = self._request("POST", "/api/agents", workspace=workspace, body=payload)
+        return data
+
+    def update_agent(self, workspace: str, agent_id: str, payload: dict):
+        data, _ = self._request("PUT", f"/api/agents/{agent_id}", workspace=workspace, body=payload)
         return data
 
     # --- Agent <-> skill bindings ---
