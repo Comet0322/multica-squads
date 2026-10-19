@@ -1,0 +1,12 @@
+{
+  "allowed_root": "/home/USER/multica_workspaces",
+  "branch_prefix": "demo/",
+  "repos": {
+    "orchestration-demo": {
+      "url": "http://localhost:8929/root/orchestration-demo.git",
+      "type": "gitlab",
+      "project": "root/orchestration-demo",
+      "default_branch": "main"
+    }
+  }
+}

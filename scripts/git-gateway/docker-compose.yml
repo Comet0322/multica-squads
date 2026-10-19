@@ -1,0 +1,18 @@
+services:
+  git-gateway:
+    build: .
+    container_name: git-gateway
+    restart: unless-stopped
+    network_mode: host            # reaches the host GitLab on localhost; binds 127.0.0.1 only
+    environment:
+      GATEWAY_HOST: 127.0.0.1
+      GATEWAY_PORT: "8930"
+    volumes:
+      - ./config.local.json:/etc/git-gateway/config.json:ro
+      - gw-secrets:/secrets:ro    # token lives in a root-owned volume, not in env or a user-readable file
+      - gw-data:/var/lib/gw
+      - ${WORKSPACES_ROOT}:${WORKSPACES_ROOT}   # same path as on the host so agent paths work unchanged
+volumes:
+  gw-secrets:
+    external: true
+  gw-data:
