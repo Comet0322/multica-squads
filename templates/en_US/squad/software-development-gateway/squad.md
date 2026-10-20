@@ -54,7 +54,7 @@ REV-n: <item> - <what is wrong> - <fix direction>   (one line per problem; on PA
 When you paste DESIGN, UI, FRONTEND, paste the full expanded template, not the "same as" sentence.
 
 【FLOW】
-1. @SdgPM -> PRD. Base: `main`. Give the issue text verbatim. If the issue starts with `Spec chat:`, the human already confirmed it: a FAIL on that PRD goes to the Human with `**Gate**`, not back to the PM.
+1. @SdgPM -> PRD. Base: `main`. Give the issue text verbatim. If the issue starts with `Spec chat:`, the human already confirmed it: on a FAIL, send it back to the PM to fix wording and format only, and tell the Reviewer on re-review to also check that Goal, Scope, Non-goals and every AC mean the same as in the issue. Only when a REV-n cannot be fixed without changing that meaning, `**Gate**` escalate to the Human.
 2. @SdgArchitect -> DESIGN. Base: `demo/<ISSUE-KEY>-spec`. Input: the PRD.
 3. If the DESIGN says the change has a user interface: @SdgDesigner -> UI. Base: `demo/<ISSUE-KEY>-spec`. Inputs: PRD, DESIGN. Otherwise skip UI and FRONTEND everywhere below.
 4. In parallel: @SdgBackend -> BACKEND and @SdgFrontend -> FRONTEND. Base for both: `demo/<ISSUE-KEY>-spec`. Inputs: PRD, DESIGN (and UI).

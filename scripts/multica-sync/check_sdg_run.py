@@ -21,7 +21,8 @@ criterion (PASS / FAIL / SKIP C<n>) and `ALL PASS` or `SOME FAIL`.
   C12 exactly one MR from demo/<KEY>, and its Test command passes when run here
   C13 the final Gate lists the MR, commits and open items
   C14 every document's headings match its template in sdg-review-<type>
-  C15 an issue filed from the PM chat (`Spec chat:`) reaches the repo PRD unchanged
+  C15 an issue filed from the PM chat (`Spec chat:`) keeps its sections, AC ids and scope in the repo PRD
+  C16 in that chat the PM pasted an all-PASS self-check before the human said to create it
 
 Usage (Python 3.9+, stdlib only; host/token/workspace come from env or config.local.json):
 
@@ -83,6 +84,7 @@ def main() -> int:
     ap.add_argument("--backend-container", default="", help="docker container of the Multica backend (for C2)")
     ap.add_argument("--gateway-container", default="", help="docker container of the git gateway (for C9/C10)")
     ap.add_argument("--audit-log", default="/var/lib/gw/audit.log", help="audit log path inside the gateway container")
+    ap.add_argument("--chat-session", default="", help="chat session id the issue was filed from (for C16)")
     ap.add_argument("--path-prefix", default="", help="directory put first on PATH when running the Test command")
     args = ap.parse_args()
 
@@ -304,7 +306,9 @@ def main() -> int:
     tail = (run.stdout + run.stderr)[-200:] if run and run.returncode else ""
     res(12, ok12, f"mrs={[e['branch'] for e in mrs] or mr_links} test rc={run.returncode if run else None} cmd={cmd!r} {tail}")
 
-    res(13, bool(mr_links) and bool(re.search(r"[0-9a-f]{40}", final)) and "Open" in final, final[:160].replace("\n", " "))
+    shas = set(re.findall(r"[0-9a-f]{40}", final))
+    ok13 = bool(mr_links) and len(shas) >= len(passes) and bool(re.search(r"\b(open|unresolved)\b", final, re.I))
+    res(13, ok13, f"mr={mr_links} commits={len(shas)} artifacts={len(passes)} " + final[:120].replace("\n", " "))
 
     c14 = []
     for kind, path in (("prd", f"docs/prd/{key}.md"), ("design", f"docs/design/{key}/design.md"), ("ui", f"docs/design/{key}/ui.md")):
@@ -318,17 +322,32 @@ def main() -> int:
             c14.append(f"{kind}: want={want} got={got}")
     res(14, not c14, str(c14))
 
-    # C15: a chat-confirmed spec reaches the repo unchanged
+    # C15: a chat-confirmed spec keeps its meaning in the repo (same sections, same AC ids, same scope bullets count)
     desc = issue.get("description") or ""
     if desc.startswith("Spec chat:"):
-        def body(text):
-            lines = [l.strip() for l in text.splitlines() if l.strip() and not l.startswith("Spec chat:")]
-            return [l for l in lines if not l.startswith("# PRD")]
         prd = git("show", f"origin/demo/{key}-spec:docs/prd/{key}.md")
-        diff = [l for l in body(desc) if l not in body(prd)] + [l for l in body(prd) if l not in body(desc)]
-        res(15, not diff, f"issue-vs-prd differences={diff[:4]}")
+
+        def shape(text):
+            heads = re.findall(r"^## .+$", text, re.M)
+            acs = re.findall(r"^- (AC-\d+):", text, re.M)
+            scope = text.split("## Scope", 1)[-1].split("\n## ", 1)[0]
+            return heads, acs, len(re.findall(r"^- ", scope, re.M))
+        res(15, shape(desc) == shape(prd), f"issue={shape(desc)} prd={shape(prd)}")
     else:
         res(15, None, "not a chat spec")
+
+    # C16: in the chat, the PM pasted a full PASS self-check before the human said to create the issue
+    if args.chat_session:
+        msgs, _ = client._request("GET", f"/api/chat/sessions/{args.chat_session}/messages", workspace=workspace)
+        msgs = as_list(msgs, "messages")
+        go = next((i for i, m in enumerate(msgs) if m.get("role") == "user" and re.search(r"create it", m.get("content") or "", re.I)), None)
+        prev = next((m for m in reversed(msgs[:go]) if m.get("role") == "assistant"), None) if go is not None else None
+        checks = re.findall(r"Self-check (\d+): (PASS|FAIL)", prev.get("content") or "") if prev else []
+        items = {n for n, _ in checks}
+        ok16 = bool(checks) and all(v == "PASS" for _, v in checks) and {"0", "1", "2", "3", "4", "5"} <= items
+        res(16, ok16, f"self-check before 'create it'={checks}")
+    else:
+        res(16, None, "no --chat-session")
 
     for n, ok, detail in results:
         print({True: "PASS", False: "FAIL", None: "SKIP"}[ok], f"C{n}", detail[:400])
