@@ -21,6 +21,7 @@ criterion (PASS / FAIL / SKIP C<n>) and `ALL PASS` or `SOME FAIL`.
   C12 exactly one MR from demo/<KEY>, and its Test command passes when run here
   C13 the final Gate lists the MR, commits and open items
   C14 every document's headings match its template in sdg-review-<type>
+  C15 an issue filed from the PM chat (`Spec chat:`) reaches the repo PRD unchanged
 
 Usage (Python 3.9+, stdlib only; host/token/workspace come from env or config.local.json):
 
@@ -316,6 +317,18 @@ def main() -> int:
         if got != want:
             c14.append(f"{kind}: want={want} got={got}")
     res(14, not c14, str(c14))
+
+    # C15: a chat-confirmed spec reaches the repo unchanged
+    desc = issue.get("description") or ""
+    if desc.startswith("Spec chat:"):
+        def body(text):
+            lines = [l.strip() for l in text.splitlines() if l.strip() and not l.startswith("Spec chat:")]
+            return [l for l in lines if not l.startswith("# PRD")]
+        prd = git("show", f"origin/demo/{key}-spec:docs/prd/{key}.md")
+        diff = [l for l in body(desc) if l not in body(prd)] + [l for l in body(prd) if l not in body(desc)]
+        res(15, not diff, f"issue-vs-prd differences={diff[:4]}")
+    else:
+        res(15, None, "not a chat spec")
 
     for n, ok, detail in results:
         print({True: "PASS", False: "FAIL", None: "SKIP"}[ok], f"C{n}", detail[:400])
