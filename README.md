@@ -44,6 +44,7 @@ You create: Agents (roles) + Squad (orchestration) + Skills (practices) + Issue 
    | [Software Development (Reviewed)](./templates/en_US/squad/software-development-reviewed/README.md) | Recommended main flow: dedicated Reviewer per regular role and a two-layer gate (generic gate + professional artifact review) | Recommended |
    | [Software Development](./templates/en_US/squad/software-development/README.md) | Lightweight alternative: frontend/backend routed by scope; any role can be missing, single-layer generic gate (no professional review) | Optional |
    | [Bug Fix](./templates/en_US/squad/bug-fix/README.md) | Root cause / fix / regression (routed by impact, skips Architect) | Experimental |
+   | [Software Development (Gateway)](./templates/en_US/squad/software-development-gateway/README.md) | One Reviewer; every git operation through an MCP git gateway so agent runtimes hold no token (Kubernetes-ready); PM chat entry | Experimental |
 
    More starters (Technical Research, etc.) will be added after being validated on real tasks. **Don't pretend best practices are finished.**
 
@@ -58,11 +59,13 @@ You create: Agents (roles) + Squad (orchestration) + Skills (practices) + Issue 
        └── squad/            Squad starters
            ├── software-development/  Regular development (squad / issue / README incl. workflow)
            ├── software-development-reviewed/  Recommended main flow: dedicated Reviewer per role + two-layer gate
-           └── bug-fix/              Minimal fix combination (only the orchestration changes)
+           ├── bug-fix/              Minimal fix combination (only the orchestration changes)
+           └── software-development-gateway/  One Reviewer, git only through the MCP git gateway (+ pilot-test-plan.md)
    docs/          ⭐ Read this first: where instructions go / gates & evidence / common mistakes / adapt & scale
    └── en_US/              English methodology
    scripts/       ⚙️ Optional automation: push templates to Multica in one shot (squad / agents / skills / bindings)
-   └── multica-sync/       Python 3.9+, stdlib only, fully idempotent; see scripts/multica-sync/README.md
+   ├── multica-sync/       Python 3.9+, stdlib only, fully idempotent; see scripts/multica-sync/README.md
+   └── git-gateway/        MCP sidecar that holds the git token for agent runtimes; see scripts/git-gateway/README.md
    ```
 
    ## Full flow at a glance

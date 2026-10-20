@@ -18,7 +18,8 @@ templates/           Everything copy-paste-ready
     └── squad/       Squad starters (copy the whole subdirectory and run)
         ├── software-development/  Regular development
         ├── software-development-reviewed/  Same pipeline + dedicated Reviewers (two-layer gates; recommended)
-        └── bug-fix/               Minimal fix combination
+        ├── bug-fix/               Minimal fix combination
+        └── software-development-gateway/  One Reviewer; git only through the MCP git gateway (experimental)
 docs/                Methodology (under en_US/)
 ├── FLOW.md                        Deliverable-driven flow, gate trimming, work-package table
 ├── role-skills-architecture.md    Why skills are layered and which layer a capability belongs to
@@ -26,7 +27,8 @@ docs/                Methodology (under en_US/)
 ├── test-automation-in-repo.md     Automation assets land in the product repo; paths come from MULTICA.md
 └── multi-repo-and-issue-links.md  Multi-repo matrix routing + mandatory upstream reads
 scripts/             Optional automation: push templates to a Multica workspace (Python 3.9+, stdlib only)
-└── multica-sync/    Idempotent sync: import skills -> create/update agents -> create squad -> add members -> bind skills
+├── multica-sync/    Idempotent sync: import skills -> create/update agents -> create squad -> add members -> bind skills
+└── git-gateway/     MCP sidecar holding the git token so agent runtimes never do
 SECURITY.md          Security check before sharing templates
 ```
 

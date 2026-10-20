@@ -21,6 +21,15 @@ Proven end to end on a Forgejo test repo (backend, frontend, fullstack, epic wit
 - Automatic notification when a human merges a PR (today a human comment wakes the Leader).
 - Two slices of the same epic stage that touch the same files.
 
+## software-development-gateway (experimental)
+
+Proven on a local GitLab test repo (greenfield CLI, backend + frontend, three Issues in parallel, Issues filed from a PM chat). Still to prove, per [`pilot-test-plan.md`](templates/en_US/squad/software-development-gateway/pilot-test-plan.md):
+
+- A company repo with existing code, and the runtime in a Kubernetes pod with the gateway sidecar.
+- A chat spec sent back for wording, a review failing three rounds, a `**Blocked**` stop.
+- A git host other than GitLab in the gateway.
+- Repo alias, branch prefix and default branch read from one config instead of `squad.md` and the PM prompt.
+
 ## Internal-edition back-migration
 
 > This repo shares a common origin with an internal fork (CORP). Batched plan for back-porting validated capabilities from the internal fork to the public edition.
