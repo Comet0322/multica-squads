@@ -11,23 +11,22 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
-REQ = {
- "T2": """第 {n} 次基準測試(變體 {variant})。請在 workspace 已註冊的 repo kv-cli(http://127.0.0.1:13000/squadadmin/kv-cli.git)上新增功能,請先 checkout 並閱讀現有程式碼再寫 spec。
-需求:新增 `kv export` 與 `kv import`。
-- `kv export`:把整個 store 以單一 JSON 物件 {{"key":"value",...}} 印到 stdout,key 依字母排序,exit 0;空 store 印 `{{}}`。
-- `kv import`:從 stdin 讀一個 JSON 物件,把每個 key 寫入(覆蓋已存在的 key、保留其他 key)。無效 JSON 或值不是字串:stderr 報錯、exit 1、store 完全不變(要么全部成功要么全部不寫)。
-- 既有指令與其 exit code 不可改變。README 要說明這兩個指令。
-流程:所有工作在 feature branch feat/kv-export-import-{variant}-a{n} 上(從 main 開出,不直接動 main);階段為實作、review、QA、文件,最後 stage 5 由 sq-implementer 用 forgejo-pr skill 對 main 開 PR(描述含 'Closes <parent issue 編號>' 與具體 sub-issue 編號及判定)。**不要 merge PR**。Human gates:只有 PR 這一關,PR 開好後 parent 設為 in_review。其餘全程自主、不要問我。我同意這份需求與流程,請直接寫 spec、建 parent 與 sub-issue 並啟動。""",
- "T3": """第 {n} 次基準測試(變體 {variant})。請在 workspace 已註冊的 repo kv-bugs(http://127.0.0.1:13000/squadadmin/kv-bugs.git)上修 bug,請先 checkout 並閱讀現有程式碼再寫 spec。使用者回報三個症狀,根因請你們自己診斷:
-1. `kv list` 沒有按字母順序印出 key(例如 `b` 排在 `aa` 前面)。預期:純位元組遞增排序。
-2. 任何 `kv set` / `kv del` 之後,store 檔案的權限被改掉(0644 或 0640 變成 0600),導致共用的其他使用者讀不到。預期:既有 store 檔案的權限要保留。
-3. 同時對同一個 store 檔案執行大量 `kv set` / `kv del` 會遺失更新(有些 process 寫入的 key 消失、已刪除的 key 又回來)。預期:每個成功的並行寫入都反映在最終 store。
-三個問題都要加回歸測試,不可改變任何指令的 CLI 介面;既有測試要維持綠燈(若必須修改請在 PR 中說明理由)。
-流程:所有工作在 feature branch fix/kv-bugs-{variant}-a{n} 上(從 main 開出,不直接動 main);階段為實作、review、QA、文件,最後 stage 5 由 sq-implementer 用 forgejo-pr skill 對 main 開 PR(描述含 'Closes <parent issue 編號>' 與具體 sub-issue 編號及判定)。**不要 merge PR**。Human gates:只有 PR 這一關,PR 開好後 parent 設為 in_review。其餘全程自主、不要問我。我同意這份需求與流程,請直接寫 spec、建 parent 與 sub-issue 並啟動。""",
-}
-BRANCH = {"T2": "feat/kv-export-import-{variant}-a{n}", "T3": "fix/kv-bugs-{variant}-a{n}"}
-HIDDEN = {"T2": ROOT / "hidden" / "T2", "T3": ROOT / "hidden" / "T3"}
-LOCAL = {"T2": "/home/comet/Code/kv-cli", "T3": "/home/comet/Code/kv-bugs"}
+REPOS = {"T3": "https://github.com/Comet0322/kv-bugs", "T2-hard": "https://github.com/Comet0322/kv-cli"}
+TASKFILE = {"T3": ROOT / "tasks" / "T3-fix-interrelated-bugs.md", "T2-hard": ROOT / "tasks" / "T2-hard-store-format-v2.md"}
+BRANCH = {"T3": "fix/kv-bugs-{variant}-a{n}", "T2-hard": "feat/kv-format-v2-{variant}-a{n}"}
+HIDDEN = {"T3": ROOT / "hidden" / "T3", "T2-hard": ROOT / "hidden" / "T2-hard"}
+LOCAL = {"T3": str(Path.home() / "Code" / "kv-bugs"), "T2-hard": str(Path.home() / "Code" / "kv-cli")}
+
+
+def request(task, n, variant):
+    """The task file's requirement section verbatim (GitHub since 2026-11-23), plus the pre-approval
+    that lets one chat message stand in for the spec-agreement conversation."""
+    body = TASKFILE[task].read_text().split("## Requirement")[1].split("\n", 1)[1].split("\n## ")[0].strip()
+    body = (body.replace("<variant>", variant).replace("<attempt>", str(n))
+                .replace("forgejo-pr skill", "github-pr skill"))
+    return (f"第 {n} 次基準測試(變體 {variant})。Repo: {REPOS[task]}(已在 workspace 註冊),請先 checkout 並閱讀現有程式碼再寫 spec。\n\n"
+            f"{body}\n\n"
+            "Human gates:只有 PR 這一關。我事先同意你寫出的 spec 與 ticket plan,不要等我回覆、不要問我,直接建立並啟動。")
 
 
 def sh(*c, **k):
@@ -62,7 +61,7 @@ def main():
     for n in range(1, a.attempts + 1):
         known = {i["identifier"] for i in issues()}
         t0 = time.time()
-        msg = REQ[a.task].format(n=n, variant=a.variant)
+        msg = request(a.task, n, a.variant)
         r = sh(sys.executable, str(REPO / "tools" / "chat.py"), "sq-lead", msg, "--wait", "420")
         P(f"[a{n}] chat done ({int(time.time()-t0)}s): {r.stdout.strip()[:160].replace(chr(10),' ')}")
         new = [i for i in issues() if i["identifier"] not in known and not i.get("parent_issue_id")
