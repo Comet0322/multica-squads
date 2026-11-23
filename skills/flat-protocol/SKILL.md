@@ -1,9 +1,9 @@
 ---
 name: flat-protocol
-description: Mechanics every dev-flat agent shares: what starts a run, restarts, reports, branches, commit identity. No policy, only platform facts.
+description: Mechanics every dev-mp agent shares: what starts a run, restarts, reports, branches, commit identity. No policy, only platform facts.
 ---
 
-# dev-flat protocol (mechanics only)
+# dev-mp protocol (mechanics only)
 
 Draft, 2026-11-23. Every line here is a platform fact already measured in `CLAUDE.md` "Hard-won facts"; judgement rules live in each agent's own file.
 

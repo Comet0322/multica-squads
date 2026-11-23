@@ -1,0 +1,1 @@
+{"name": "dev-ps", "description": "pstack squad: one leader running poteto-mode, who plans, reviews and verifies and delegates all code to its own subagents. The pstack counterpart of dev-mp.", "leader": "ps-lead", "members": []}

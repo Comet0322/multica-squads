@@ -1,1 +1,0 @@
-{"name": "fl-builder", "description": "Builds one ticket test-first; never judges its own work", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["flat-protocol", "tdd", "diagnosing-bugs", "codebase-design", "principle-sequence-verifiable-units", "principle-prove-it-works"], "mcp": [], "tier": "judgment"}

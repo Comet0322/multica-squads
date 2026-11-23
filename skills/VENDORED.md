@@ -1,11 +1,15 @@
 # Vendored skills (used unchanged)
 
-Copied verbatim by `tools/vendor-skills.sh`; never edit them here. Both sources are MIT.
+Copied verbatim by `tools/vendor-skills.sh`; never edit them here. Both sources are MIT. The two squads use **disjoint** method sets, so a difference between them is attributable to the method, not to a mixture.
 
-| Source | Pin | Skills |
-|---|---|---|
-| mattpocock/skills | 1.3.1 (Claude plugin cache) | tdd, diagnosing-bugs, codebase-design, code-review, to-spec, to-tickets, pr, retro, domain-modeling, grilling |
-| michael-denyer/pstack-claude (port of Lauren Tan's pstack) | 66181d3 | architect, interrogate, principle-prove-it-works, principle-sequence-verifiable-units |
+| Squad | Source | Pin | Attached skills |
+|---|---|---|---|
+| `dev-mp` | mattpocock/skills | 1.3.1 (Claude plugin cache) | lead: grilling, domain-modeling, to-spec, to-tickets, pr, retro. builder: tdd, diagnosing-bugs, codebase-design. verifier: code-review |
+| `dev-ps` | michael-denyer/pstack-claude (port of Lauren Tan's pstack) | 66181d3 | `ps-lead`: poteto-mode and the skills it routes to (see `agents/ps-lead.json`); the whole pstack skill set is vendored, only these are attached |
 
-Not used: pstack's `poteto-mode` router and playbooks (they bring model configuration and routing hooks), pstack's `tdd` (same name as mattpocock's), mattpocock's `grill-with-docs`/`implement`/`implement-spec` (orchestrators that a human invokes; their job is `fl-lead`'s dispatch).
-Our own adaptation lives only in `agents/fl-*.md` and `skills/flat-protocol`; `agents/fl-lead.md` supplies the issue-tracker mapping the skills ask `/setup-matt-pocock-skills` for.
+Deviations, all forced:
+- pstack's `tdd` is **not** vendored: the name clashes with mattpocock's `tdd` and a workspace has one namespace. poteto-mode's Bug fix playbook mentions it; `ps-lead` has no `tdd` skill.
+- pstack's `pstack:poteto-agent` plugin subagent is not installed in Multica; `ps-lead.md` says to use the general-purpose subagent with poteto-mode's `worker.md` kickoff. No `/setup-pstack` runs, so poteto-mode's default models apply.
+- mattpocock's skills ask for `/setup-matt-pocock-skills`; `agents/mp-lead.md` supplies the issue-tracker mapping instead.
+
+Everything else ours lives in `agents/mp-*.md`, `agents/ps-lead.md` and `skills/flat-protocol` (platform mechanics only; the name predates the split).

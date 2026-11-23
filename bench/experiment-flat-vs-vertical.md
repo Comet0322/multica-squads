@@ -3,19 +3,19 @@
 Nothing here has been run. Two questions, kept separate because they were conflated before.
 
 1. **Where does requirement clarification happen?** (mattpocock expects `/grill-with-docs` with a human, then `ready-for-agent` tickets for an AFK agent. A Multica leader could instead do the grilling itself.)
-2. **Does the squad need many roles?** (`dev-team` v9: 5 agents, test-first by another agent. `dev-flat`: one builder + one independent verifier, skills carry the discipline.)
+2. **Does the squad need many roles?** (`dev-team` v9: 5 agents, test-first by another agent. `dev-mp`: one builder + one independent verifier, skills carry the discipline.)
 
 ## Factors
 
 | Factor | Levels |
 |---|---|
 | **Entry** | **G-in**: the squad's leader grills the requester in Multica (comments/chat). **G-out**: grilling happens outside, in Claude Code with `/grill-with-docs`; the squad receives one `ready-for-agent` issue (agent brief, per `triage/AGENT-BRIEF.md`). |
-| **Squad** | `dev-team` (v9), `dev-flat` (builder + verifier), **A**: one bare agent with the same skills and no squad (baseline) |
+| **Squad** | `dev-team` (v9), `dev-mp` (builder + verifier), **A**: one bare agent with the same skills and no squad (baseline) |
 | **Input quality** | one sentence · three sentences · full spec (the current T2 text, kept as the ceiling control) |
 
 Full cross is too big (cap is 3 runs per cell). Order of play:
 
-1. **Pass 1** — T2 feature, one-sentence input only. Cells: `{dev-team, dev-flat} x {G-in, G-out}` + A (G-in only) = 5 cells x 3 = 15 runs.
+1. **Pass 1** — T2 feature, one-sentence input only. Cells: `{dev-team, dev-mp} x {G-in, G-out}` + A (G-in only) = 5 cells x 3 = 15 runs.
 2. **Pass 2** — repeat on the best entry for three-sentence and full input.
 3. **Pass 3** — a mined real-PR task (`bench/mine_prs.py`), never read while designing.
 
@@ -38,19 +38,19 @@ hidden pass · questions asked by the squad · requester turns · whether each q
 
 ## What each outcome would mean
 
-- `dev-flat` >= `dev-team` at lower cost and fewer visible issues: v9's roles are a liability; keep the independent verifier only.
-- `dev-team` > `dev-flat` on hidden pass or defects caught: independent test-first authorship earns its cost.
-- A (bare) ~ `dev-flat`: the squad adds nothing at this task size; the benefit has to be shown on larger tasks.
+- `dev-mp` >= `dev-team` at lower cost and fewer visible issues: v9's roles are a liability; keep the independent verifier only.
+- `dev-team` > `dev-mp` on hidden pass or defects caught: independent test-first authorship earns its cost.
+- A (bare) ~ `dev-mp`: the squad adds nothing at this task size; the benefit has to be shown on larger tasks.
 - G-out >> G-in: the squad should not own clarification; its entry contract is a `ready-for-agent` issue.
 - G-in ~ G-out: leader-led grilling is enough and users never leave Multica.
 
 ## Rule admission (from mattpocock `SCOPE.md`)
 
-A rule goes into `dev-flat` only if a recorded run failed without it. Candidates carried over from v9 are listed in `bench/failures.md` by id; anything with no failure id stays out until it earns one.
+A rule goes into `dev-mp` only if a recorded run failed without it. Candidates carried over from v9 are listed in `bench/failures.md` by id; anything with no failure id stays out until it earns one.
 
 ## To build before Pass 1
 
-1. `agents/builder.{json,md}`, `agents/verifier.{json,md}`, `squads/dev-flat.json`.
+1. `agents/builder.{json,md}`, `agents/verifier.{json,md}`, `squads/dev-mp.json`.
 2. Task variants: `bench/tasks/T2-1sentence.md`, `T2-3sentence.md`, plus `bench/intents/T2.md` (the hidden intent).
 3. `bench/requester.py`: simulated requester (reads intent file, answers only what is asked).
 4. A frozen G-out artifact for T2 from one `/grill-with-docs` session.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copy third-party skills into skills/ UNCHANGED, so a result is attributable to them and not to our rewording.
-# Sources are pinned: mattpocock/skills 1.3.1 (plugin cache), pstack-claude @ 66181d3 (git clone). Both MIT.
+# pstack: everything except `tdd`. Sources are pinned: mattpocock/skills 1.3.1 (plugin cache), pstack-claude @ 66181d3 (git clone). Both MIT.
 #   tools/vendor-skills.sh <pstack-claude checkout>
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -11,6 +11,7 @@ for s in engineering/tdd engineering/diagnosing-bugs engineering/codebase-design
          productivity/grilling; do
   rm -rf "skills/$(basename "$s")"; cp -r "$MP/$s" "skills/$(basename "$s")"
 done
-for s in architect interrogate principle-prove-it-works principle-sequence-verifiable-units; do
-  rm -rf "skills/$s"; cp -r "$PS/$s" "skills/$s"
+for d in "$PS"/*/; do
+  s=$(basename "$d"); [ "$s" = tdd ] && continue   # name clashes with mattpocock's tdd; one workspace, one namespace
+  rm -rf "skills/$s"; cp -r "$d" "skills/$s"
 done
