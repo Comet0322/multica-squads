@@ -9,7 +9,7 @@ Everything here is pushed to Multica with `./sync.py`; Multica itself is the ups
 - `tiers.json` — model tiers: judgment (Opus 5.5 high: lead, test-writer, verifier), execution (Sonnet 5.5 medium: implementer), light (the docs stage).
 - `sync.py [--dry-run] [--workspace X] [--only properties,skills,mcp,agents,squads]` — idempotent upsert by name, never deletes. Targets in `workspaces.json`; skips workspaces where you are not admin/owner.
 - `tools/chat.py <agent> "<msg>" [--session ID]` — Multica CLI cannot send chat; this uses the REST API with the token in `~/.multica/config.json`.
-- `tools/forgejo-pr.sh` — opens a PR on the local Forgejo (token from `forgejo/.env`).
+- `tools/github-pr.sh` / `tools/github-pr-comments.sh` — open or update a PR, and list a PR's comments, on **GitHub** through `gh` (its stored login). Since 2026-11-23 GitHub is the VCS; the `forgejo/` dir and the Forgejo notes below are history, not current.
 - `forgejo/` — local Forgejo compose (UI `http://localhost:13000`, user `squadadmin`; secrets in gitignored `.env`, `.connection.json`).
 - `docs/design-review.md` — **the criteria for auditing this squad's design without running it**: the wake inventory (every event has exactly one wake) plus W/O/R/S/C/E/$ items. Run it after every config change; `bench/failures.md` records what it caught.
 - `bench/` — rubric, tasks, per-run scorer, aggregate report (see `bench/README.md`). Reliability metric is pass^n over at most 3 runs per variant (user cap), following tau-bench; no composite score.
