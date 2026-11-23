@@ -1,0 +1,1 @@
+{"name": "fl-verifier", "description": "Independent gate: re-runs the checks, reviews the diff, and rules PASS or REWORK. Never edits code.", "runtime": "claude", "max_concurrent_tasks": 3, "skills": ["flat-protocol", "code-review", "interrogate", "principle-prove-it-works"], "mcp": [], "tier": "judgment"}
