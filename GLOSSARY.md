@@ -17,8 +17,9 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
   implement handoff):
   - **Build handoff** — builds the ticket test-first (the `tdd` skill), in
     any commit order. Its tests are proven by the verifier: with every
-    non-test file restored to the ticket's base, each `AC#`'s tests must fail.
-    May never change a test line that existed at the base.
+    function the ticket added or changed blanked to a zero-value return, each
+    `AC#`'s tests must fail on an assertion. May never change a test file
+    that existed at the base.
   - **Docs handoff** — documents what a user can now see. Documentation files
     only. Last, because it commits to the same branch: the head a human merges
     must be a head that was verified.
@@ -101,7 +102,7 @@ acceptance criterion; it has simply stopped being absent.
   commented somewhere no one may answer them. The sole exception to "comment
   only on your own issue", because it is the only path from a member to the
   leader.
-- **Rework round** — one send-back of one ticket, counted by its briefs. The
+- **Rework round** — one send-back of one ticket, counted by the `Rework round:` lines on the ticket's reports (not by briefs). The
   budget is per ticket and resets when a human changes the inputs; the brief's
   own label does not.
 - **Reconcile wake** — an owner wake that carries nothing new, because the

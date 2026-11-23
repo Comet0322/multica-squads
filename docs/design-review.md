@@ -121,7 +121,7 @@ Forbidden, because they produce **no** wake while looking like one:
   terminal-by-accident: a ticket nobody will wake, a spec that never reaches `in_review`.
 - **R3b** Which stalls can the squad recover from, and which can it not? Be exact, because
   the owner's self-recovery is weaker than it reads. An owner only re-checks its level
-  **on a wake**, so recovery needs a wake to arrive. After promoting stage 2 or 3 one does:
+  **on a wake**, so recovery needs a wake to arrive. After promoting stage 2 one does:
   the promotion is a child status change while a lower stage is already terminal, so row 10
   re-fires the barrier within seconds and the owner gets a free second look. After
   promoting a ticket's **stage 1**, or the spec-check, **no stage is terminal yet, so no

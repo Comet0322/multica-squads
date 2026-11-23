@@ -455,3 +455,14 @@ It printed `rework_issues`, which counts issues with "rework" in the title — t
 mechanism. v7 and v8 reopen a stage in place and create no such issue, so the aggregate read
 `0.0` for v8 while two of its three runs had a real rework cycle. Now prints both
 `rwIss` and `rwOpen`.
+
+## 2026-11-24 — design review of config v10 (two rounds, 6 auditors, no run)
+
+### F6. v9 dropped "set the ticket `done`" from the normal ticket close (stops a run)
+v8's `reviewer.md:83` ended the stage-3 PASS exit with "and the ticket `done`. That wakes the leader." v9's rewrite of that exit kept the properties and the report and lost the status write, so no barrier fires on the spec and the leader never wakes. Found by the v10 W/O auditor. Fixed in v10 and in tag `config-v9.1` (only change from `config-v9`), which is the fair comparison arm.
+
+### F7. The first v10 draft verified the builder's process, and every trusting check was bypassable
+Per-criterion test-only/code-only commits walked by the verifier: code first then "behaviour already present", mutation output as prose, silent passes (`t.Skip`, build tags, `TestMain` exit), an unbounded compile stub, merge commits, and a per-cycle `Red SHA` that broke on a mid-build death and on any rebase. Replaced by a result check (ADR 0004).
+
+### F8. Round 2: the result check's first form broke on real trees
+Restoring non-test files to `Base SHA` also restored `go.mod` (test-only dependencies stop compiling, unstubbable); hand-written stubs scale with the API and a stub panic aborts the Go test binary and counts as a "failure" that proves nothing; the `I#` mutation diff was written against `Head SHA` but applied to the restored tree; a test whose right answer is the zero value passes against a stub; "test file" was undefined, so an inserted `t.Skip()` (added lines only), a weakened `testutil` helper or a regenerated golden file escaped the no-weakening check. Fixed: blank changed function bodies instead of restoring files; one anchored test per run, FAIL must be an assertion; mutations applied in a clean `Head SHA` worktree; test files defined; no hunk at all in a pre-existing test file plus "every test passing at `Base SHA` still passes". Also fixed: a docs commit inside a reopened build range failing the scope check, a crash between the rework report and the brief double-counting a round, and the docs stage not resuming its own commit.
