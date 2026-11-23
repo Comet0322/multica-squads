@@ -1,5 +1,5 @@
 {
-  "judgment":  {"model": "claude-opus-5-5",   "thinking_level": "high",   "use": "spec/architecture, supervision, building (tests and code), verifying evidence"},
-  "execution": {"model": "claude-sonnet-5-5", "thinking_level": "medium", "use": "bp-dev; no dev-team agent uses this tier from v10"},
-  "light":     {"model": "claude-haiku-5-5",  "thinking_level": "medium", "use": "documentation"}
+  "judgment": {"model": "claude-haiku-5-5", "thinking_level": "high", "use": "spec/architecture, supervision, building (tests and code), verifying evidence"},
+  "execution": {"model": "claude-haiku-5-5", "thinking_level": "medium", "use": "bp-dev; no dev-team agent uses this tier from v10"},
+  "light": {"model": "claude-haiku-5-5", "thinking_level": "medium", "use": "documentation"}
 }
