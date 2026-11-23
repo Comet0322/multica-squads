@@ -12,14 +12,13 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
 - **Handoff issue** — one task for one agent. Internal; humans are not
   expected to read these. One stands alone — the **spec-check handoff**, the
   spec's own first child, which checks the spec before any ticket exists. The
-  other three sit under a ticket, which has exactly one of each, in this
-  order:
-  - **Test handoff** — turns a ticket's criteria into executable tests that
-    have been seen to fail. It never reads the implementation to decide what
-    to assert; where the behaviour is already present it may break the code
-    on purpose to prove the test can fail, and discards that change.
-  - **Implement handoff** — makes those tests pass. May add tests; may not
-    change or delete the ones the test handoff wrote.
+  other two sit under a ticket, which has exactly one of each, in this
+  order (config v10; v8 and v9 had a separate test handoff before the
+  implement handoff):
+  - **Build handoff** — builds the ticket test-first in vertical slices: per
+    criterion a test commit that has been seen to fail, then a code commit
+    that makes it pass. May add tests; may never weaken one, and no code
+    commit touches a test file.
   - **Docs handoff** — documents what a user can now see. Documentation files
     only. Last, because it commits to the same branch: the head a human merges
     must be a head that was verified.
