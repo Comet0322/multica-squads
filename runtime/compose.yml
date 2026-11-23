@@ -1,0 +1,27 @@
+# Joins the selfhost stack's network, so the daemon talks to the backend directly
+# (http://backend:8080) and no host port is involved.
+services:
+  runtime:
+    build: .
+    image: squads-runtime:v0.11.0
+    container_name: squads-runtime
+    restart: unless-stopped
+    env_file: .env            # MULTICA_TOKEN (and optional GH_TOKEN / CLAUDE_CODE_OAUTH_TOKEN)
+    environment:
+      MULTICA_SERVER_URL: http://backend:8080
+      MULTICA_DAEMON_ID: squads-runtime
+      MULTICA_DAEMON_DEVICE_NAME: squads-runtime
+      MULTICA_DAEMON_MAX_CONCURRENT_TASKS: "6"
+    volumes:
+      - claude-home:/home/agent/.claude
+      - workspaces:/home/agent/multica_workspaces
+      - multica-home:/home/agent/.multica
+    networks: [selfhost]
+volumes:
+  claude-home:
+  workspaces:
+  multica-home:
+networks:
+  selfhost:
+    name: multica-selfhost_default
+    external: true

@@ -10,6 +10,7 @@ with repeated --workspace. Workspaces where you are not admin/owner are skipped.
 
 Usage: ./sync.py [--dry-run] [--workspace ID|SLUG ...] [--only properties,skills,mcp,agents,squads]
 """
+import os
 import argparse, json, re, subprocess, sys
 from pathlib import Path
 
@@ -98,8 +99,13 @@ def sync_mcp():
 
 
 def sync_agents(skill_ids, mcp_ids):
+    # Bind agents to an ONLINE runtime of the right provider (an offline one can never
+    # claim a task). SQUADS_RUNTIME_NAME narrows it to one runtime, e.g. "squads-runtime".
+    want = os.environ.get("SQUADS_RUNTIME_NAME", "")
     runtimes = {}
-    for r in listing("runtime", "list"):
+    for r in sorted(listing("runtime", "list"), key=lambda r: r.get("status") != "online"):
+        if want and want not in r.get("name", ""):
+            continue
         runtimes.setdefault(r["provider"], r["id"])
     existing = {a["name"]: a for a in listing("agent", "list") if not a.get("archived_at")}
     ids = {n: a["id"] for n, a in existing.items()}
