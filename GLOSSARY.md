@@ -15,10 +15,10 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
   other two sit under a ticket, which has exactly one of each, in this
   order (config v10; v8 and v9 had a separate test handoff before the
   implement handoff):
-  - **Build handoff** — builds the ticket test-first in vertical slices: per
-    criterion a test commit that has been seen to fail, then a code commit
-    that makes it pass. May add tests; may never weaken one, and no code
-    commit touches a test file.
+  - **Build handoff** — builds the ticket test-first (the `tdd` skill), in
+    any commit order. Its tests are proven by the verifier: with every
+    non-test file restored to the ticket's base, each `AC#`'s tests must fail.
+    May never change a test line that existed at the base.
   - **Docs handoff** — documents what a user can now see. Documentation files
     only. Last, because it commits to the same branch: the head a human merges
     must be a head that was verified.
@@ -113,7 +113,7 @@ acceptance criterion; it has simply stopped being absent.
 - **Ticket base** — the commit a ticket's work starts from: `main` for the
   first, the previous ticket's verified head otherwise. Written on the ticket,
   because order cannot be inferred.
-- **Integration check** — the last ticket's own stage-2 verification, widened
+- **Integration check** — the last ticket's own build-stage (stage 1) verification, widened
   to every criterion some ticket owed evidence for. An invariant an existing
   check already covers is discharged by running that check on the head, not
   by looking for a ticket that covered it. There is no separate integration

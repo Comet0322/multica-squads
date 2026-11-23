@@ -1,4 +1,4 @@
-# 0004 — One builder works in vertical slices; independence moves to the verifier's commit checks
+# 0004 — One builder works test-first; independence moves to the verifier removing the implementation
 
 Status: proposed (config v10, 2026-11-24). **Not verified.** v9 is banked at tag `config-v9`; this must earn its own pass^3 before any claim moves to it.
 
@@ -10,15 +10,17 @@ We also want to adopt mattpocock's `tdd` skill. It explicitly forbids "horizonta
 
 ## Decision
 
-- `sq-qa` is retired (`agents/archive/`). A ticket has two stages: **build** (`sq-implementer`, now tier judgment, with the `tdd` skill) and **docs** (`sq-doc`).
-- The builder works per criterion: a **test commit** (test files only, plus a compile stub) followed by a **code commit** (no test files), or a test commit alone where the behaviour is already present.
-- `Red SHA` now means the commit the build started from; `Head SHA` the last it pushed.
-- The verifier (`reviewer.md` §3) walks every commit in `Red SHA..Head SHA`: a commit that mixes test and non-test files is rejected; every test commit is checked out and must fail on an assertion (behaviour absent) or carry mutation evidence (present, ADR 0003 unchanged); no code commit may touch a test file. The rest of v9's stage-2 checks (suite, scope, intake baseline, invariants, authorship, integration) are unchanged.
-- `implementer.md` overrides three `tdd` rules that assume a person at the keyboard: seams come from the spec rather than being confirmed with a user, a slice is one criterion, and there is no refactor step.
+- `sq-qa` is retired (`agents/archive/`). A ticket has two stages: **build** (`sq-implementer`, now tier judgment, with the `tdd` skill, used as written apart from three overrides for working without a person: seams come from the spec, a slice is a criterion, no refactor step) and **docs** (`sq-doc`).
+- **The verifier judges the result, not the process.** In a scratch worktree at `Head SHA` it restores every non-test file the ticket changed to `Base SHA`, writes its own zero-value stubs if the tests no longer compile, and runs each `AC#`'s tests by name, verbosely: each must FAIL. An `I#` (or an `AC#` an earlier ticket delivered) must PASS there and FAIL under a mutation **diff** from the report, which the verifier applies itself. No test line that existed at `Base SHA` may change without a correction or brief authorising it.
+- `Red SHA` = `Base SHA`, fixed for the life of the ticket; the range is always `Base SHA..Head SHA`.
+
+### Rejected first draft (b13d6ca)
+
+The first v10 draft required a test-only commit then a code-only commit per criterion, and the verifier walked every commit. The design review (4 auditors, 2026-11-24) found that every check that trusted the builder's account could be bypassed — code first then a claim that the behaviour was "already present", mutation output that existed only as prose, `t.Skip`/build tags/`TestMain` exits passing silently, an unbounded "compile stub", merge commits — and that a per-cycle `Red SHA` broke on a mid-build death and on any history rewrite. All of those were costs of verifying the *process*. Verifying the *result* removes them, because the verifier runs everything itself.
 
 ## What is given up
 
-The test writer now knows the implementation it is about to write. The commit checks prove each test failed before its code existed and was never weakened afterwards; they do **not** prove the test asserts what the spec means rather than what the builder planned. That judgment is the verifier's check 1 (tests against the spec's own text), as it already was in v8 — which is where v8's only test rework was caught.
+The test writer now knows the implementation it is about to write. The removal check proves each `AC#` test fails without this ticket's implementation and that no pre-existing test was weakened. It does **not** prove the test was written first, nor the test asserts what the spec means rather than what the builder planned. That judgment is the verifier's check 1 (tests against the spec's own text), as it already was in v8 — which is where v8's only test rework was caught.
 
 ## How it is decided
 
