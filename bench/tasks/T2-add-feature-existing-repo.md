@@ -1,6 +1,6 @@
 # T2 — Add a feature to an existing repo
 
-- **Repo**: `kv-cli` (registered in the workspace; Forgejo `squadadmin/kv-cli`). Baseline = git tag `bench-base-t2` (equal to `main` now). Base branch for the PR stays `main`.
+- **Repo**: `kv-cli` (registered in the workspace; GitHub `Comet0322/kv-cli` (public; `main` is protected)). Baseline = git tag `bench-base-t2` (equal to `main` now). Base branch for the PR stays `main`.
 - **Ability under test**: leader reads the real repo before writing the spec; change stays in scope; existing behavior is not broken.
 
 ## Requirement (give this text to the leader verbatim, in chat)
@@ -8,7 +8,7 @@ Add `kv export` and `kv import`:
 - `kv export` prints the whole store as one JSON object `{"key":"value",...}` to stdout, keys sorted, exit 0. Empty store prints `{}`.
 - `kv import` reads a JSON object from stdin and sets every key (overwriting existing keys, keeping others). Invalid JSON or non-string values: stderr error, exit 1, store unchanged (all-or-nothing).
 - Existing commands and their exit codes must not change. README documents both commands.
-- Work on branch `feat/kv-export-import-<variant>-a<attempt>` (e.g. `feat/kv-export-import-v1-a1`); the final stage opens a PR against `main` with the forgejo-pr skill. **Do not merge the PR** (the scorer reads the branch; `main` must stay at the baseline so every attempt starts identically).
+- Work on branch `feat/kv-export-import-<variant>-a<attempt>` (e.g. `feat/kv-export-import-v1-a1`); the final stage opens a PR against `main` with the github-pr skill. **Do not merge the PR** (the scorer reads the branch; `main` must stay at the baseline so every attempt starts identically).
 
 ## Expected touched files
 `main.go`, `internal/kvstore/*` (new method(s) + tests), `README.md`. Anything else is out of scope.

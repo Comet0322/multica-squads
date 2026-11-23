@@ -1,6 +1,6 @@
 # T2-hard — Add a versioned store format with backward-compatible migration
 
-- **Repo**: `kv-cli` (registered in the workspace; Forgejo `squadadmin/kv-cli`). Baseline = git tag `bench-base-t2` (= `main`, never merged into). Base branch for the PR stays `main`.
+- **Repo**: `kv-cli` (registered in the workspace; GitHub `Comet0322/kv-cli` (public; `main` is protected)). Baseline = git tag `bench-base-t2` (= `main`, never merged into). Base branch for the PR stays `main`.
 - **Scenario / scope tier**: scenario 2 (add a feature to an existing repo), tier A (scored, pass^3).
 - **Ability under test**: a feature whose difficulty is in the *edge cases implied by the requirement*, not in the amount of code. It replaces T2, which 3 runs passed with zero rework and therefore exercised neither review nor QA.
 
@@ -17,7 +17,7 @@
 8. Everything else is unchanged: the output and exit codes of `set`, `get`, `del` and `list`; an unreadable or malformed store file is still an error with a message on stderr and exit 1 (a value that is not a string is malformed, in either format); an empty file is still an empty store.
 9. README documents the format, the migration and the new command.
 
-Work on branch `feat/kv-format-v2-<variant>-a<attempt>` (e.g. `feat/kv-format-v2-v6-a1`); the final stage opens a PR against `main` with the forgejo-pr skill. **Do not merge the PR** (the scorer reads the branch; `main` must stay at the baseline so every attempt starts identically).
+Work on branch `feat/kv-format-v2-<variant>-a<attempt>` (e.g. `feat/kv-format-v2-v6-a1`); the final stage opens a PR against `main` with the github-pr skill. **Do not merge the PR** (the scorer reads the branch; `main` must stay at the baseline so every attempt starts identically).
 
 ## Expected touched files
 `main.go`, `internal/kvstore/*` (format handling + tests), `README.md`. Anything else is out of scope.
