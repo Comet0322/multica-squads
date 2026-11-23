@@ -1,5 +1,5 @@
 {
- "version": 3,
+ "version": 4,
  "runs_per_variant": 3,
  "max_runs_per_variant": 3,
  "max_scored_runs_per_version": 12,
@@ -38,6 +38,20 @@
   "pass_at_n": "at least one of n runs succeeds (capability ceiling)",
   "success_rate": "successes / n",
   "failure_mode_ledger": "bench/failures.md — every observed failure classified (platform, spec-wrong, integration-miss, review-miss, tooling, cost, other) with its evidence and the design change it caused."
+ },
+ "attention_cost": {
+  "status": "DEFINED 2026-11-23, NOT YET RECORDED: score.py writes none of these columns, and results.csv has no such columns. Measure them from the issue tree (parent_issue_id) and the `internal` label; first baseline is in bench/attention-inventory.md.",
+  "why": "human_interventions counts what a person DID. It cannot say how much a person had to READ or DECIDE to get the result, nor how long a stall went unnoticed. A harness that passes every hidden test but buries the requester in 14 issues and 30 comments is costly to use; none of the other metrics sees that. Secondary metrics: compare variants on pass_hat_n first (see notes), then these.",
+  "metrics": {
+   "visible_issues": "Issues in the run's family (spec plus all descendants) that do NOT carry the `internal` label, i.e. what the requester sees on the board by default. Target: as few as one per deliverable plus the spec.",
+   "internal_issues": "Family issues carrying `internal`. Reported with visible_issues so a variant cannot shrink the first by moving work to the second without it showing up as run cost.",
+   "visible_comments": "Comments on visible issues. The spec issue is counted separately as spec_comments, because it is the one issue the requester is promised to read; lead.md promises ONE `**Status**` comment there.",
+   "spec_comments": "Comments on the spec issue. Of these, `Status` and `Spec correction` are by design; anything else is narration the requester has to read.",
+   "decisions_required": "Times the requester must act to continue: Gate = Decision needed, plus the spec approval. A hands-off run that needs the human only at the PR is 1.",
+   "time_to_first_usable_result_min": "Minutes from the request to a PR whose Gate reads `PR review`. Same clock as wall_minutes but stops at the first usable result.",
+   "stall_detection_latency_min": "For a run that stalls (fault injection or real): minutes from the last progress event to the first signal a requester could see WITHOUT a watcher. In the current design this is unbounded, because the only detector is watch.py, an operator tool (ADR 0001's accepted position)."
+  },
+  "not_measured": "Machine-only properties (Result, Red SHA, Head SHA) on visible issues, and how readable a PR body is. The second needs a judge or a person; do not sum it with the counts above."
  },
  "improvement_claim_rule": "With n<=3 runs, pass^n has no resolution (3/3 gives a 95% lower bound near 0.37 by the rule of three). A version may therefore claim an improvement only by showing (a) the failure mode it targeted does not recur, AND (b) a deterministic probe for that mode passes. Never by a higher pass count alone.",
  "per_run_record": [
