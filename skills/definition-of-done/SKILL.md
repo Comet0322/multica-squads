@@ -15,7 +15,7 @@ A ticket is done only when all of these are true and evidenced:
 - Those tests pass now, and the whole suite passes.
 - No test file that existed at `Base SHA` changed at all (added lines included), and every test that passed there still passes, unless a `**Spec correction**` (retiring or `Amends:` the criterion) or the owner's brief authorises it.
 - The diff touches only files the spec's `Impact analysis` allows.
-- Behaviour a user can see is documented by the ticket's docs stage, and that stage touched documentation files only.
+- Behaviour a user can see is documented by the build stage, in files the spec's `Impact analysis` allows; where it forbids every documentation file, none is owed.
 - Build, vet and formatter show no **new** violations against the baseline the spec's `Repo intake` recorded. A repo that was already dirty is held to "nothing new", never to "clean" — tidying files the spec does not touch fails the scope check instead.
 - The `Result` property is `PASS` and `Head SHA` names the commit it was given on.
 

@@ -33,7 +33,7 @@ It replaces the body of every function you added or changed with a zero-value re
 - ****Test files** are everything the repo's test runner treats as tests (`*_test.go` in Go) **plus** `testdata/**`, golden files, and any helper file or package imported only by tests. Everything else — including `go.mod`, `go.sum` and `vendor/` — is non-test.** No test file that existed at `Base SHA` gets **any** change — not even an added line — except where a `**Spec correction**` retires the criterion (delete only the tests that name it), carries `Amends: <AC#|I#>` (rewrite only the test encoding the old wording), or your owner's `**Brief (cycle N)**` tells you to. Name which in your report. Tests you added in this ticket you may fix freely.
 - **Never make a test pass by special-casing its input**, and never weaken a test to go green.
 - Never rewrite a pushed commit unless a brief tells you to (the one case is a commit carrying a person's identity: amend it and `--force-with-lease`, as `handoff-protocol` describes).
-- **You do not write documentation.** `sq-doc` is the ticket's last stage.
+- **Documentation is yours too** — there is no docs stage. Document behaviour a **user** can see (new commands and flags, changed output, defaults, limits) in the files the spec's `Impact analysis` allows for it, matching the document's existing voice. **If `Impact analysis` forbids a documentation file, do not touch it** — not even to correct it; say in your report what you would have written. Never document an internal detail a user cannot observe.
 - Conventions come from the spec's `Impact analysis`: error-message shape, formatter, allowed dependencies, what must never be committed.
 
 # Spec defects and blockers

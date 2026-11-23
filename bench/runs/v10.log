@@ -1,0 +1,42 @@
+== T3/v10 config 6206f0f
+[a1] chat done (165s): session: 01a20938-692e-725c-b220-844355719161 I created the spec and started it. The spec check is running now; I'll create the 3 tickets once it passes.  **Cre
+[a1] parent LAB-21
+[a1] 00:26:27 LAB-21=in_progress LAB-22=in_progress
+[a1] 00:28:00 LAB-21=in_progress LAB-22=done
+[a1] 00:28:31 LAB-21=in_progress LAB-22=todo
+[a1] 00:28:47 LAB-21=in_progress LAB-22=in_progress
+[a1] 00:29:02 LAB-21=in_progress LAB-22=done
+[a1] 00:29:33 LAB-21=in_progress LAB-22=done LAB-23=todo LAB-24=backlog LAB-25=backlog
+[a1] 00:30:05 LAB-21=in_progress LAB-22=done LAB-23=in_progress LAB-24=backlog LAB-25=backlog
+[a1] 00:35:48 LAB-21=in_progress LAB-22=done LAB-23=done LAB-24=backlog LAB-25=backlog
+[a1] 00:36:04 LAB-21=in_progress LAB-22=done LAB-23=done LAB-24=todo LAB-25=backlog
+[a1] 00:36:35 LAB-21=in_progress LAB-22=done LAB-23=done LAB-24=in_progress LAB-25=backlog
+[a1] 00:42:50 LAB-21=in_progress LAB-22=done LAB-23=done LAB-24=done LAB-25=backlog
+[a1] 00:43:05 LAB-21=in_progress LAB-22=done LAB-23=done LAB-24=done LAB-25=todo
+[a1] 00:43:36 LAB-21=in_progress LAB-22=done LAB-23=done LAB-24=done LAB-25=in_progress
+[a1] 00:54:04 LAB-21=in_progress LAB-22=done LAB-23=done LAB-24=done LAB-25=done
+[a1] 00:55:07 LAB-21=in_review LAB-22=done LAB-23=done LAB-24=done LAB-25=done
+[a1] score: {
+ "parent": "LAB-21",
+ "success": true,
+ "hidden_pass_rate": 1.0,
+ "existing_green": true,
+ "build_clean": true,
+ "human_interventions": 0,
+ "auto_recoveries": 0,
+ "rework_reopens": 3,
+ "negative_final_verdicts": 0,
+ "double_wakes": 0,
+ "escalations": 0,
+ "verdict_role_mismatch": [],
+ "stalled": []
+}
+Manual 1-5 (spec_quality, pr_and_handoff_quality, maintainability, scope_discipline): fill in results.csv manual_scores
+per-run detail: bench/runs/LAB-21.json
+[a2] chat done (175s): session: 01a20955-4082-7c4b-b6d3-936e731ede92 已建立並啟動 spec **LAB-32**。sq-reviewer 正在跑規格檢查 LAB-33,通過後我會依序建立 3 張 ticket。  **基準狀態:** 我在 `main` @ `9be8f00` 上實際跑過檢查: 
+[a2] parent LAB-32
+[a2] 00:58:07 LAB-32=in_progress LAB-33=in_progress
+[a2] 00:59:26 LAB-32=in_progress LAB-33=done
+[a2] 00:59:58 LAB-32=in_progress LAB-33=done LAB-34=backlog LAB-35=backlog LAB-36=backlog
+[a2] 01:00:14 LAB-32=in_progress LAB-33=done LAB-34=todo LAB-35=backlog LAB-36=backlog
+[a2] 01:00:46 LAB-32=in_progress LAB-33=done LAB-34=in_progress LAB-35=backlog LAB-36=backlog

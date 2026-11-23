@@ -12,17 +12,13 @@ decisions (those belong in agent instructions, `bench/`, or an ADR).
 - **Handoff issue** — one task for one agent. Internal; humans are not
   expected to read these. One stands alone — the **spec-check handoff**, the
   spec's own first child, which checks the spec before any ticket exists. The
-  other two sit under a ticket, which has exactly one of each, in this
-  order (config v10; v8 and v9 had a separate test handoff before the
-  implement handoff):
-  - **Build handoff** — builds the ticket test-first (the `tdd` skill), in
-    any commit order. Its tests are proven by the verifier: with every
-    function the ticket added or changed blanked to a zero-value return, each
-    `AC#`'s tests must fail on an assertion. May never change a test file
-    that existed at the base.
-  - **Docs handoff** — documents what a user can now see. Documentation files
-    only. Last, because it commits to the same branch: the head a human merges
-    must be a head that was verified.
+  other sits under a ticket, which has exactly one (config v10.1; v8 and
+  v9 had test, implement and docs handoffs, v10 had build and docs):
+  - **Build handoff** — builds the ticket test-first (the `tdd` skill),
+    including any documentation `Impact analysis` allows. Its tests are
+    proven by the verifier: with every function the ticket added or changed
+    blanked to a zero-value return, each `AC#`'s tests must fail on an
+    assertion. May never change a test file that existed at the base.
 
 ## Criteria
 
