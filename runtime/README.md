@@ -18,3 +18,10 @@ SQUADS_RUNTIME_NAME=squads-runtime ../sync.py   # bind agents to this runtime
 ```
 Optional in `.env`: `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`), `GH_TOKEN`.
 Do not run a host daemon at the same time: agents bind to one runtime.
+
+## Selfhost server (outside this repo)
+The server this runtime connects to lives in `~/multica-selfhost` (not a git repo; `.env` holds secrets), so its state is recorded here.
+- Upgraded in place from v0.8.1 to **v0.11.0** on 2026-11-23 via `MULTICA_IMAGE_TAG`; the DB backup is `~/multica-selfhost/backups/pre-v0.11.0-20261123-2002.sql.gz`. Migrations are one-way.
+- **Always pass `-p multica-selfhost`**: `docker compose -p multica-selfhost -f docker-compose.selfhost.yml ...`. Without it compose picks project `multica`, creates duplicate containers and fails on the port.
+- No email backend is configured, so login codes are not mailed. `.env` sets `MULTICA_DEV_VERIFICATION_CODE=888888` and `APP_ENV=development` (the fixed code is ignored when `APP_ENV=production`), and `docker-compose.selfhost.yml` passes the variable to `backend`. Any email logs in with `888888`; the port is bound to 127.0.0.1 only. A first login creates the account, so delete probe accounts you create while testing.
+- Host CLI: `~/.local/bin/multica` is a v0.11.0 build from tag `v0.11.0` (the brew 0.12.0 is shadowed). Do not run a host `multica daemon` while this container runs.
